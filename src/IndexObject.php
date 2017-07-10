@@ -1,0 +1,167 @@
+<?php
+
+namespace Sync;
+
+class IndexObject
+{
+    const TYPE_DIR = 1;
+    const TYPE_FILE = 2;
+    const TYPE_LINK = 3;
+
+    /**
+     * @var string
+     */
+    protected $relativePath;
+
+    /**
+     * @var int
+     */
+    protected $type;
+
+    /**
+     * @var int
+     */
+    protected $mtime;
+
+    /**
+     * @var int
+     */
+    protected $ctime;
+
+    /**
+     * @var int
+     */
+    protected $mode;
+
+    /**
+     * @var string
+     */
+    protected $linkTarget;
+
+    /**
+     * @var string
+     */
+    protected $blobId;
+
+
+    public function getRelativePath(): string
+    {
+        return $this->relativePath;
+    }
+
+    public function getType(): int
+    {
+        return $this->type;
+    }
+
+    public function isDirectory(): bool
+    {
+        return $this->type === static::TYPE_DIR;
+    }
+
+    public function isFile(): bool
+    {
+        return $this->type === static::TYPE_FILE;
+    }
+
+    public function isLink(): bool
+    {
+        return $this->type === static::TYPE_LINK;
+    }
+
+    public function getMtime(): int
+    {
+        return $this->mtime;
+    }
+
+    public function getCtime(): int
+    {
+        return $this->ctime;
+    }
+
+    public function getMode(): int
+    {
+        return $this->mode;
+    }
+
+    public function getLinkTarget()
+    {
+        return $this->linkTarget;
+    }
+
+    public function getBlobId()
+    {
+        return $this->blobId;
+    }
+
+    public function setBlobId(string $blobId): IndexObject
+    {
+        $this->blobId = $blobId;
+
+        return $this;
+    }
+
+    public function getIndexRecord(): array
+    {
+        return [
+            $this->relativePath,
+            $this->type,
+            $this->mtime,
+            $this->ctime,
+            $this->mode,
+            $this->blobId,
+            $this->linkTarget
+        ];
+    }
+
+    public static function fromIndexRecord(array $row): IndexObject
+    {
+        $object = new static;
+        $object->relativePath = $row[0];
+        $object->type = (int)$row[1];
+        $object->mtime = (int)$row[2];
+        $object->ctime = (int)$row[3];
+        $object->mode = (int)$row[4];
+        $object->blobId = $row[5];
+        $object->linkTarget = $row[6];
+
+        return $object;
+    }
+
+    public static function fromPath(string $basePath, string $relativePath): IndexObject
+    {
+        $absolutePath = $basePath . DIRECTORY_SEPARATOR . $relativePath;
+
+        $object = new static;
+        $object->relativePath = $relativePath;
+
+        if (is_file($absolutePath))
+        {
+            $object->type = static::TYPE_FILE;
+        }
+        elseif (is_dir($absolutePath))
+        {
+            $object->type = static::TYPE_DIR;
+        }
+        elseif (is_link($absolutePath))
+        {
+            $object->type = static::TYPE_LINK;
+            $object->linkTarget = str_replace($basePath, '', readlink($absolutePath));
+        }
+        else
+        {
+            throw new \InvalidArgumentException(sprintf('File %s does not exist!', $absolutePath));
+        }
+
+        if (!($stat = lstat($absolutePath)))
+        {
+            throw new \RuntimeException();
+        }
+
+        $object->mtime = $stat['mtime'];
+        $object->ctime = $stat['ctime'];
+        $object->mode = $stat['mode'];
+
+        return $object;
+    }
+}

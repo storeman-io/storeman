@@ -1,0 +1,25 @@
+{
+    "name": "agroskurth/archivr",
+    "description": "ArchivR is a secure file-synchronization and -backup utility that can be used with a large variety of storage providers.",
+    "keywords": ["archivr", "cloud", "sync", "synchronization", "backup", "storage"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Arne Groskurth",
+            "email": "arne.groskurth@gears9.de"
+        }
+    ],
+    "require": {
+        "php": "^7.0",
+        "symfony/finder": "^3.2",
+        "ramsey/uuid": "^3.6"
+    },
+    "autoload": {
+        "psr-4": {"Sync\\": "src/"}
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.x-dev"
+        }
+    }
+}
