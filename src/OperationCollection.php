@@ -1,8 +1,8 @@
 <?php
 
-namespace Sync;
+namespace Archivr;
 
-use Sync\Operation\OperationInterface;
+use Archivr\Operation\OperationInterface;
 
 class OperationCollection implements \Countable, \IteratorAggregate
 {

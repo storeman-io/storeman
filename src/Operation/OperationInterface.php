@@ -1,6 +1,6 @@
 <?php
 
-namespace Sync\Operation;
+namespace Archivr\Operation;
 
 interface OperationInterface
 {

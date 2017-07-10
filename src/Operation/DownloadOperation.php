@@ -1,8 +1,8 @@
 <?php
 
-namespace Sync\Operation;
+namespace Archivr\Operation;
 
-use Sync\VaultConnectionInterface;
+use Archivr\VaultConnectionInterface;
 
 class DownloadOperation implements OperationInterface
 {

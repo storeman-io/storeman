@@ -15,7 +15,7 @@
         "ramsey/uuid": "^3.6"
     },
     "autoload": {
-        "psr-4": {"Sync\\": "src/"}
+        "psr-4": {"Archivr\\": "src/"}
     },
     "extra": {
         "branch-alias": {

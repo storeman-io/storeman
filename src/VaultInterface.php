@@ -1,6 +1,6 @@
 <?php
 
-namespace Sync;
+namespace Archivr;
 
 interface VaultInterface
 {
@@ -48,7 +48,7 @@ interface VaultInterface
     public function getOperationCollection(): OperationCollection;
 
     /**
-     * Generator function that yields instances of Sync\OperationResult for each executed operation.
+     * Generator function that yields instances of Archivr\OperationResult for each executed operation.
      *
      * @return OperationResult[]
      */

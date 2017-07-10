@@ -1,6 +1,6 @@
 <?php
 
-namespace Sync;
+namespace Archivr;
 
 trait TildeExpansionTrait
 {

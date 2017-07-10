@@ -1,17 +1,17 @@
 <?php
 
-namespace Sync;
+namespace Archivr;
 
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use Sync\Operation\ChmodOperation;
-use Sync\Operation\DownloadOperation;
-use Sync\Operation\MkdirOperation;
-use Sync\Operation\OperationInterface;
-use Sync\Operation\SymlinkOperation;
-use Sync\Operation\TouchOperation;
-use Sync\Operation\UnlinkOperation;
-use Sync\Operation\UploadOperation;
+use Archivr\Operation\ChmodOperation;
+use Archivr\Operation\DownloadOperation;
+use Archivr\Operation\MkdirOperation;
+use Archivr\Operation\OperationInterface;
+use Archivr\Operation\SymlinkOperation;
+use Archivr\Operation\TouchOperation;
+use Archivr\Operation\UnlinkOperation;
+use Archivr\Operation\UploadOperation;
 
 class Vault implements VaultInterface
 {
