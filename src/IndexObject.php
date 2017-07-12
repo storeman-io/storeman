@@ -43,6 +43,7 @@ class IndexObject
      */
     protected $blobId;
 
+    protected function __construct() {}
 
     public function getRelativePath(): string
     {
