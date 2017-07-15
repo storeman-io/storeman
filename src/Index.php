@@ -4,7 +4,7 @@ namespace Archivr;
 
 use Ramsey\Uuid\Uuid;
 
-class Index implements \IteratorAggregate
+class Index implements \Countable, \IteratorAggregate
 {
     /**
      * @var \DateTime
@@ -50,6 +50,11 @@ class Index implements \IteratorAggregate
         }
 
         return null;
+    }
+
+    public function count(): int
+    {
+        return count($this->pathMap);
     }
 
     public function getIterator(): \Traversable
