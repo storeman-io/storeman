@@ -29,6 +29,21 @@ class Index implements \Countable, \IteratorAggregate
 
     public function addObject(IndexObject $indexObject): Index
     {
+        // ensure existence of containing directory
+        if (substr_count($indexObject->getRelativePath(), DIRECTORY_SEPARATOR))
+        {
+            $parent = $this->getObjectByPath(dirname($indexObject->getRelativePath()));
+
+            if ($parent === null)
+            {
+                throw new \InvalidArgumentException();
+            }
+            elseif (!$parent->isDirectory())
+            {
+                throw new \InvalidArgumentException();
+            }
+        }
+
         $this->pathMap[$indexObject->getRelativePath()] = $indexObject;
 
         return $this;
