@@ -1,8 +1,10 @@
 <?php
 
-namespace Archivr;
+namespace Archivr\Connection;
 
-class VaultConnection implements VaultConnectionInterface
+use Archivr\TildeExpansionTrait;
+
+class StreamVaultConnection implements VaultConnectionInterface
 {
     use TildeExpansionTrait;
 

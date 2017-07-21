@@ -2,7 +2,7 @@
 
 namespace Archivr\Operation;
 
-use Archivr\VaultConnectionInterface;
+use Archivr\Connection\VaultConnectionInterface;
 
 class UploadOperation implements OperationInterface
 {

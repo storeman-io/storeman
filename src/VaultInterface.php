@@ -2,6 +2,8 @@
 
 namespace Archivr;
 
+use Archivr\Connection\VaultConnectionInterface;
+
 interface VaultInterface
 {
     /**

@@ -2,6 +2,7 @@
 
 namespace Archivr;
 
+use Archivr\Connection\VaultConnectionInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Archivr\Operation\ChmodOperation;
@@ -23,7 +24,7 @@ class Vault implements VaultInterface
 
 
     /**
-     * @var VaultConnection
+     * @var VaultConnectionInterface
      */
     protected $vaultConnection;
 
