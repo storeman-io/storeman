@@ -2,17 +2,17 @@
 
 namespace Archivr;
 
-use Archivr\Connection\VaultConnectionInterface;
+use Archivr\Connection\ConnectionInterface;
 
 interface VaultInterface
 {
     /**
      * Construct the vault object based on a connection to the remote vault and its local representation.
      *
-     * @param VaultConnectionInterface $vaultConnection
+     * @param ConnectionInterface $vaultConnection
      * @param string $localPath
      */
-    public function __construct(VaultConnectionInterface $vaultConnection, string $localPath);
+    public function __construct(ConnectionInterface $vaultConnection, string $localPath);
 
     /**
      * Builds and returns an index representing the current local state.

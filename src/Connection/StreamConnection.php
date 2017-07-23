@@ -4,7 +4,7 @@ namespace Archivr\Connection;
 
 use Archivr\TildeExpansionTrait;
 
-class StreamVaultConnection implements VaultConnectionInterface
+class StreamConnection implements ConnectionInterface
 {
     use TildeExpansionTrait;
 
@@ -37,6 +37,11 @@ class StreamVaultConnection implements VaultConnectionInterface
     public function __destruct()
     {
         $this->releaseLock();
+    }
+
+    public function hasLock(): bool
+    {
+        return $this->lockAcquired;
     }
 
     public function acquireLock(bool $wait = true, bool $force = false)

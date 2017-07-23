@@ -2,7 +2,7 @@
 
 namespace Archivr;
 
-use Archivr\Connection\VaultConnectionInterface;
+use Archivr\Connection\ConnectionInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Archivr\Operation\ChmodOperation;
@@ -24,7 +24,7 @@ class Vault implements VaultInterface
 
 
     /**
-     * @var VaultConnectionInterface
+     * @var ConnectionInterface
      */
     protected $vaultConnection;
 
@@ -59,7 +59,7 @@ class Vault implements VaultInterface
     protected $operationCollection;
 
 
-    public function __construct(VaultConnectionInterface $vaultConnection, string $localPath)
+    public function __construct(ConnectionInterface $vaultConnection, string $localPath)
     {
         $this->vaultConnection = $vaultConnection;
         $this->localPath = rtrim($this->expandTildePath($localPath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
