@@ -13,9 +13,12 @@ interface ConnectionInterface
 
     /**
      * Tries to acquire a lock.
+     * Returns true on success and false on failure.
      *
      * @param bool $wait
      * @param bool $force
+     *
+     * @return bool
      */
     public function acquireLock(bool $wait = true, bool $force = false);
 

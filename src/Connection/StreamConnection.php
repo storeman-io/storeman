@@ -72,6 +72,8 @@ class StreamConnection implements ConnectionInterface
 
             $this->lockAcquired = true;
         }
+
+        return $this->lockAcquired;
     }
 
     public function releaseLock()
