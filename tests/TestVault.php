@@ -3,8 +3,9 @@
 namespace Archivr\Test;
 
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Iterator\RecursiveDirectoryIterator;
 
-class TestVault
+class TestVault implements \IteratorAggregate
 {
     use TemporaryPathGeneratorProviderTrait;
 
@@ -55,6 +56,14 @@ class TestVault
         $this->filesystem->remove($this->getAbsolutePath($relativePath));
 
         return $this;
+    }
+
+    public function getIterator(): \Iterator
+    {
+        return new \RecursiveIteratorIterator(new RecursiveDirectoryIterator($this->basePath,
+            RecursiveDirectoryIterator::CURRENT_AS_FILEINFO |
+            RecursiveDirectoryIterator::SKIP_DOTS
+        ));
     }
 
     protected function getAbsolutePath(string $relativePath): string
