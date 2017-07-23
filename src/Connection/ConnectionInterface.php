@@ -24,6 +24,9 @@ interface ConnectionInterface
 
     /**
      * Releases an acquired lock.
+     * Returns true on success and false on failure.
+     *
+     * @return bool
      */
     public function releaseLock();
 

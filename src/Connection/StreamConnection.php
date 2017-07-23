@@ -84,6 +84,8 @@ class StreamConnection implements ConnectionInterface
 
             $this->lockAcquired = false;
         }
+
+        return !$this->lockAcquired;
     }
 
     public function getStream(string $relativePath, string $mode)
