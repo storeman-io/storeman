@@ -6,6 +6,8 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class TestVault
 {
+    use TemporaryPathGeneratorProviderTrait;
+
     /**
      * @var string
      */
@@ -19,21 +21,7 @@ class TestVault
     public function __construct()
     {
         $this->filesystem = new Filesystem();
-
-        do
-        {
-            $basePath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'testVault_' . uniqid() . DIRECTORY_SEPARATOR;
-        }
-        while($this->filesystem->exists($basePath));
-
-        $this->filesystem->mkdir($basePath);
-
-        $this->basePath = $basePath;
-    }
-
-    public function __destruct()
-    {
-        $this->filesystem->remove($this->basePath);
+        $this->basePath = $this->getTemporaryPathGenerator()->getTemporaryDirectory('testVault');
     }
 
     public function getBasePath(): string
