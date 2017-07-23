@@ -30,7 +30,7 @@ class StreamConnection implements ConnectionInterface
 
     public function __construct(string $remotePath, $streamContext = null)
     {
-        $this->remotePath = rtrim($this->expandTildePath($remotePath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;;
+        $this->remotePath = rtrim($this->expandTildePath($remotePath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         $this->streamContext = $streamContext ?: stream_context_create();
     }
 
