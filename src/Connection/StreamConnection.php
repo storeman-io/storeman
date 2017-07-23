@@ -48,12 +48,16 @@ class StreamConnection implements ConnectionInterface
     {
         if (!$this->lockAcquired)
         {
+            $lockExists = false;
+
             // check for existing lock
             if (!$force)
             {
                 do
                 {
-                    if (!$this->exists(static::LOCK_FILE_NAME))
+                    $lockExists = $this->exists(static::LOCK_FILE_NAME);
+
+                    if (!$lockExists)
                     {
                         // no other lock present
                         break;
@@ -68,9 +72,13 @@ class StreamConnection implements ConnectionInterface
                 while($wait);
             }
 
-            $this->write(static::LOCK_FILE_NAME, getmypid());
+            // only write lock if no other exists (or $force is true)
+            if (!$lockExists)
+            {
+                $this->write(static::LOCK_FILE_NAME, getmypid());
 
-            $this->lockAcquired = true;
+                $this->lockAcquired = true;
+            }
         }
 
         return $this->lockAcquired;
