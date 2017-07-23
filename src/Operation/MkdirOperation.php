@@ -18,6 +18,9 @@ class MkdirOperation implements OperationInterface
         return mkdir($this->absolutePath, $this->mode, true);
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function __toString(): string
     {
         return sprintf('Mkdir %s (mode: %s)', $this->absolutePath, decoct($this->mode));

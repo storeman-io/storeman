@@ -32,20 +32,21 @@ class TemporaryPathGenerator
         }
     }
 
-    public function getTemporaryDirectory(string $prefix): string
+    public function getTemporaryDirectory(string $prefix = 'tempDir', int $perms = 0777): string
     {
-        $path = $this->getTemporaryPath($prefix);
+        $path = $this->getTemporaryPath($prefix) . DIRECTORY_SEPARATOR;
 
-        $this->filesystem->mkdir($path);
+        $this->filesystem->mkdir($path, $perms);
 
         return $path;
     }
 
-    public function getTemporaryFile(string $prefix): string
+    public function getTemporaryFile(string $prefix = 'tempFile', int $perms = 0777): string
     {
         $path = $this->getTemporaryPath($prefix);
 
         $this->filesystem->touch($path);
+        $this->filesystem->chmod($path, $perms);
 
         return $path;
     }
@@ -54,7 +55,7 @@ class TemporaryPathGenerator
     {
         do
         {
-            $path = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $prefix . '_' . uniqid() . DIRECTORY_SEPARATOR;
+            $path = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $prefix . '_' . uniqid();
         }
         while($this->filesystem->exists($path));
 

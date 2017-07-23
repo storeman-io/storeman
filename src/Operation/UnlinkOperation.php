@@ -16,6 +16,9 @@ class UnlinkOperation implements OperationInterface
         return unlink($this->absolutePath);
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function __toString(): string
     {
         return "Unlink {$this->absolutePath}";

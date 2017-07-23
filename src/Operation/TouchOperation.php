@@ -18,6 +18,9 @@ class TouchOperation implements OperationInterface
         return touch($this->absolutePath, $this->mtime);
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function __toString(): string
     {
         return sprintf('Touch %s to mtime = %s', $this->absolutePath, date('c', $this->mtime));

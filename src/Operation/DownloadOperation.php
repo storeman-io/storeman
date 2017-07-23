@@ -30,6 +30,9 @@ class DownloadOperation implements OperationInterface
         return $bytesCopied !== false;
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function __toString(): string
     {
         return sprintf('Download %s (blobId %s)', $this->absolutePath, $this->blobId);

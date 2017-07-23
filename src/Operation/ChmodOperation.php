@@ -18,6 +18,9 @@ class ChmodOperation implements OperationInterface
         return chmod($this->absolutePath, $this->mode);
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function __toString(): string
     {
         return sprintf('Chmod %s to %s', $this->absolutePath, decoct($this->mode));

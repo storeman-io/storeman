@@ -20,6 +20,9 @@ class SymlinkOperation implements OperationInterface
         return symlink($this->absoluteLinkTarget, $this->absolutePath) && chmod($this->absolutePath, $this->mode);
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function __toString(): string
     {
         return sprintf('Symlink %s to %s (mode %s)', $this->absolutePath, $this->absoluteLinkTarget, $this->mode);

@@ -30,6 +30,9 @@ class UploadOperation implements OperationInterface
         return $bytesCopied !== false;
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function __toString(): string
     {
         return sprintf('Upload %s (blobId %s)', $this->absolutePath, $this->blobId);
