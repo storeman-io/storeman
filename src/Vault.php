@@ -390,26 +390,4 @@ class Vault implements VaultInterface
 
         fclose($stream);
     }
-
-    protected function downloadBlob(IndexObject $indexObject)
-    {
-        $localStream = fopen($this->localPath . $indexObject->getRelativePath(), 'w');
-        $remoteStream = $this->vaultConnection->getStream($indexObject->getBlobId(), 'r');
-
-        stream_copy_to_stream($remoteStream, $localStream);
-
-        fclose($remoteStream);
-        fclose($localStream);
-    }
-
-    protected function uploadBlob(IndexObject $indexObject)
-    {
-        $localStream = fopen($this->localPath . $indexObject->getRelativePath(), 'r');
-        $remoteStream = $this->vaultConnection->getStream($indexObject->getBlobId(), 'w');
-
-        stream_copy_to_stream($localStream, $remoteStream);
-
-        fclose($remoteStream);
-        fclose($localStream);
-    }
 }
