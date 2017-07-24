@@ -337,8 +337,8 @@ class Vault implements VaultInterface
         $progressionListener->advance();
 
         // is now outdated
-        unset($this->remoteIndex);
-        unset($this->lastLocalIndex);
+        $this->remoteIndex = null;
+        $this->lastLocalIndex = null;
 
         $this->vaultConnection->releaseLock();
 
