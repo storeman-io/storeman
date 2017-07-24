@@ -24,4 +24,18 @@ class IndexTest extends TestCase
         $this->assertTrue($indexObject->isFile());
         $this->assertEquals('file.ext', $indexObject->getRelativePath());
     }
+
+    public function testCreationDateInjection()
+    {
+        $index = new Index();
+
+        $this->assertEquals(new \DateTime(), $index->getCreated(), '', 1);
+
+        $injected = new \DateTime();
+        $injected->modify('+30 minutes');
+
+        $anotherIndex = new Index($injected);
+
+        $this->assertEquals($injected, $anotherIndex->getCreated());
+    }
 }
