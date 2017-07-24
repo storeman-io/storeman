@@ -3,6 +3,7 @@
 namespace Archivr;
 
 use Archivr\Connection\ConnectionInterface;
+use Archivr\IndexMerger\IndexMergerInterface;
 
 interface VaultInterface
 {
@@ -13,6 +14,20 @@ interface VaultInterface
      * @param string $localPath
      */
     public function __construct(ConnectionInterface $vaultConnection, string $localPath);
+
+    /**
+     * Sets the index merger to be used.
+     *
+     * @param IndexMergerInterface $indexMerger
+     */
+    public function setIndexMerger(IndexMergerInterface $indexMerger = null);
+
+    /**
+     * Returns the currently used index merger.
+     *
+     * @return IndexMergerInterface
+     */
+    public function getIndexMerger(): IndexMergerInterface;
 
     /**
      * Builds and returns an index representing the current local state.

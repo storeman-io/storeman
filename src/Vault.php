@@ -3,6 +3,8 @@
 namespace Archivr;
 
 use Archivr\Connection\ConnectionInterface;
+use Archivr\IndexMerger\IndexMergerInterface;
+use Archivr\IndexMerger\StandardIndexMerger;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Archivr\Operation\ChmodOperation;
@@ -34,6 +36,11 @@ class Vault implements VaultInterface
     protected $localPath;
 
     /**
+     * @var IndexMergerInterface
+     */
+    protected $indexMerger;
+
+    /**
      * @var Index
      */
     protected $localIndex;
@@ -63,6 +70,23 @@ class Vault implements VaultInterface
     {
         $this->vaultConnection = $vaultConnection;
         $this->localPath = rtrim($this->expandTildePath($localPath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    }
+
+    public function setIndexMerger(IndexMergerInterface $indexMerger = null)
+    {
+        $this->indexMerger = $indexMerger;
+
+        return $this;
+    }
+
+    public function getIndexMerger(): IndexMergerInterface
+    {
+        if ($this->indexMerger === null)
+        {
+            $this->indexMerger = new StandardIndexMerger();
+        }
+
+        return $this->indexMerger;
     }
 
     public function buildLocalIndex(): Index
@@ -144,75 +168,11 @@ class Vault implements VaultInterface
     {
         if ($this->mergedIndex === null)
         {
-            $localIndex = $this->buildLocalIndex();
-            $lastLocalIndex = $this->loadLastLocalIndex();
-            $remoteIndex = $this->loadRemoteIndex();
-
-            $this->mergedIndex = new Index();
-
-            // build new index from local index
-            foreach ($localIndex as $localObject)
-            {
-                /** @var IndexObject $localObject */
-
-                $remoteObject = $remoteIndex ? $remoteIndex->getObjectByPath($localObject->getRelativePath()) : null;
-
-                $localObjectModified = $lastLocalIndex ? ($localObject->getMtime() > $lastLocalIndex->getCreated()->getTimestamp()) : true;
-
-                if ($remoteObject === null)
-                {
-                    if ($localObjectModified)
-                    {
-                        $this->mergedIndex->addObject($localObject);
-                    }
-                    elseif ($remoteIndex === null)
-                    {
-                        $this->mergedIndex->addObject($localObject);
-                    }
-                }
-                else
-                {
-                    // todo: merge mode by ctime
-
-                    $remoteObjectModified = $remoteObject->getMtime() > $lastLocalIndex->getCreated()->getTimestamp();
-
-                    if (!$localObjectModified)
-                    {
-                        $this->mergedIndex->addObject($remoteObject);
-                    }
-
-                    elseif (!$remoteObjectModified)
-                    {
-                        $this->mergedIndex->addObject($localObject);
-                    }
-
-                    else
-                    {
-                        // todo: properly handle collision
-                        throw new \RuntimeException("Collision at path {$localObject->getRelativePath()}");
-                    }
-                }
-            }
-
-            if ($remoteIndex !== null)
-            {
-                // add remote index content
-                foreach ($remoteIndex as $remoteObject)
-                {
-                    /** @var IndexObject $remoteObject */
-
-                    $localObject = $localIndex->getObjectByPath($remoteObject->getRelativePath());
-                    $lastLocalObject = $lastLocalIndex ? $lastLocalIndex->getObjectByPath($remoteObject->getRelativePath()) : null;
-
-                    if ($localObject === null)
-                    {
-                        if ($lastLocalObject === null)
-                        {
-                            $this->mergedIndex->addObject($remoteObject);
-                        }
-                    }
-                }
-            }
+            $this->mergedIndex = $this->getIndexMerger()->merge(
+                $this->buildLocalIndex(),
+                $this->loadLastLocalIndex(),
+                $this->loadRemoteIndex()
+            );
         }
 
         return $this->mergedIndex;
