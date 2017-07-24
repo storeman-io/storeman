@@ -340,10 +340,21 @@ class Vault implements VaultInterface
         return $this->operationCollection;
     }
 
-    public function synchronize()
+    public function synchronize(SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
     {
+        // todo: profile to verify/falsify that this might have slight performance benefits due to less branching
+        if ($progressionListener === null)
+        {
+            $progressionListener = new DummySynchronizationProgressListener();
+        }
+
         $mergedIndex = $this->buildMergedIndex();
         $operationCollection = $this->getOperationCollection();
+
+        $operationResultCollection = new OperationResultCollection();
+
+        // operation count + 2 index writes + lock release
+        $progressionListener->start(count($operationCollection) + 2 + 1);
 
         foreach ($operationCollection as $operation)
         {
@@ -351,17 +362,30 @@ class Vault implements VaultInterface
 
             $success = $operation->execute();
 
-            yield new OperationResult($operation, $success);
+            $operationResult = new OperationResult($operation, $success);
+            $operationResultCollection->addOperationResult($operationResult);
+
+            $progressionListener->advance();
         }
 
         $this->writeIndexToStream($mergedIndex, $this->vaultConnection->getStream(static::REMOTE_INDEX_FILE_NAME, 'w'));
+
+        $progressionListener->advance();
+
         $this->writeIndexToStream($mergedIndex, fopen($this->localPath . self::LAST_LOCAL_INDEX_FILE_NAME, 'w'));
+
+        $progressionListener->advance();
 
         // is now outdated
         unset($this->remoteIndex);
         unset($this->lastLocalIndex);
 
         $this->vaultConnection->releaseLock();
+
+        $progressionListener->advance();
+        $progressionListener->finish();
+
+        return $operationResultCollection;
     }
 
     protected function readIndexFromStream($stream, \DateTime $created = null): Index

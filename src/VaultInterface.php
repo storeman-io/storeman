@@ -44,15 +44,19 @@ interface VaultInterface
 
     /**
      * Returns ordered collection of operations required to synchronize the vault with the local path.
+     * In addition to the object specific operations contained in the returned OperationCollection additional operations
+     * might be necessary like index updates that do not belong to specific index objects.
      *
      * @return OperationCollection
      */
     public function getOperationCollection(): OperationCollection;
 
     /**
-     * Generator function that yields instances of Archivr\OperationResult for each executed operation.
+     * Synchronizes the local with the remote state by executing all operations returned by getOperationCollection() (broadly speaking).
      *
-     * @return OperationResult[]
+     * @param SynchronizationProgressListenerInterface $progressionListener
+     *
+     * @return OperationResultCollection
      */
-    public function synchronize();
+    public function synchronize(SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection;
 }
