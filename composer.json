@@ -24,6 +24,9 @@
     "autoload-dev": {
         "psr-4": {"Archivr\\Test\\": "tests/"}
     },
+    "scripts": {
+        "test": "phpunit --colors=always --verbose"
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "1.x-dev"
