@@ -40,31 +40,6 @@ class Vault implements VaultInterface
      */
     protected $indexMerger;
 
-    /**
-     * @var Index
-     */
-    protected $localIndex;
-
-    /**
-     * @var Index
-     */
-    protected $lastLocalIndex;
-
-    /**
-     * @var Index
-     */
-    protected $remoteIndex;
-
-    /**
-     * @var Index
-     */
-    protected $mergedIndex;
-
-    /**
-     * @var OperationCollection
-     */
-    protected $operationCollection;
-
 
     public function __construct(ConnectionInterface $vaultConnection, string $localPath)
     {
@@ -91,211 +66,76 @@ class Vault implements VaultInterface
 
     public function buildLocalIndex(): Index
     {
-        if ($this->localIndex === null)
+        $finder = new Finder();
+        $finder->in($this->localPath);
+        $finder->ignoreDotFiles(false);
+        $finder->ignoreVCS(true);
+
+        $index = new Index();
+
+        foreach ($finder->directories() as $fileInfo)
         {
-            $finder = new Finder();
-            $finder->in($this->localPath);
-            $finder->ignoreDotFiles(false);
-            $finder->ignoreVCS(true);
+            /** @var SplFileInfo $fileInfo */
 
-            $index = new Index();
-
-            foreach ($finder->directories() as $fileInfo)
-            {
-                /** @var SplFileInfo $fileInfo */
-
-                $index->addObject(IndexObject::fromPath($this->localPath, $fileInfo->getRelativePathname()));
-            }
-
-            foreach ($finder->files() as $fileInfo)
-            {
-                /** @var SplFileInfo $fileInfo */
-
-                if ($fileInfo->getFilename() === Vault::LAST_LOCAL_INDEX_FILE_NAME)
-                {
-                    continue;
-                }
-
-                $index->addObject(IndexObject::fromPath($this->localPath, $fileInfo->getRelativePathname()));
-            }
-
-            $this->localIndex = $index;
+            $index->addObject(IndexObject::fromPath($this->localPath, $fileInfo->getRelativePathname()));
         }
 
-        return $this->localIndex;
+        foreach ($finder->files() as $fileInfo)
+        {
+            /** @var SplFileInfo $fileInfo */
+
+            if ($fileInfo->getFilename() === Vault::LAST_LOCAL_INDEX_FILE_NAME)
+            {
+                continue;
+            }
+
+            $index->addObject(IndexObject::fromPath($this->localPath, $fileInfo->getRelativePathname()));
+        }
+
+        return $index;
     }
 
     public function loadLastLocalIndex()
     {
-        if ($this->lastLocalIndex === null)
+        $index = null;
+        $path = $this->localPath . self::LAST_LOCAL_INDEX_FILE_NAME;
+
+        if (is_file($path))
         {
-            $path = $this->localPath . self::LAST_LOCAL_INDEX_FILE_NAME;
+            $stream = fopen($path, 'r');
 
-            if (is_file($path))
-            {
-                $stream = fopen($path, 'r');
+            $index = $this->readIndexFromStream($stream, \DateTime::createFromFormat('U', filemtime($path)));
 
-                $this->lastLocalIndex = $this->readIndexFromStream($stream, \DateTime::createFromFormat('U', filemtime($path)));
-
-                fclose($stream);
-            }
+            fclose($stream);
         }
 
-
-        return $this->lastLocalIndex;
+        return $index;
     }
 
     public function loadRemoteIndex()
     {
-        if ($this->remoteIndex === null)
+        $index = null;
+
+        if ($this->vaultConnection->exists(static::REMOTE_INDEX_FILE_NAME))
         {
-            if ($this->vaultConnection->exists(static::REMOTE_INDEX_FILE_NAME))
-            {
-                $stream = $this->vaultConnection->getStream(static::REMOTE_INDEX_FILE_NAME, 'r');
+            $stream = $this->vaultConnection->getStream(static::REMOTE_INDEX_FILE_NAME, 'r');
 
-                $this->remoteIndex = $this->readIndexFromStream($stream);
+            $index = $this->readIndexFromStream($stream);
 
-                fclose($stream);
-            }
+            fclose($stream);
         }
 
-        return $this->remoteIndex;
+        return $index;
     }
 
     public function buildMergedIndex(): Index
     {
-        if ($this->mergedIndex === null)
-        {
-            $this->mergedIndex = $this->getIndexMerger()->merge(
-                $this->buildLocalIndex(),
-                $this->loadLastLocalIndex(),
-                $this->loadRemoteIndex()
-            );
-        }
-
-        return $this->mergedIndex;
+        return $this->doBuildMergedIndex();
     }
 
     public function getOperationCollection(): OperationCollection
     {
-        if ($this->operationCollection === null)
-        {
-            $localIndex = $this->buildLocalIndex();
-            $remoteIndex = $this->loadRemoteIndex();
-            $mergedIndex = $this->buildMergedIndex();
-
-
-            $this->operationCollection = new OperationCollection();
-
-            $directoryMtimes = [];
-
-            foreach ($mergedIndex as $indexObject)
-            {
-                /** @var IndexObject $indexObject */
-
-                $absoluteLocalPath = $this->localPath . $indexObject->getRelativePath();
-
-                $localObject = $localIndex->getObjectByPath($indexObject->getRelativePath());
-                $remoteObject = $remoteIndex ? $remoteIndex->getObjectByPath($indexObject->getRelativePath()) : null;
-
-
-                if ($localObject !== null && $localObject->getType() !== $indexObject->getType())
-                {
-                    $this->operationCollection->addOperation(new UnlinkOperation($absoluteLocalPath));
-                }
-
-
-                if ($indexObject->isDirectory())
-                {
-                    if ($localObject === null)
-                    {
-                        $this->operationCollection->addOperation(new MkdirOperation($absoluteLocalPath, $indexObject->getMode()));
-                    }
-                    elseif (!$localObject->isDirectory())
-                    {
-                        $this->operationCollection->addOperation(new MkdirOperation($absoluteLocalPath, $indexObject->getMode()));
-                    }
-
-                    if ($localObject !== null && $localObject->isDirectory())
-                    {
-                        if ($localObject->getMtime() !== $indexObject->getMtime())
-                        {
-                            $directoryMtimes[$absoluteLocalPath] = $indexObject->getMtime();
-                        }
-                    }
-                }
-
-                elseif ($indexObject->isFile())
-                {
-                    // local file did not exist, hasn't been a file before or is outdated
-                    if ($localObject === null || !$localObject->isFile() || $localObject->getMtime() < $indexObject->getMtime())
-                    {
-                        $this->operationCollection->addOperation(new DownloadOperation($absoluteLocalPath, $indexObject->getBlobId(), $this->vaultConnection));
-                        $this->operationCollection->addOperation(new TouchOperation($absoluteLocalPath, $indexObject->getMtime()));
-                        $this->operationCollection->addOperation(new ChmodOperation($absoluteLocalPath, $indexObject->getMode()));
-
-                        $directoryMtimes[dirname($absoluteLocalPath)] = $indexObject->getMtime();
-                    }
-
-                    // local file got updated
-                    elseif ($remoteObject === null || $indexObject->getBlobId() !== $remoteObject->getBlobId())
-                    {
-                        // generate blob id
-                        do
-                        {
-                            $blobId = $mergedIndex->generateNewBlobId();
-                        }
-                        while($this->vaultConnection->exists($blobId));
-
-                        $indexObject->setBlobId($blobId);
-
-                        $this->operationCollection->addOperation(new UploadOperation($absoluteLocalPath, $indexObject->getBlobId(), $this->vaultConnection));
-                    }
-                }
-
-                elseif ($indexObject->isLink())
-                {
-                    $absoluteLinkTarget = dirname($absoluteLocalPath) . DIRECTORY_SEPARATOR . $indexObject->getLinkTarget();
-
-                    if ($localObject !== null && $localObject->getLinkTarget() !== $indexObject->getLinkTarget())
-                    {
-                        $this->operationCollection->addOperation(new UnlinkOperation($absoluteLocalPath));
-                        $this->operationCollection->addOperation(new SymlinkOperation($absoluteLocalPath, $absoluteLinkTarget, $indexObject->getMode()));
-                    }
-                }
-
-                else
-                {
-                    // unknown object type
-                    throw new \RuntimeException();
-                }
-
-
-                if ($localObject !== null && $localObject->getMode() !== $indexObject->getMode())
-                {
-                    $this->operationCollection->addOperation(new ChmodOperation($absoluteLocalPath, $indexObject->getMode()));
-                }
-            }
-
-            // remove superfluous local files
-            foreach ($localIndex as $localObject)
-            {
-                /** @var IndexObject $localObject */
-
-                if ($mergedIndex->getObjectByPath($localObject->getRelativePath()) === null)
-                {
-                    $this->operationCollection->addOperation(new UnlinkOperation($this->localPath . $localObject->getRelativePath()));
-                }
-            }
-
-            // set directory mtimes
-            foreach ($directoryMtimes as $absoluteLocalPath => $mtime)
-            {
-                $this->operationCollection->addOperation(new TouchOperation($absoluteLocalPath, $mtime));
-            }
-        }
-
-        return $this->operationCollection;
+        return $this->doGetOperationCollection();
     }
 
     public function synchronize(SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
@@ -306,10 +146,15 @@ class Vault implements VaultInterface
             $progressionListener = new DummySynchronizationProgressListener();
         }
 
+        $localIndex = $this->buildLocalIndex();
+        $lastLocalIndex = $this->loadLastLocalIndex();
+
         $this->vaultConnection->acquireLock();
 
-        $mergedIndex = $this->buildMergedIndex();
-        $operationCollection = $this->getOperationCollection();
+        $remoteIndex = $this->loadRemoteIndex();
+
+        $mergedIndex = $this->doBuildMergedIndex($localIndex, $lastLocalIndex, $remoteIndex);
+        $operationCollection = $this->doGetOperationCollection($localIndex, $remoteIndex, $mergedIndex);
 
         $operationResultCollection = new OperationResultCollection();
 
@@ -336,16 +181,140 @@ class Vault implements VaultInterface
 
         $progressionListener->advance();
 
-        // is now outdated
-        $this->remoteIndex = null;
-        $this->lastLocalIndex = null;
-
         $this->vaultConnection->releaseLock();
 
         $progressionListener->advance();
         $progressionListener->finish();
 
         return $operationResultCollection;
+    }
+
+    protected function doBuildMergedIndex(Index $localIndex = null, Index $lastLocalIndex = null, Index $remoteIndex = null)
+    {
+        $localIndex = $localIndex ?: $this->buildLocalIndex();
+        $lastLocalIndex = $lastLocalIndex ?: $this->loadLastLocalIndex();
+        $remoteIndex = $remoteIndex ?: $this->loadRemoteIndex();
+
+        return $this->getIndexMerger()->merge($localIndex, $lastLocalIndex, $remoteIndex);
+    }
+
+    protected function doGetOperationCollection(Index $localIndex = null, Index $remoteIndex = null, Index $mergedIndex = null): OperationCollection
+    {
+        $localIndex = $localIndex ?: $this->buildLocalIndex();
+        $remoteIndex = $remoteIndex ?: $this->loadRemoteIndex();
+        $mergedIndex = $mergedIndex ?: $this->doBuildMergedIndex($localIndex, $remoteIndex);
+
+
+        $operationCollection = new OperationCollection();
+
+        $directoryMtimes = [];
+
+        foreach ($mergedIndex as $indexObject)
+        {
+            /** @var IndexObject $indexObject */
+
+            $absoluteLocalPath = $this->localPath . $indexObject->getRelativePath();
+
+            $localObject = $localIndex->getObjectByPath($indexObject->getRelativePath());
+            $remoteObject = $remoteIndex ? $remoteIndex->getObjectByPath($indexObject->getRelativePath()) : null;
+
+
+            if ($localObject !== null && $localObject->getType() !== $indexObject->getType())
+            {
+                $operationCollection->addOperation(new UnlinkOperation($absoluteLocalPath));
+            }
+
+
+            if ($indexObject->isDirectory())
+            {
+                if ($localObject === null)
+                {
+                    $operationCollection->addOperation(new MkdirOperation($absoluteLocalPath, $indexObject->getMode()));
+                }
+                elseif (!$localObject->isDirectory())
+                {
+                    $operationCollection->addOperation(new MkdirOperation($absoluteLocalPath, $indexObject->getMode()));
+                }
+
+                if ($localObject !== null && $localObject->isDirectory())
+                {
+                    if ($localObject->getMtime() !== $indexObject->getMtime())
+                    {
+                        $directoryMtimes[$absoluteLocalPath] = $indexObject->getMtime();
+                    }
+                }
+            }
+
+            elseif ($indexObject->isFile())
+            {
+                // local file did not exist, hasn't been a file before or is outdated
+                if ($localObject === null || !$localObject->isFile() || $localObject->getMtime() < $indexObject->getMtime())
+                {
+                    $operationCollection->addOperation(new DownloadOperation($absoluteLocalPath, $indexObject->getBlobId(), $this->vaultConnection));
+                    $operationCollection->addOperation(new TouchOperation($absoluteLocalPath, $indexObject->getMtime()));
+                    $operationCollection->addOperation(new ChmodOperation($absoluteLocalPath, $indexObject->getMode()));
+
+                    $directoryMtimes[dirname($absoluteLocalPath)] = $indexObject->getMtime();
+                }
+
+                // local file got updated
+                elseif ($remoteObject === null || $indexObject->getBlobId() !== $remoteObject->getBlobId())
+                {
+                    // generate blob id
+                    do
+                    {
+                        $blobId = $mergedIndex->generateNewBlobId();
+                    }
+                    while($this->vaultConnection->exists($blobId));
+
+                    $indexObject->setBlobId($blobId);
+
+                    $operationCollection->addOperation(new UploadOperation($absoluteLocalPath, $indexObject->getBlobId(), $this->vaultConnection));
+                }
+            }
+
+            elseif ($indexObject->isLink())
+            {
+                $absoluteLinkTarget = dirname($absoluteLocalPath) . DIRECTORY_SEPARATOR . $indexObject->getLinkTarget();
+
+                if ($localObject !== null && $localObject->getLinkTarget() !== $indexObject->getLinkTarget())
+                {
+                    $operationCollection->addOperation(new UnlinkOperation($absoluteLocalPath));
+                    $operationCollection->addOperation(new SymlinkOperation($absoluteLocalPath, $absoluteLinkTarget, $indexObject->getMode()));
+                }
+            }
+
+            else
+            {
+                // unknown object type
+                throw new \RuntimeException();
+            }
+
+
+            if ($localObject !== null && $localObject->getMode() !== $indexObject->getMode())
+            {
+                $operationCollection->addOperation(new ChmodOperation($absoluteLocalPath, $indexObject->getMode()));
+            }
+        }
+
+        // remove superfluous local files
+        foreach ($localIndex as $localObject)
+        {
+            /** @var IndexObject $localObject */
+
+            if ($mergedIndex->getObjectByPath($localObject->getRelativePath()) === null)
+            {
+                $operationCollection->addOperation(new UnlinkOperation($this->localPath . $localObject->getRelativePath()));
+            }
+        }
+
+        // set directory mtimes
+        foreach ($directoryMtimes as $absoluteLocalPath => $mtime)
+        {
+            $operationCollection->addOperation(new TouchOperation($absoluteLocalPath, $mtime));
+        }
+
+        return $operationCollection;
     }
 
     protected function readIndexFromStream($stream, \DateTime $created = null): Index
