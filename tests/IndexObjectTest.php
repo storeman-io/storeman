@@ -49,4 +49,17 @@ class IndexObjectTest extends TestCase
 
         IndexObject::fromPath('/tmp', 'non-existent');
     }
+
+    public function testComparison()
+    {
+        $testVaultA = new TestVault();
+        $testVaultA->fwrite('test.ext');
+        $testVaultA->fwrite('another.ext');
+
+        $indexObjectA = IndexObject::fromPath($testVaultA->getBasePath(), 'test.ext');
+        $indexObjectB = IndexObject::fromPath($testVaultA->getBasePath(), 'another.ext');
+
+        $this->assertTrue($indexObjectA->equals($indexObjectA));
+        $this->assertFalse($indexObjectA->equals($indexObjectB));
+    }
 }

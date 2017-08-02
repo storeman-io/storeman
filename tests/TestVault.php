@@ -2,8 +2,10 @@
 
 namespace Archivr\Test;
 
+use Archivr\Vault;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Iterator\RecursiveDirectoryIterator;
+use Symfony\Component\Finder\SplFileInfo;
 
 class TestVault implements \IteratorAggregate
 {
@@ -28,6 +30,13 @@ class TestVault implements \IteratorAggregate
     public function getBasePath(): string
     {
         return $this->basePath;
+    }
+
+    public function getObjectByRelativePath(string $relativePath): SplFileInfo
+    {
+        $absolutePath = $this->basePath . DIRECTORY_SEPARATOR . $relativePath;
+
+        return new SplFileInfo($absolutePath, dirname($absolutePath), $relativePath);
     }
 
     public function mkdir(string $relativePath): TestVault
@@ -58,12 +67,24 @@ class TestVault implements \IteratorAggregate
         return $this;
     }
 
-    public function getIterator(): \Iterator
+    public function getIterator(bool $filterMetaFiles = true): \Iterator
     {
-        return new \RecursiveIteratorIterator(new RecursiveDirectoryIterator($this->basePath,
+        $iterator = new \RecursiveIteratorIterator(new RecursiveDirectoryIterator($this->basePath,
             RecursiveDirectoryIterator::CURRENT_AS_FILEINFO |
             RecursiveDirectoryIterator::SKIP_DOTS
         ));
+
+        if ($filterMetaFiles)
+        {
+            $iterator = new \CallbackFilterIterator($iterator, function(SplFileInfo $testVaultObject) {
+
+                return !in_array($testVaultObject->getFilename(), [
+                    Vault::LAST_LOCAL_INDEX_FILE_NAME
+                ]);
+            });
+        }
+
+        return $iterator;
     }
 
     protected function getAbsolutePath(string $relativePath): string

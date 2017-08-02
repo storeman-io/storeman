@@ -87,4 +87,36 @@ class Index implements \Countable, \IteratorAggregate
 
         return $blobId;
     }
+
+    public function equals(Index $other = null): bool
+    {
+        if ($other === null)
+        {
+            return false;
+        }
+
+        return $this->isSubsetOf($other) && $other->isSubsetOf($this);
+    }
+
+    public function isSubsetOf(Index $other, int $flags = 0): bool
+    {
+        foreach ($this as $indexObject)
+        {
+            /** @var IndexObject $indexObject */
+
+            $otherIndexObject = $other->getObjectByPath($indexObject->getRelativePath());
+
+            if ($otherIndexObject === null)
+            {
+                return false;
+            }
+
+            if (!$otherIndexObject->equals($indexObject, $flags))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

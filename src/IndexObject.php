@@ -8,6 +8,9 @@ class IndexObject
     const TYPE_FILE = 2;
     const TYPE_LINK = 3;
 
+    const CMP_IGNORE_BLOB_ID = 1;
+    const CMP_IGNORE_CTIME = 2;
+
     /**
      * @var string
      */
@@ -113,6 +116,25 @@ class IndexObject
             $this->blobId,
             $this->linkTarget
         ];
+    }
+
+    public function equals(IndexObject $other = null, int $flags = 0): bool
+    {
+        if ($other === null)
+        {
+            return false;
+        }
+
+        $equals = true;
+        $equals &= ($this->getRelativePath() === $other->getRelativePath());
+        $equals &= ($this->getType() === $other->getType());
+        $equals &= ($this->getMtime() === $other->getMtime());
+        $equals &= ($this->getMode() === $other->getMode());
+        $equals &= ($this->getLinkTarget() === $other->getLinkTarget());
+        $equals &= (($flags & self::CMP_IGNORE_BLOB_ID) || ($this->getBlobId() === $other->getBlobId()));
+        $equals &= (($flags & self::CMP_IGNORE_CTIME) || ($this->getCtime() === $other->getCtime()));
+
+        return $equals;
     }
 
     public static function fromIndexRecord(array $row): IndexObject
