@@ -151,8 +151,6 @@ class Vault implements VaultInterface
         {
             if ($this->vaultConnection->exists(static::REMOTE_INDEX_FILE_NAME))
             {
-                $this->vaultConnection->acquireLock();
-
                 $stream = $this->vaultConnection->getStream(static::REMOTE_INDEX_FILE_NAME, 'r');
 
                 $this->remoteIndex = $this->readIndexFromStream($stream);
@@ -307,6 +305,8 @@ class Vault implements VaultInterface
         {
             $progressionListener = new DummySynchronizationProgressListener();
         }
+
+        $this->vaultConnection->acquireLock();
 
         $mergedIndex = $this->buildMergedIndex();
         $operationCollection = $this->getOperationCollection();
