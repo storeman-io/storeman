@@ -64,6 +64,7 @@ class Vault implements VaultInterface
         return $this->indexMerger;
     }
 
+    // todo: this work should only be done once across all vaults within an ArchivR
     public function buildLocalIndex(): Index
     {
         $finder = new Finder();
@@ -95,6 +96,7 @@ class Vault implements VaultInterface
         return $index;
     }
 
+    // todo: file has to be unique across vaults in ArchivR
     public function loadLastLocalIndex()
     {
         $index = null;

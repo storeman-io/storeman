@@ -16,6 +16,13 @@ class OperationResultCollection implements \Countable, \IteratorAggregate
         return $this;
     }
 
+    public function append(OperationResultCollection $other): OperationResultCollection
+    {
+        $this->operationResults = array_merge($this->operationResults, $other->operationResults);
+
+        return $this;
+    }
+
     /**
      * @return OperationResult[]
      */

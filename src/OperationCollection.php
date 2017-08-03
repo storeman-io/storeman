@@ -18,6 +18,13 @@ class OperationCollection implements \Countable, \IteratorAggregate
         return $this;
     }
 
+    public function append(OperationCollection $other): OperationCollection
+    {
+        $this->operations = array_merge($this->operations, $other->operations);
+
+        return $this;
+    }
+
     /**
      * @return OperationInterface[]
      */

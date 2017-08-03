@@ -1,0 +1,29 @@
+#!/usr/bin/env php
+<?php
+
+$autoloaderFound = false;
+foreach ([__DIR__ . '/../../autoload.php', __DIR__ . '/../vendor/autoload.php', __DIR__ . '/vendor/autoload.php'] as $path)
+{
+    if (is_file($path))
+    {
+        require $path;
+
+        $autoloaderFound = true;
+
+        break;
+    }
+}
+
+if (!$autoloaderFound)
+{
+    fwrite(STDERR, 'Dependencies are not installed. Try `composer install`.' . PHP_EOL);
+
+    exit(1);
+}
+unset ($autoloaderFound);
+
+
+$application = new \Archivr\Cli\Application('ArchivR', 'alpha');
+$application->add(new \Archivr\Cli\Command\InfoCommand());
+$application->add(new \Archivr\Cli\Command\SynchronizeCommand());
+$application->run();
