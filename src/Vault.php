@@ -267,7 +267,7 @@ class Vault implements VaultInterface
                     {
                         $blobId = $mergedIndex->generateNewBlobId();
                     }
-                    while($this->vaultConnection->exists($blobId));
+                    while ($this->vaultConnection->exists($blobId));
 
                     $indexObject->setBlobId($blobId);
 
@@ -323,7 +323,7 @@ class Vault implements VaultInterface
     {
         $index = new Index($created);
 
-        while(($row = fgetcsv($stream)) !== false)
+        while (($row = fgetcsv($stream)) !== false)
         {
             $index->addObject(IndexObject::fromIndexRecord($row));
         }

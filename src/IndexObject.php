@@ -46,7 +46,9 @@ class IndexObject
      */
     protected $blobId;
 
-    protected function __construct() {}
+    protected function __construct()
+    {
+    }
 
     public function getRelativePath(): string
     {
@@ -107,15 +109,7 @@ class IndexObject
 
     public function getIndexRecord(): array
     {
-        return [
-            $this->relativePath,
-            $this->type,
-            $this->mtime,
-            $this->ctime,
-            $this->mode,
-            $this->blobId,
-            $this->linkTarget
-        ];
+        return [$this->relativePath, $this->type, $this->mtime, $this->ctime, $this->mode, $this->blobId, $this->linkTarget];
     }
 
     public function equals(IndexObject $other = null, int $flags = 0): bool

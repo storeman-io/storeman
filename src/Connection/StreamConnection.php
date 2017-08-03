@@ -69,7 +69,7 @@ class StreamConnection implements ConnectionInterface
                         sleep(5);
                     }
                 }
-                while($wait);
+                while ($wait);
             }
 
             // only write lock if no other exists (or $force is true)
@@ -115,7 +115,7 @@ class StreamConnection implements ConnectionInterface
         {
             @fclose($this->getStream($relativePath, 'r'));
         }
-        catch(\RuntimeException $exception)
+        catch (\RuntimeException $exception)
         {
             return false;
         }

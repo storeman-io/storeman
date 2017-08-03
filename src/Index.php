@@ -83,7 +83,7 @@ class Index implements \Countable, \IteratorAggregate
         {
             $blobId = Uuid::uuid4();
         }
-        while($this->getObjectByBlobId($blobId) !== null);
+        while ($this->getObjectByBlobId($blobId) !== null);
 
         return $blobId;
     }

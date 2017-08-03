@@ -47,6 +47,7 @@ abstract class AbstractCommand extends Command
         if (preg_match('/\.json/', $path))
         {
             $factory = new JsonFileConfigurationFactory($path);
+
             return $factory();
         }
         else
