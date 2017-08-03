@@ -24,7 +24,6 @@ class SynchronizeCommand extends AbstractCommand
 
         $archivr->synchronize(new SynchronizationProgressListener($output));
 
-        // todo: display report about successful/failed operations
         $output->writeln(PHP_EOL . '<info>Done!</info>');
     }
 }

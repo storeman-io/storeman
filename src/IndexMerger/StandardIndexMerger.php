@@ -33,8 +33,6 @@ class StandardIndexMerger implements IndexMergerInterface
             }
             else
             {
-                // todo: merge mode by ctime
-
                 $remoteObjectModified = $remoteObject->getMtime() > $lastLocalIndex->getCreated()->getTimestamp();
 
                 if (!$localObjectModified)
@@ -49,7 +47,6 @@ class StandardIndexMerger implements IndexMergerInterface
 
                 else
                 {
-                    // todo: properly handle collision
                     throw new \RuntimeException("Collision at path {$localObject->getRelativePath()}");
                 }
             }
