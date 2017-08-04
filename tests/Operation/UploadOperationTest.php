@@ -2,7 +2,7 @@
 
 namespace Archivr\Test\Operation;
 
-use Archivr\Connection\StreamConnection;
+use Archivr\ConnectionAdapter\StreamConnectionAdapter;
 use Archivr\Operation\UploadOperation;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use Archivr\Test\TestVault;
@@ -22,7 +22,7 @@ class UploadOperationTest extends TestCase
         file_put_contents($testFilePath, $testFileContent);
 
         $testVault = new TestVault();
-        $testVaultConnection = new StreamConnection($testVault->getBasePath());
+        $testVaultConnection = new StreamConnectionAdapter($testVault->getBasePath());
 
         $operation = new UploadOperation($testFilePath, $testBlobId, $testVaultConnection);
         $operation->execute();

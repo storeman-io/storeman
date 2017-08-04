@@ -2,9 +2,11 @@
 
 namespace Archivr;
 
-use Archivr\Connection\ConnectionInterface;
+use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
 use Archivr\IndexMerger\IndexMergerInterface;
 use Archivr\IndexMerger\StandardIndexMerger;
+use Archivr\LockAdapter\ConnectionBasedLockAdapter;
+use Archivr\LockAdapter\LockAdapterInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Archivr\Operation\ChmodOperation;
@@ -16,17 +18,15 @@ use Archivr\Operation\TouchOperation;
 use Archivr\Operation\UnlinkOperation;
 use Archivr\Operation\UploadOperation;
 
-class Vault implements VaultInterface
+class Vault
 {
     use TildeExpansionTrait;
-
 
     const LAST_LOCAL_INDEX_FILE_NAME = '.lastLocalIndex';
     const REMOTE_INDEX_FILE_NAME = 'index';
 
-
     /**
-     * @var ConnectionInterface
+     * @var ConnectionAdapterInterface
      */
     protected $vaultConnection;
 
@@ -36,12 +36,17 @@ class Vault implements VaultInterface
     protected $localPath;
 
     /**
+     * @var LockAdapterInterface
+     */
+    protected $lockAdapter;
+
+    /**
      * @var IndexMergerInterface
      */
     protected $indexMerger;
 
 
-    public function __construct(ConnectionInterface $vaultConnection, string $localPath)
+    public function __construct(string $localPath, ConnectionAdapterInterface $vaultConnection)
     {
         $this->vaultConnection = $vaultConnection;
         $this->localPath = rtrim($this->expandTildePath($localPath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
@@ -64,6 +69,33 @@ class Vault implements VaultInterface
         return $this->indexMerger;
     }
 
+    public function setLockAdapter(LockAdapterInterface $lockAdapter = null): Vault
+    {
+        $this->lockAdapter = $lockAdapter;
+
+        return $this;
+    }
+
+    public function getLockAdapter(): LockAdapterInterface
+    {
+        if ($this->lockAdapter === null)
+        {
+            $this->lockAdapter = new ConnectionBasedLockAdapter($this->vaultConnection);
+        }
+
+        return $this->lockAdapter;
+    }
+
+    public function getVaultConnection(): ConnectionAdapterInterface
+    {
+        return $this->vaultConnection;
+    }
+
+    /**
+     * Builds and returns an index representing the current local state.
+     *
+     * @return Index
+     */
     public function buildLocalIndex(): Index
     {
         $finder = new Finder();
@@ -95,6 +127,11 @@ class Vault implements VaultInterface
         return $index;
     }
 
+    /**
+     * Reads and returns the index representing the local state on the last synchronization.
+     *
+     * @return Index
+     */
     public function loadLastLocalIndex()
     {
         $index = null;
@@ -112,6 +149,11 @@ class Vault implements VaultInterface
         return $index;
     }
 
+    /**
+     * Reads and returns the current remote index.
+     *
+     * @return Index
+     */
     public function loadRemoteIndex()
     {
         $index = null;
@@ -128,16 +170,35 @@ class Vault implements VaultInterface
         return $index;
     }
 
+    /**
+     * Computes and returns the index representing the vault state after the local index has been merged with the remote index.
+     *
+     * @return Index
+     */
     public function buildMergedIndex(): Index
     {
         return $this->doBuildMergedIndex();
     }
 
+    /**
+     * Returns ordered collection of operations required to synchronize the vault with the local path.
+     * In addition to the object specific operations contained in the returned OperationCollection additional operations
+     * might be necessary like index updates that do not belong to specific index objects.
+     *
+     * @return OperationCollection
+     */
     public function getOperationCollection(): OperationCollection
     {
         return $this->doGetOperationCollection();
     }
 
+    /**
+     * Synchronizes the local with the remote state by executing all operations returned by getOperationCollection() (broadly speaking).
+     *
+     * @param SynchronizationProgressListenerInterface $progressionListener
+     *
+     * @return OperationResultCollection
+     */
     public function synchronize(SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
     {
         if ($progressionListener === null)
@@ -148,7 +209,7 @@ class Vault implements VaultInterface
         $localIndex = $this->buildLocalIndex();
         $lastLocalIndex = $this->loadLastLocalIndex();
 
-        $this->vaultConnection->acquireLock();
+        $this->getLockAdapter()->acquireLock('sync');
 
         $remoteIndex = $this->loadRemoteIndex();
 
@@ -180,7 +241,7 @@ class Vault implements VaultInterface
 
         $progressionListener->advance();
 
-        $this->vaultConnection->releaseLock();
+        $this->getLockAdapter()->releaseLock('sync');
 
         $progressionListener->advance();
         $progressionListener->finish();

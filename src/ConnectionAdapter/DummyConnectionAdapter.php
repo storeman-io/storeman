@@ -1,26 +1,9 @@
 <?php
 
-namespace Archivr\Connection;
+namespace Archivr\ConnectionAdapter;
 
-class DummyConnection implements ConnectionInterface
+class DummyConnectionAdapter implements ConnectionAdapterInterface
 {
-    protected $lockAcquired = false;
-
-    public function hasLock(): bool
-    {
-        return $this->lockAcquired;
-    }
-
-    public function acquireLock(bool $wait = true, bool $force = false)
-    {
-        return $this->lockAcquired = true;
-    }
-
-    public function releaseLock()
-    {
-        return !($this->lockAcquired = false);
-    }
-
     public function read(string $relativePath): string
     {
         throw new \RuntimeException('Trying to call ' . __FUNCTION__ . '() on DummyVaultConnection.');

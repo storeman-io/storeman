@@ -2,7 +2,7 @@
 
 namespace Archivr\Operation;
 
-use Archivr\Connection\ConnectionInterface;
+use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
 
 class UploadOperation implements OperationInterface
 {
@@ -10,7 +10,7 @@ class UploadOperation implements OperationInterface
     protected $blobId;
     protected $vaultConnection;
 
-    public function __construct(string $absolutePath, string $blobId, ConnectionInterface $vaultConnection)
+    public function __construct(string $absolutePath, string $blobId, ConnectionAdapterInterface $vaultConnection)
     {
         $this->absolutePath = $absolutePath;
         $this->blobId = $blobId;

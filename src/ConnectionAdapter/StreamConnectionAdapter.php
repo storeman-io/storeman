@@ -1,16 +1,12 @@
 <?php
 
-namespace Archivr\Connection;
+namespace Archivr\ConnectionAdapter;
 
 use Archivr\TildeExpansionTrait;
 
-class StreamConnection implements ConnectionInterface
+class StreamConnectionAdapter implements ConnectionAdapterInterface
 {
     use TildeExpansionTrait;
-
-
-    const LOCK_FILE_NAME = 'lockfile';
-
 
     /**
      * @var string
@@ -22,78 +18,11 @@ class StreamConnection implements ConnectionInterface
      */
     protected $streamContext;
 
-    /**
-     * @var bool
-     */
-    protected $lockAcquired = false;
-
 
     public function __construct(string $remotePath, $streamContext = null)
     {
         $this->remotePath = rtrim($this->expandTildePath($remotePath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         $this->streamContext = $streamContext ?: stream_context_create();
-    }
-
-    public function __destruct()
-    {
-        $this->releaseLock();
-    }
-
-    public function hasLock(): bool
-    {
-        return $this->lockAcquired;
-    }
-
-    public function acquireLock(bool $wait = true, bool $force = false)
-    {
-        if (!$this->lockAcquired)
-        {
-            $lockExists = false;
-
-            // check for existing lock
-            if (!$force)
-            {
-                do
-                {
-                    $lockExists = $this->exists(static::LOCK_FILE_NAME);
-
-                    if (!$lockExists)
-                    {
-                        // no other lock present
-                        break;
-                    }
-
-                    // sleep and try again
-                    if ($wait)
-                    {
-                        sleep(5);
-                    }
-                }
-                while ($wait);
-            }
-
-            // only write lock if no other exists (or $force is true)
-            if (!$lockExists)
-            {
-                $this->write(static::LOCK_FILE_NAME, getmypid());
-
-                $this->lockAcquired = true;
-            }
-        }
-
-        return $this->lockAcquired;
-    }
-
-    public function releaseLock()
-    {
-        if ($this->lockAcquired)
-        {
-            $this->unlink(static::LOCK_FILE_NAME);
-
-            $this->lockAcquired = false;
-        }
-
-        return !$this->lockAcquired;
     }
 
     public function getStream(string $relativePath, string $mode)

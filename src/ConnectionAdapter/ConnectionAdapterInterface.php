@@ -1,35 +1,9 @@
 <?php
 
-namespace Archivr\Connection;
+namespace Archivr\ConnectionAdapter;
 
-interface ConnectionInterface
+interface ConnectionAdapterInterface
 {
-    /**
-     * Returns true if the connection currently holds a lock.
-     *
-     * @return bool
-     */
-    public function hasLock(): bool;
-
-    /**
-     * Tries to acquire a lock.
-     * Returns true on success and false on failure.
-     *
-     * @param bool $wait
-     * @param bool $force
-     *
-     * @return bool
-     */
-    public function acquireLock(bool $wait = true, bool $force = false);
-
-    /**
-     * Releases an acquired lock.
-     * Returns true on success and false on failure.
-     *
-     * @return bool
-     */
-    public function releaseLock();
-
     /**
      * Reads and returns the content of a remote stored object.
      *

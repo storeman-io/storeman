@@ -2,10 +2,11 @@
 
 namespace Archivr\Test;
 
-use Archivr\Connection\DummyConnection;
-use Archivr\Connection\StreamConnection;
+use Archivr\ConnectionAdapter\DummyConnectionAdapter;
+use Archivr\ConnectionAdapter\StreamConnectionAdapter;
 use Archivr\Index;
 use Archivr\IndexObject;
+use Archivr\LockAdapter\DummyLockAdapter;
 use Archivr\OperationResultCollection;
 use Archivr\Vault;
 use PHPUnit\Framework\TestCase;
@@ -19,7 +20,7 @@ class VaultTest extends TestCase
     public function testBuildLocalIndex()
     {
         $testVault = $this->getTestVaultGenerator()->generate();
-        $vault = new Vault(new DummyConnection(), $testVault->getBasePath());
+        $vault = new Vault($testVault->getBasePath(), new DummyConnectionAdapter(), new DummyLockAdapter());
 
         $localIndex = $vault->buildLocalIndex();
 
@@ -36,7 +37,7 @@ class VaultTest extends TestCase
     {
         $testVault = $this->getTestVaultGenerator()->generate();
         $connectionTarget = $this->getTemporaryPathGenerator()->getTemporaryDirectory();
-        $vault = new Vault(new StreamConnection($connectionTarget), $testVault->getBasePath());
+        $vault = new Vault($testVault->getBasePath(), new StreamConnectionAdapter($connectionTarget));
 
         $this->assertIndexEqualsTestVault($testVault, $vault->buildLocalIndex());
         $this->assertNull($vault->loadLastLocalIndex());
@@ -59,8 +60,8 @@ class VaultTest extends TestCase
 
         $connectionTarget = $this->getTemporaryPathGenerator()->getTemporaryDirectory();
 
-        $firstVault = new Vault(new StreamConnection($connectionTarget), $firstTestVault->getBasePath());
-        $secondVault = new Vault(new StreamConnection($connectionTarget), $secondTestVault->getBasePath());
+        $firstVault = new Vault($firstTestVault->getBasePath(), new StreamConnectionAdapter($connectionTarget));
+        $secondVault = new Vault($secondTestVault->getBasePath(), new StreamConnectionAdapter($connectionTarget));
 
         $this->assertNull($firstVault->loadRemoteIndex());
         $this->assertNull($firstVault->loadLastLocalIndex());

@@ -2,7 +2,7 @@
 
 namespace Archivr\Test\Operation;
 
-use Archivr\Connection\StreamConnection;
+use Archivr\ConnectionAdapter\StreamConnectionAdapter;
 use Archivr\Operation\DownloadOperation;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use Archivr\Test\TestVault;
@@ -21,7 +21,7 @@ class DownloadOperationTest extends TestCase
         $testVault = new TestVault();
         $testVault->fwrite($testBlobId, $testFileContent);
 
-        $testVaultConnection = new StreamConnection($testVault->getBasePath());
+        $testVaultConnection = new StreamConnectionAdapter($testVault->getBasePath());
 
         $targetFilePath = $this->getTemporaryPathGenerator()->getTemporaryFile();
 

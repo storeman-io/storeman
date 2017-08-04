@@ -2,9 +2,11 @@
 
 namespace Archivr;
 
-use Archivr\Connection\ConnectionInterface;
-use Archivr\Connection\StreamConnection;
+use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
+use Archivr\ConnectionAdapter\StreamConnectionAdapter;
 use Archivr\Exception\ConfigurationException;
+use Archivr\LockAdapter\ConnectionBasedLockAdapter;
+use Archivr\LockAdapter\LockAdapterInterface;
 
 class ArchivR
 {
@@ -12,6 +14,11 @@ class ArchivR
      * @var Configuration
      */
     protected $configuration;
+
+    /**
+     * @var Vault[]
+     */
+    protected $vaults = [];
 
     public function __construct(Configuration $configuration)
     {
@@ -23,20 +30,21 @@ class ArchivR
         return $this->configuration;
     }
 
-    public function getConnection(string $title): ConnectionInterface
+    public function getConnection(string $vaultTitle): ConnectionAdapterInterface
     {
-        $connectionConfiguration = $this->configuration->getConnectionConfigurationByTitle($title);
+        $connectionConfiguration = $this->configuration->getConnectionConfigurationByTitle($vaultTitle);
 
         if ($connectionConfiguration === null)
         {
-            throw new \InvalidArgumentException(sprintf('Unknown connection title: %s.', $title));
+            throw new \InvalidArgumentException(sprintf('Unknown connection title: %s.', $vaultTitle));
         }
 
+        // todo: replace by usage of factory map
         switch ($connectionConfiguration->getAdapter())
         {
             case 'path':
 
-                $connection = new StreamConnection($connectionConfiguration['path']);
+                $connection = new StreamConnectionAdapter($connectionConfiguration['path']);
 
                 break;
 
@@ -46,6 +54,26 @@ class ArchivR
         }
 
         return $connection;
+    }
+
+    public function getLockAdapter(string $vaultTitle): LockAdapterInterface
+    {
+        $connectionConfiguration = $this->configuration->getConnectionConfigurationByTitle($vaultTitle);
+
+        if ($connectionConfiguration === null)
+        {
+            throw new \InvalidArgumentException(sprintf('Unknown connection title: %s.', $vaultTitle));
+        }
+
+        // todo: replace by usage of factory map
+        switch ($connectionConfiguration->getAdapter())
+        {
+            default:
+
+                $lockAdapter = new ConnectionBasedLockAdapter($this->getConnection($vaultTitle));
+        }
+
+        return $lockAdapter;
     }
 
     public function buildOperationCollection(): OperationCollection
@@ -61,23 +89,31 @@ class ArchivR
     }
 
     /**
-     * @return VaultInterface[]
+     * @return Vault[]
      */
     public function getVaults(): array
     {
-        $vaults = [];
+        return array_map(function(ConnectionConfiguration $connectionConfiguration) {
 
-        foreach ($this->configuration->getConnectionConfigurations() as $connectionConfiguration)
-        {
-            $vaults[] = $this->doGetVault($this->getConnection($connectionConfiguration->getTitle()));
-        }
+            return $this->getVault($connectionConfiguration->getTitle());
 
-        return $vaults;
+        }, $this->configuration->getConnectionConfigurations());
     }
 
-    public function getVault(string $title): VaultInterface
+    public function getVault(string $vaultTitle): Vault
     {
-        return $this->doGetVault($this->getConnection($title));
+        if (!isset($this->vaults[$vaultTitle]))
+        {
+            $vault = new Vault(
+                $this->configuration->getLocalPath(),
+                $this->getConnection($vaultTitle)
+            );
+            $vault->setLockAdapter($this->getLockAdapter($vaultTitle));
+
+            $this->vaults[$vaultTitle] = $vault;
+        }
+
+        return $this->vaults[$vaultTitle];
     }
 
     public function synchronize(SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
@@ -90,10 +126,5 @@ class ArchivR
         }
 
         return $return;
-    }
-
-    protected function doGetVault(ConnectionInterface $connection): VaultInterface
-    {
-        return new Vault($connection, $this->configuration->getLocalPath());
     }
 }
