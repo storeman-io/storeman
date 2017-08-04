@@ -140,8 +140,14 @@ class Vault
         if (is_file($path))
         {
             $stream = fopen($path, 'r');
+            $indexModificationDate = \DateTime::createFromFormat('U', filemtime($path));
 
-            $index = $this->readIndexFromStream($stream, \DateTime::createFromFormat('U', filemtime($path)));
+            if (!($indexModificationDate instanceof \DateTime))
+            {
+                throw new \RuntimeException();
+            }
+
+            $index = $this->readIndexFromStream($stream, $indexModificationDate);
 
             fclose($stream);
         }
@@ -392,6 +398,11 @@ class Vault
 
     protected function readIndexFromStream($stream, \DateTime $created = null): Index
     {
+        if (!is_resource($stream))
+        {
+            throw new \RuntimeException();
+        }
+
         $index = new Index($created);
 
         while (($row = fgetcsv($stream)) !== false)

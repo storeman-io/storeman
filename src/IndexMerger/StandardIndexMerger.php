@@ -33,7 +33,7 @@ class StandardIndexMerger implements IndexMergerInterface
             }
             else
             {
-                $remoteObjectModified = $remoteObject->getMtime() > $lastLocalIndex->getCreated()->getTimestamp();
+                $remoteObjectModified = $lastLocalIndex ? ($remoteObject->getMtime() > $lastLocalIndex->getCreated()->getTimestamp()) : false;
 
                 if (!$localObjectModified)
                 {
