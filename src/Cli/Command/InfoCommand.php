@@ -18,7 +18,15 @@ class InfoCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $configuration = $this->getConfiguration($input, $output);
+        $configuration = $this->getConfiguration($input);
+
+        if ($configuration === null)
+        {
+            $output->writeln(sprintf('This does not seem to be an archive!'));
+
+            return;
+        }
+
         $archivr = new ArchivR($configuration);
 
         $operationCollection = $archivr->buildOperationCollection();

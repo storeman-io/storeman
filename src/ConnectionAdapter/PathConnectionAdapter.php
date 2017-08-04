@@ -4,7 +4,7 @@ namespace Archivr\ConnectionAdapter;
 
 use Archivr\TildeExpansionTrait;
 
-class StreamConnectionAdapter implements ConnectionAdapterInterface
+class PathConnectionAdapter implements ConnectionAdapterInterface
 {
     use TildeExpansionTrait;
 

@@ -1,29 +1,25 @@
 <?php
 
-namespace Archivr\ConfigurationFactory;
+namespace Archivr;
 
-use Archivr\Configuration;
-use Archivr\ConnectionConfiguration;
 use Archivr\Exception\ConfigurationException;
 use Zend\Stdlib\ArrayUtils;
 
-class JsonConfigurationFactory extends AbstractConfigurationFactory
+class ConfigurationFileReader
 {
-    /**
-     * @var string
-     */
-    protected $json;
-
-    public function __construct(string $json)
+    public function getConfiguration(string $configurationFilePath)
     {
-        $this->json = $json;
-    }
+        $json = file_get_contents($configurationFilePath);
 
-    public function __invoke(): Configuration
-    {
-        $array = json_decode($this->json, true);
+        if (!$json)
+        {
+            throw new \RuntimeException(sprintf('Configuration file path "%s" does not exist or is not readable.', $configurationFilePath));
+        }
 
-        $array = ArrayUtils::merge($this->getDefaults(), $array);
+        $array = json_decode($json, true);
+        $array = ArrayUtils::merge([
+            'path' => dirname($configurationFilePath)
+        ], $array);
 
         foreach (['path', 'vaults'] as $requiredKey)
         {
@@ -53,11 +49,12 @@ class JsonConfigurationFactory extends AbstractConfigurationFactory
                 throw new ConfigurationException(sprintf('Vault configuration #%d is missing the obligatory \'adapter\' key.', $index));
             }
 
-            $name = $vaultConfig['adapter'];
+            $lockAdapter = empty($vaultConfig['lockAdapter']) ? 'connection' : $vaultConfig['lockAdapter'];
 
-            unset($vaultConfig['adapter']);
+            $connectionConfig = new ConnectionConfiguration($vaultConfig['adapter'], $lockAdapter);
+            $connectionConfig->setSettings($vaultConfig['settings'] ?: []);
 
-            $configuration->addConnectionConfiguration(new ConnectionConfiguration(trim($name), $vaultConfig));
+            $configuration->addConnectionConfiguration($connectionConfig);
         }
 
         return $configuration;

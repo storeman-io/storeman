@@ -2,18 +2,32 @@
 
 namespace Archivr;
 
+use Archivr\ConnectionAdapter\ConnectionAdapterFactoryContainer;
 use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
-use Archivr\ConnectionAdapter\StreamConnectionAdapter;
+use Archivr\ConnectionAdapter\PathConnectionAdapter;
 use Archivr\Exception\ConfigurationException;
 use Archivr\LockAdapter\ConnectionBasedLockAdapter;
+use Archivr\LockAdapter\LockAdapterFactoryContainer;
 use Archivr\LockAdapter\LockAdapterInterface;
 
 class ArchivR
 {
+    use TildeExpansionTrait;
+
     /**
      * @var Configuration
      */
     protected $configuration;
+
+    /**
+     * @var ConnectionAdapterFactoryContainer
+     */
+    protected $connectionAdapterFactoryContainer;
+
+    /**
+     * @var LockAdapterFactoryContainer
+     */
+    protected $lockAdapterFactoryContainer;
 
     /**
      * @var Vault[]
@@ -23,11 +37,45 @@ class ArchivR
     public function __construct(Configuration $configuration)
     {
         $this->configuration = $configuration;
+        $this->connectionAdapterFactoryContainer = new ConnectionAdapterFactoryContainer([
+
+            'path' => function(ConnectionConfiguration $connectionConfiguration)
+            {
+                $path = $connectionConfiguration->getSetting('path');
+                $path = $this->expandTildePath($path);
+
+                if (!is_dir($path) || !is_writable($path))
+                {
+                    throw new ConfigurationException(sprintf('Path "%s" does not exist or is not writable.', $path));
+                }
+
+                return new PathConnectionAdapter($path);
+            }
+        ]);
+        $this->lockAdapterFactoryContainer = new LockAdapterFactoryContainer([
+
+            'connection' => function(ConnectionConfiguration $connectionConfiguration)
+            {
+                $connection = $this->getConnection($connectionConfiguration->getTitle());
+
+                return new ConnectionBasedLockAdapter($connection);
+            }
+        ]);
     }
 
-    public function getConfiguration()
+    public function getConfiguration(): Configuration
     {
         return $this->configuration;
+    }
+
+    public function getConnectionAdapterFactoryContainer(): AbstractServiceFactoryContainer
+    {
+        return $this->connectionAdapterFactoryContainer;
+    }
+
+    public function getLockAdapterFactoryContainer(): AbstractServiceFactoryContainer
+    {
+        return $this->lockAdapterFactoryContainer;
     }
 
     public function getConnection(string $vaultTitle): ConnectionAdapterInterface
@@ -36,21 +84,14 @@ class ArchivR
 
         if ($connectionConfiguration === null)
         {
-            throw new \InvalidArgumentException(sprintf('Unknown connection title: %s.', $vaultTitle));
+            throw new \InvalidArgumentException(sprintf('Unknown connection title: "%s".', $vaultTitle));
         }
 
-        // todo: replace by usage of factory map
-        switch ($connectionConfiguration->getAdapter())
+        $connection = $this->connectionAdapterFactoryContainer->get($connectionConfiguration->getVaultAdapter(), $connectionConfiguration);
+
+        if ($connection === null)
         {
-            case 'path':
-
-                $connection = new StreamConnectionAdapter($connectionConfiguration['path']);
-
-                break;
-
-            default:
-
-                throw new ConfigurationException(sprintf('Unknown connection adapter: %s.', $connectionConfiguration->getAdapter()));
+            throw new ConfigurationException(sprintf('Unknown connection adapter: "%s".', $connectionConfiguration->getVaultAdapter()));
         }
 
         return $connection;
@@ -62,15 +103,14 @@ class ArchivR
 
         if ($connectionConfiguration === null)
         {
-            throw new \InvalidArgumentException(sprintf('Unknown connection title: %s.', $vaultTitle));
+            throw new \InvalidArgumentException(sprintf('Unknown connection title: "%s".', $vaultTitle));
         }
 
-        // todo: replace by usage of factory map
-        switch ($connectionConfiguration->getAdapter())
-        {
-            default:
+        $lockAdapter = $this->lockAdapterFactoryContainer->get($connectionConfiguration->getLockAdapter(), $connectionConfiguration);
 
-                $lockAdapter = new ConnectionBasedLockAdapter($this->getConnection($vaultTitle));
+        if ($lockAdapter === null)
+        {
+            throw new ConfigurationException(sprintf('Unknown lock adapter: "%s".', $connectionConfiguration->getLockAdapter()));
         }
 
         return $lockAdapter;

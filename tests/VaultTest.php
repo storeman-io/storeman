@@ -3,7 +3,7 @@
 namespace Archivr\Test;
 
 use Archivr\ConnectionAdapter\DummyConnectionAdapter;
-use Archivr\ConnectionAdapter\StreamConnectionAdapter;
+use Archivr\ConnectionAdapter\PathConnectionAdapter;
 use Archivr\Index;
 use Archivr\IndexObject;
 use Archivr\LockAdapter\DummyLockAdapter;
@@ -37,7 +37,7 @@ class VaultTest extends TestCase
     {
         $testVault = $this->getTestVaultGenerator()->generate();
         $connectionTarget = $this->getTemporaryPathGenerator()->getTemporaryDirectory();
-        $vault = new Vault($testVault->getBasePath(), new StreamConnectionAdapter($connectionTarget));
+        $vault = new Vault($testVault->getBasePath(), new PathConnectionAdapter($connectionTarget));
 
         $this->assertIndexEqualsTestVault($testVault, $vault->buildLocalIndex());
         $this->assertNull($vault->loadLastLocalIndex());
@@ -60,8 +60,8 @@ class VaultTest extends TestCase
 
         $connectionTarget = $this->getTemporaryPathGenerator()->getTemporaryDirectory();
 
-        $firstVault = new Vault($firstTestVault->getBasePath(), new StreamConnectionAdapter($connectionTarget));
-        $secondVault = new Vault($secondTestVault->getBasePath(), new StreamConnectionAdapter($connectionTarget));
+        $firstVault = new Vault($firstTestVault->getBasePath(), new PathConnectionAdapter($connectionTarget));
+        $secondVault = new Vault($secondTestVault->getBasePath(), new PathConnectionAdapter($connectionTarget));
 
         $this->assertNull($firstVault->loadRemoteIndex());
         $this->assertNull($firstVault->loadLastLocalIndex());

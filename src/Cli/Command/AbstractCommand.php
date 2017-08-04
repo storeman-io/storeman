@@ -3,56 +3,26 @@
 namespace Archivr\Cli\Command;
 
 use Archivr\Configuration;
-use Archivr\ConfigurationFactory\JsonFileConfigurationFactory;
+use Archivr\ConfigurationFileReader;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class AbstractCommand extends Command
 {
-    protected function getConfiguration(InputInterface $input, OutputInterface $output): Configuration
+    protected function getConfiguration(InputInterface $input): Configuration
     {
-        $configuration = $this->readConfigurationFile($input->getOption('config'));
+        $reader = new ConfigurationFileReader();
 
-        if ($configuration === null)
+        if ($input->getOption('config'))
         {
-            $output->writeln(sprintf('This does not seem to be an archive!'));
-
-            exit(1);
+            return $reader->getConfiguration($input->getOption('config'));
         }
 
-        return $configuration;
-    }
-
-    protected function readConfigurationFile(string $path = null)
-    {
-        if ($path === null)
+        if (is_file('archivr.json'))
         {
-            foreach (['archivr.json'] as $defaultPath)
-            {
-                if (is_file($defaultPath))
-                {
-                    $path = $defaultPath;
-
-                    break;
-                }
-            }
-
-            if ($path === null)
-            {
-                return null;
-            }
+            return $reader->getConfiguration('archivr.json');
         }
 
-        if (preg_match('/\.json/', $path))
-        {
-            $factory = new JsonFileConfigurationFactory($path);
-
-            return $factory();
-        }
-        else
-        {
-            throw new \InvalidArgumentException(sprintf('Don\'t know how to handle configuration given file %s.', $path));
-        }
+        return null;
     }
 }
