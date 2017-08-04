@@ -4,11 +4,13 @@ namespace Archivr;
 
 use Archivr\ConnectionAdapter\ConnectionAdapterFactoryContainer;
 use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
-use Archivr\ConnectionAdapter\PathConnectionAdapter;
+use Archivr\ConnectionAdapter\FlysystemConnectionAdapter;
 use Archivr\Exception\ConfigurationException;
 use Archivr\LockAdapter\ConnectionBasedLockAdapter;
 use Archivr\LockAdapter\LockAdapterFactoryContainer;
 use Archivr\LockAdapter\LockAdapterInterface;
+use League\Flysystem\Adapter\Local;
+use League\Flysystem\Filesystem;
 
 class ArchivR
 {
@@ -49,8 +51,11 @@ class ArchivR
                     throw new ConfigurationException(sprintf('Path "%s" does not exist or is not writable.', $path));
                 }
 
-                return new PathConnectionAdapter($path);
-            }
+                $adapter = new Local($path);
+                $filesystem = new Filesystem($adapter);
+
+                return new FlysystemConnectionAdapter($filesystem);
+            },
         ]);
         $this->lockAdapterFactoryContainer = new LockAdapterFactoryContainer([
 

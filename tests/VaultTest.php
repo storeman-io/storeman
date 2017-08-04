@@ -3,12 +3,14 @@
 namespace Archivr\Test;
 
 use Archivr\ConnectionAdapter\DummyConnectionAdapter;
-use Archivr\ConnectionAdapter\PathConnectionAdapter;
+use Archivr\ConnectionAdapter\FlysystemConnectionAdapter;
 use Archivr\Index;
 use Archivr\IndexObject;
 use Archivr\LockAdapter\DummyLockAdapter;
 use Archivr\OperationResultCollection;
 use Archivr\Vault;
+use League\Flysystem\Adapter\Local;
+use League\Flysystem\Filesystem;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -37,7 +39,7 @@ class VaultTest extends TestCase
     {
         $testVault = $this->getTestVaultGenerator()->generate();
         $connectionTarget = $this->getTemporaryPathGenerator()->getTemporaryDirectory();
-        $vault = new Vault($testVault->getBasePath(), new PathConnectionAdapter($connectionTarget));
+        $vault = $this->getLocalVault($testVault->getBasePath(), $connectionTarget);
 
         $this->assertIndexEqualsTestVault($testVault, $vault->buildLocalIndex());
         $this->assertNull($vault->loadLastLocalIndex());
@@ -60,8 +62,8 @@ class VaultTest extends TestCase
 
         $connectionTarget = $this->getTemporaryPathGenerator()->getTemporaryDirectory();
 
-        $firstVault = new Vault($firstTestVault->getBasePath(), new PathConnectionAdapter($connectionTarget));
-        $secondVault = new Vault($secondTestVault->getBasePath(), new PathConnectionAdapter($connectionTarget));
+        $firstVault = $this->getLocalVault($firstTestVault->getBasePath(), $connectionTarget);
+        $secondVault = $this->getLocalVault($secondTestVault->getBasePath(), $connectionTarget);
 
         $this->assertNull($firstVault->loadRemoteIndex());
         $this->assertNull($firstVault->loadLastLocalIndex());
@@ -139,5 +141,10 @@ class VaultTest extends TestCase
         $this->assertEquals($testVaultObject->isLink(), $indexObject->isLink());
         $this->assertEquals($testVaultObject->getMTime(), $indexObject->getMtime());
         $this->assertEquals($testVaultObject->getPerms(), $indexObject->getMode());
+    }
+
+    private function getLocalVault(string $basePath, string $remotePath): Vault
+    {
+        return new Vault($basePath, new FlysystemConnectionAdapter(new Filesystem(new Local($remotePath))));
     }
 }

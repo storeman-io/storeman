@@ -2,10 +2,12 @@
 
 namespace Archivr\Test\Operation;
 
-use Archivr\ConnectionAdapter\PathConnectionAdapter;
+use Archivr\ConnectionAdapter\FlysystemConnectionAdapter;
 use Archivr\Operation\DownloadOperation;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use Archivr\Test\TestVault;
+use League\Flysystem\Adapter\Local;
+use League\Flysystem\Filesystem;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 
@@ -21,7 +23,7 @@ class DownloadOperationTest extends TestCase
         $testVault = new TestVault();
         $testVault->fwrite($testBlobId, $testFileContent);
 
-        $testVaultConnection = new PathConnectionAdapter($testVault->getBasePath());
+        $testVaultConnection = new FlysystemConnectionAdapter(new Filesystem(new Local($testVault->getBasePath())));
 
         $targetFilePath = $this->getTemporaryPathGenerator()->getTemporaryFile();
 

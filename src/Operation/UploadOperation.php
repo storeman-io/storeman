@@ -20,14 +20,19 @@ class UploadOperation implements OperationInterface
     public function execute(): bool
     {
         $localStream = fopen($this->absolutePath, 'r');
-        $remoteStream = $this->vaultConnection->getStream($this->blobId, 'w');
 
-        $bytesCopied = stream_copy_to_stream($localStream, $remoteStream);
+        try
+        {
+            $this->vaultConnection->writeStream($this->blobId, $localStream);
+        }
+        catch (\RuntimeException $exception)
+        {
+            return false;
+        }
 
-        fclose($remoteStream);
         fclose($localStream);
 
-        return $bytesCopied !== false;
+        return true;
     }
 
     /**

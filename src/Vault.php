@@ -160,7 +160,7 @@ class Vault
 
         if ($this->vaultConnection->exists(static::REMOTE_INDEX_FILE_NAME))
         {
-            $stream = $this->vaultConnection->getStream(static::REMOTE_INDEX_FILE_NAME, 'r');
+            $stream = $this->vaultConnection->getReadStream(static::REMOTE_INDEX_FILE_NAME);
 
             $index = $this->readIndexFromStream($stream);
 
@@ -209,6 +209,7 @@ class Vault
         $localIndex = $this->buildLocalIndex();
         $lastLocalIndex = $this->loadLastLocalIndex();
 
+        // todo: ensure success
         $this->getLockAdapter()->acquireLock('sync');
 
         $remoteIndex = $this->loadRemoteIndex();
@@ -218,8 +219,12 @@ class Vault
 
         $operationResultCollection = new OperationResultCollection();
 
-        // operation count + 2 index writes + lock release
-        $progressionListener->start(count($operationCollection) + 2 + 1);
+        // operation count +
+        // merged index write +
+        // copy merged index to vault +
+        // save merged index as last local index +
+        // release lock
+        $progressionListener->start(count($operationCollection) + 4);
 
         foreach ($operationCollection as $operation)
         {
@@ -233,11 +238,20 @@ class Vault
             $progressionListener->advance();
         }
 
-        $this->writeIndexToStream($mergedIndex, $this->vaultConnection->getStream(static::REMOTE_INDEX_FILE_NAME, 'w'));
+        $mergedIndexFilePath = $this->writeIndexToTemporaryFile($mergedIndex);
 
         $progressionListener->advance();
 
-        $this->writeIndexToStream($mergedIndex, fopen($this->localPath . self::LAST_LOCAL_INDEX_FILE_NAME, 'w'));
+        $readStream = fopen($mergedIndexFilePath, 'r');
+        $this->vaultConnection->writeStream(static::REMOTE_INDEX_FILE_NAME, $readStream);
+        rewind($readStream);
+
+        $progressionListener->advance();
+
+        $writeStream = fopen($this->localPath . self::LAST_LOCAL_INDEX_FILE_NAME, 'w');
+        stream_copy_to_stream($readStream, $writeStream);
+        fclose($writeStream);
+        fclose($readStream);
 
         $progressionListener->advance();
 
@@ -389,8 +403,11 @@ class Vault
         return $index;
     }
 
-    protected function writeIndexToStream(Index $index, $stream)
+    protected function writeIndexToTemporaryFile(Index $index): string
     {
+        $path = tempnam(sys_get_temp_dir(), 'index');
+        $stream = fopen($path, 'w');
+
         foreach ($index as $object)
         {
             /** @var IndexObject $object */
@@ -402,5 +419,7 @@ class Vault
         }
 
         fclose($stream);
+
+        return $path;
     }
 }

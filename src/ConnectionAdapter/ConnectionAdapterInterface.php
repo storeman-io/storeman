@@ -22,6 +22,14 @@ interface ConnectionAdapterInterface
     public function write(string $relativePath, string $content);
 
     /**
+     * Writes the contents of a given stream to a remote object.
+     *
+     * @param string $relativePath
+     * @param resource $stream
+     */
+    public function writeStream(string $relativePath, $stream);
+
+    /**
      * Returns true of the remote object exists.
      *
      * @param string $relativePath
@@ -38,12 +46,11 @@ interface ConnectionAdapterInterface
     public function unlink(string $relativePath);
 
     /**
-     * Opens and returns a PHP stream to a remote stored object that can be used to read/write to/from.
+     * Opens and returns a PHP stream that can be used to read from a remote object.
      *
      * @param string $relativePath
-     * @param string $mode
      *
      * @return resource
      */
-    public function getStream(string $relativePath, string $mode);
+    public function getReadStream(string $relativePath);
 }

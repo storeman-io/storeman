@@ -20,7 +20,7 @@ class DownloadOperation implements OperationInterface
     public function execute(): bool
     {
         $localStream = fopen($this->absolutePath, 'w');
-        $remoteStream = $this->vaultConnection->getStream($this->blobId, 'r');
+        $remoteStream = $this->vaultConnection->getReadStream($this->blobId);
 
         $bytesCopied = stream_copy_to_stream($remoteStream, $localStream);
 

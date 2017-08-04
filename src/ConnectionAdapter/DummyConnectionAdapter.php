@@ -14,6 +14,11 @@ class DummyConnectionAdapter implements ConnectionAdapterInterface
         throw new \RuntimeException('Trying to call ' . __FUNCTION__ . '() on DummyVaultConnection.');
     }
 
+    public function writeStream(string $relativePath, $stream)
+    {
+        throw new \RuntimeException('Trying to call ' . __FUNCTION__ . '() on DummyVaultConnection.');
+    }
+
     public function exists(string $relativePath): bool
     {
         throw new \RuntimeException('Trying to call ' . __FUNCTION__ . '() on DummyVaultConnection.');
@@ -24,7 +29,7 @@ class DummyConnectionAdapter implements ConnectionAdapterInterface
         throw new \RuntimeException('Trying to call ' . __FUNCTION__ . '() on DummyVaultConnection.');
     }
 
-    public function getStream(string $relativePath, string $mode)
+    public function getReadStream(string $relativePath)
     {
         throw new \RuntimeException('Trying to call ' . __FUNCTION__ . '() on DummyVaultConnection.');
     }
