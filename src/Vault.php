@@ -209,7 +209,6 @@ class Vault
         $localIndex = $this->buildLocalIndex();
         $lastLocalIndex = $this->loadLastLocalIndex();
 
-        // todo: ensure success
         $this->getLockAdapter()->acquireLock('sync');
 
         $remoteIndex = $this->loadRemoteIndex();

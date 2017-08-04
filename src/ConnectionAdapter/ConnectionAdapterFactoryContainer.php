@@ -7,7 +7,7 @@ use Archivr\ConnectionConfiguration;
 
 class ConnectionAdapterFactoryContainer extends AbstractServiceFactoryContainer
 {
-    function get(string $name, ConnectionConfiguration $connectionConfiguration)
+    public function get(string $name, ConnectionConfiguration $connectionConfiguration)
     {
         if (!isset($this->map[$name]))
         {
