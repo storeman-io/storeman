@@ -19,7 +19,7 @@ class UploadOperation implements OperationInterface
 
     public function execute(): bool
     {
-        $localStream = fopen($this->absolutePath, 'r');
+        $localStream = fopen($this->absolutePath, 'rb');
 
         try
         {

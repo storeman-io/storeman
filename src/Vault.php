@@ -139,7 +139,7 @@ class Vault
 
         if (is_file($path))
         {
-            $stream = fopen($path, 'r');
+            $stream = fopen($path, 'rb');
             $indexModificationDate = \DateTime::createFromFormat('U', filemtime($path));
 
             if (!($indexModificationDate instanceof \DateTime))
@@ -247,13 +247,13 @@ class Vault
 
         $progressionListener->advance();
 
-        $readStream = fopen($mergedIndexFilePath, 'r');
+        $readStream = fopen($mergedIndexFilePath, 'rb');
         $this->vaultConnection->writeStream(static::REMOTE_INDEX_FILE_NAME, $readStream);
         rewind($readStream);
 
         $progressionListener->advance();
 
-        $writeStream = fopen($this->localPath . self::LAST_LOCAL_INDEX_FILE_NAME, 'w');
+        $writeStream = fopen($this->localPath . self::LAST_LOCAL_INDEX_FILE_NAME, 'wb');
         stream_copy_to_stream($readStream, $writeStream);
         fclose($writeStream);
         fclose($readStream);
@@ -416,7 +416,7 @@ class Vault
     protected function writeIndexToTemporaryFile(Index $index): string
     {
         $path = tempnam(sys_get_temp_dir(), 'index');
-        $stream = fopen($path, 'w');
+        $stream = fopen($path, 'wb');
 
         foreach ($index as $object)
         {
