@@ -213,6 +213,8 @@ class Vault
         {
             $stream = $this->vaultConnection->getReadStream(static::REMOTE_INDEX_FILE_NAME);
 
+            stream_filter_append($stream, 'zlib.inflate');
+
             $index = $this->readIndexFromStream($stream);
 
             fclose($stream);
@@ -297,8 +299,10 @@ class Vault
         $progressionListener->advance();
 
         $readStream = fopen($mergedIndexFilePath, 'rb');
+        $compressionFilter = stream_filter_append($readStream, 'zlib.deflate');
         $this->vaultConnection->writeStream(static::REMOTE_INDEX_FILE_NAME, $readStream);
         rewind($readStream);
+        stream_filter_remove($compressionFilter);
 
         $progressionListener->advance();
 
