@@ -9,18 +9,25 @@ class DownloadOperation implements OperationInterface
     protected $absolutePath;
     protected $blobId;
     protected $vaultConnection;
+    protected $streamFilterConfigMap;
 
-    public function __construct(string $absolutePath, string $blobId, ConnectionAdapterInterface $vaultConnection)
+    public function __construct(string $absolutePath, string $blobId, ConnectionAdapterInterface $vaultConnection, array $streamFilterConfigMap = [])
     {
         $this->absolutePath = $absolutePath;
         $this->blobId = $blobId;
         $this->vaultConnection = $vaultConnection;
+        $this->streamFilterConfigMap = $streamFilterConfigMap;
     }
 
     public function execute(): bool
     {
         $localStream = fopen($this->absolutePath, 'wb');
         $remoteStream = $this->vaultConnection->getReadStream($this->blobId);
+
+        foreach ($this->streamFilterConfigMap as $filterName => $filterParams)
+        {
+            stream_filter_append($remoteStream, $filterName, STREAM_FILTER_READ, $filterParams);
+        }
 
         $bytesCopied = stream_copy_to_stream($remoteStream, $localStream);
 
@@ -35,6 +42,8 @@ class DownloadOperation implements OperationInterface
      */
     public function __toString(): string
     {
-        return sprintf('Download %s (blobId %s)', $this->absolutePath, $this->blobId);
+        $filterNames = implode(',', array_keys($this->streamFilterConfigMap)) ?: '-';
+
+        return sprintf('Download %s (blobId %s, filters: %s)', $this->absolutePath, $this->blobId, $filterNames);
     }
 }

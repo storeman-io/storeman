@@ -284,6 +284,13 @@ class Vault
         $remoteIndex = $remoteIndex ?: $this->loadRemoteIndex();
         $mergedIndex = $mergedIndex ?: $this->doBuildMergedIndex($localIndex, $remoteIndex);
 
+        $uploadStreamFilters = [
+            'zlib.deflate' => []
+        ];
+        $downloadStreamFilters = [
+            'zlib.inflate' => []
+        ];
+
 
         $operationCollection = new OperationCollection();
 
@@ -330,7 +337,7 @@ class Vault
                 // local file did not exist, hasn't been a file before or is outdated
                 if ($localObject === null || !$localObject->isFile() || $localObject->getMtime() < $indexObject->getMtime())
                 {
-                    $operationCollection->addOperation(new DownloadOperation($absoluteLocalPath, $indexObject->getBlobId(), $this->vaultConnection));
+                    $operationCollection->addOperation(new DownloadOperation($absoluteLocalPath, $indexObject->getBlobId(), $this->vaultConnection, $downloadStreamFilters));
                     $operationCollection->addOperation(new TouchOperation($absoluteLocalPath, $indexObject->getMtime()));
                     $operationCollection->addOperation(new ChmodOperation($absoluteLocalPath, $indexObject->getMode()));
 
@@ -349,7 +356,7 @@ class Vault
 
                     $indexObject->setBlobId($blobId);
 
-                    $operationCollection->addOperation(new UploadOperation($absoluteLocalPath, $indexObject->getBlobId(), $this->vaultConnection));
+                    $operationCollection->addOperation(new UploadOperation($absoluteLocalPath, $indexObject->getBlobId(), $this->vaultConnection, $uploadStreamFilters));
                 }
             }
 

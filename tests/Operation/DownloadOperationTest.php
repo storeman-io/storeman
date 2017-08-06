@@ -32,4 +32,24 @@ class DownloadOperationTest extends TestCase
 
         $this->assertEquals($testFileContent, file_get_contents($targetFilePath));
     }
+
+    public function testExecutionWithFilter()
+    {
+        $testBlobId = Uuid::uuid4();
+        $testFileContent = 'Hello World!';
+
+        $testVault = new TestVault();
+        $testVault->fwrite($testBlobId, str_rot13($testFileContent));
+
+        $testVaultConnection = new FlysystemConnectionAdapter(new Filesystem(new Local($testVault->getBasePath())));
+
+        $targetFilePath = $this->getTemporaryPathGenerator()->getTemporaryFile();
+
+        $operation = new DownloadOperation($targetFilePath, $testBlobId, $testVaultConnection, [
+            'string.rot13' => []
+        ]);
+        $operation->execute();
+
+        $this->assertEquals($testFileContent, file_get_contents($targetFilePath));
+    }
 }

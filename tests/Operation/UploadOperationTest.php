@@ -34,4 +34,26 @@ class UploadOperationTest extends TestCase
         $this->assertTrue(is_string($uploadedFileContent));
         $this->assertEquals($testFileContent, $uploadedFileContent);
     }
+
+    public function testExecutionWithFilter()
+    {
+        $testFilePath = $this->getTemporaryPathGenerator()->getTemporaryFile();
+        $testBlobId = Uuid::uuid4();
+        $testFileContent = 'Hello World!';
+
+        file_put_contents($testFilePath, str_rot13($testFileContent));
+
+        $testVault = new TestVault();
+        $testVaultConnection = new FlysystemConnectionAdapter(new Filesystem(new Local($testVault->getBasePath())));
+
+        $operation = new UploadOperation($testFilePath, $testBlobId, $testVaultConnection, [
+            'string.rot13' => []
+        ]);
+        $operation->execute();
+
+        $uploadedFileContent = $testVaultConnection->read($testBlobId);
+
+        $this->assertTrue(is_string($uploadedFileContent));
+        $this->assertEquals($testFileContent, $uploadedFileContent);
+    }
 }
