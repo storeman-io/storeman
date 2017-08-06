@@ -15,14 +15,19 @@ abstract class AbstractCommand extends Command
 
         if ($input->getOption('config'))
         {
-            return $reader->getConfiguration($input->getOption('config'));
+            $config = $reader->getConfiguration($input->getOption('config'));
         }
-
-        if (is_file('archivr.json'))
+        elseif (is_file('archivr.json'))
         {
-            return $reader->getConfiguration('archivr.json');
+            $config = $reader->getConfiguration('archivr.json');
+        }
+        else
+        {
+            return null;
         }
 
-        return null;
+        $config->addExclusion('archivr.json');
+
+        return $config;
     }
 }

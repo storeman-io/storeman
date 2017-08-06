@@ -54,6 +54,16 @@ class ConfigurationFileReader
         $configuration = new Configuration();
         $configuration->setLocalPath($array['path']);
 
+        if (!empty($array['exclude']))
+        {
+            if (!is_array($array['exclude']))
+            {
+                throw new ConfigurationException('Config key "exclude" has to be an array.');
+            }
+
+            $configuration->setExclusions($array['exclude']);
+        }
+
         foreach ($array['vaults'] as $index => $vaultConfig)
         {
             if (empty($vaultConfig['adapter']))

@@ -12,6 +12,11 @@ class Configuration
     protected $localPath;
 
     /**
+     * @var string[]
+     */
+    protected $exclusions = [];
+
+    /**
      * @var ConnectionConfiguration[]
      */
     protected $connectionConfigurations = [];
@@ -32,6 +37,38 @@ class Configuration
     public function setLocalPath(string $localPath): Configuration
     {
         $this->localPath = $localPath;
+
+        return $this;
+    }
+
+    /**
+     * @return \string[]
+     */
+    public function getExclusions(): array
+    {
+        return $this->exclusions;
+    }
+
+    /**
+     * @param \string[] $paths
+     *
+     * @return Configuration
+     */
+    public function setExclusions(array $paths): Configuration
+    {
+        $this->exclusions = array_values($paths);
+
+        return $this;
+    }
+
+    /**
+     * @param string $path
+     *
+     * @return Configuration
+     */
+    public function addExclusion(string $path): Configuration
+    {
+        $this->exclusions[] = $path;
 
         return $this;
     }
@@ -75,6 +112,7 @@ class Configuration
      * @param ConnectionConfiguration $configuration
      *
      * @return Configuration
+     * @throws Exception
      */
     public function addConnectionConfiguration(ConnectionConfiguration $configuration): Configuration
     {

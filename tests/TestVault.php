@@ -4,7 +4,7 @@ namespace Archivr\Test;
 
 use Archivr\Vault;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Iterator\RecursiveDirectoryIterator;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
 class TestVault implements \IteratorAggregate
@@ -69,22 +69,11 @@ class TestVault implements \IteratorAggregate
 
     public function getIterator(bool $filterMetaFiles = true): \Iterator
     {
-        $iterator = new \RecursiveIteratorIterator(new RecursiveDirectoryIterator($this->basePath,
-            RecursiveDirectoryIterator::CURRENT_AS_FILEINFO |
-            RecursiveDirectoryIterator::SKIP_DOTS
-        ));
+        $finder = new Finder();
+        $finder->in($this->basePath);
+        $finder->exclude(Vault::METADATA_DIRECTORY_NAME);
 
-        if ($filterMetaFiles)
-        {
-            $iterator = new \CallbackFilterIterator($iterator, function(SplFileInfo $testVaultObject) {
-
-                return !in_array($testVaultObject->getFilename(), [
-                    Vault::LAST_LOCAL_INDEX_FILE_NAME
-                ]);
-            });
-        }
-
-        return $iterator;
+        return $finder->getIterator();
     }
 
     protected function getAbsolutePath(string $relativePath): string

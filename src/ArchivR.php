@@ -151,10 +151,12 @@ class ArchivR
         if (!isset($this->vaults[$vaultTitle]))
         {
             $vault = new Vault(
+                $vaultTitle,
                 $this->configuration->getLocalPath(),
                 $this->getConnection($vaultTitle)
             );
             $vault->setLockAdapter($this->getLockAdapter($vaultTitle));
+            $vault->setExclusions($this->configuration->getExclusions());
 
             $this->vaults[$vaultTitle] = $vault;
         }

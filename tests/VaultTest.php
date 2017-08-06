@@ -25,7 +25,7 @@ class VaultTest extends TestCase
 
     public function testIndexMergerInjection()
     {
-        $vault = new Vault($this->getTemporaryPathGenerator()->getTemporaryDirectory(), new DummyConnectionAdapter(), new DummyLockAdapter());
+        $vault = new Vault('test', $this->getTemporaryPathGenerator()->getTemporaryDirectory(), new DummyConnectionAdapter(), new DummyLockAdapter());
 
         $this->assertEquals(StandardIndexMerger::class, get_class($vault->getIndexMerger()));
 
@@ -37,7 +37,7 @@ class VaultTest extends TestCase
 
     public function testLockAdapterInjection()
     {
-        $vault = new Vault($this->getTemporaryPathGenerator()->getTemporaryDirectory(), new DummyConnectionAdapter(), new DummyLockAdapter());
+        $vault = new Vault('test', $this->getTemporaryPathGenerator()->getTemporaryDirectory(), new DummyConnectionAdapter(), new DummyLockAdapter());
 
         $this->assertEquals(ConnectionBasedLockAdapter::class, get_class($vault->getLockAdapter()));
 
@@ -50,7 +50,7 @@ class VaultTest extends TestCase
     public function testBuildLocalIndex()
     {
         $testVault = $this->getTestVaultGenerator()->generate();
-        $vault = new Vault($testVault->getBasePath(), new DummyConnectionAdapter(), new DummyLockAdapter());
+        $vault = new Vault('test', $testVault->getBasePath(), new DummyConnectionAdapter(), new DummyLockAdapter());
 
         $localIndex = $vault->buildLocalIndex();
 
@@ -173,6 +173,6 @@ class VaultTest extends TestCase
 
     private function getLocalVault(string $basePath, string $remotePath): Vault
     {
-        return new Vault($basePath, new FlysystemConnectionAdapter(new Filesystem(new Local($remotePath))));
+        return new Vault('test', $basePath, new FlysystemConnectionAdapter(new Filesystem(new Local($remotePath))));
     }
 }

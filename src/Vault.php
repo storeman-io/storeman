@@ -23,9 +23,15 @@ class Vault
 {
     use TildeExpansionTrait;
 
-    const LAST_LOCAL_INDEX_FILE_NAME = '.lastLocalIndex';
+    const METADATA_DIRECTORY_NAME = '.archivr';
+    const LAST_LOCAL_INDEX_FILE_NAME = 'lastLocalIndex-%s';
     const REMOTE_INDEX_FILE_NAME = 'index';
     const LOCK_SYNC = 'sync';
+
+    /**
+     * @var string
+     */
+    protected $title;
 
     /**
      * @var ConnectionAdapterInterface
@@ -47,11 +53,27 @@ class Vault
      */
     protected $indexMerger;
 
+    /**
+     * @var string[]
+     */
+    protected $exclusions = [];
 
-    public function __construct(string $localPath, ConnectionAdapterInterface $vaultConnection)
+
+    public function __construct(string $title, string $localPath, ConnectionAdapterInterface $vaultConnection)
     {
+        $this->title = $title;
         $this->vaultConnection = $vaultConnection;
         $this->localPath = rtrim($this->expandTildePath($localPath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    }
+
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    public function getLocalPath(): string
+    {
+        return $this->localPath;
     }
 
     public function setIndexMerger(IndexMergerInterface $indexMerger = null)
@@ -93,6 +115,25 @@ class Vault
         return $this->vaultConnection;
     }
 
+    public function getExclusions(): array
+    {
+        return $this->exclusions;
+    }
+
+    public function addExclusion(string $path): Vault
+    {
+        $this->exclusions[] = $path;
+
+        return $this;
+    }
+
+    public function setExclusions(array $paths): Vault
+    {
+        $this->exclusions = array_values($paths);
+
+        return $this;
+    }
+
     /**
      * Builds and returns an index representing the current local state.
      *
@@ -104,6 +145,12 @@ class Vault
         $finder->in($this->localPath);
         $finder->ignoreDotFiles(false);
         $finder->ignoreVCS(true);
+        $finder->exclude(static::METADATA_DIRECTORY_NAME);
+
+        foreach ($this->exclusions as $path)
+        {
+            $finder->notPath($path);
+        }
 
         $index = new Index();
 
@@ -118,11 +165,6 @@ class Vault
         {
             /** @var SplFileInfo $fileInfo */
 
-            if ($fileInfo->getFilename() === Vault::LAST_LOCAL_INDEX_FILE_NAME)
-            {
-                continue;
-            }
-
             $index->addObject(IndexObject::fromPath($this->localPath, $fileInfo->getRelativePathname()));
         }
 
@@ -133,11 +175,12 @@ class Vault
      * Reads and returns the index representing the local state on the last synchronization.
      *
      * @return Index
+     * @throws Exception
      */
     public function loadLastLocalIndex()
     {
         $index = null;
-        $path = $this->localPath . self::LAST_LOCAL_INDEX_FILE_NAME;
+        $path = $this->getLastLocalIndexFilePath();
 
         if (is_file($path))
         {
@@ -259,7 +302,7 @@ class Vault
 
         $progressionListener->advance();
 
-        $writeStream = fopen($this->localPath . self::LAST_LOCAL_INDEX_FILE_NAME, 'wb');
+        $writeStream = fopen($this->getLastLocalIndexFilePath(), 'wb');
         stream_copy_to_stream($readStream, $writeStream);
         fclose($writeStream);
         fclose($readStream);
@@ -447,5 +490,25 @@ class Vault
         fclose($stream);
 
         return $path;
+    }
+
+    protected function initMetadataDirectory(): string
+    {
+        $path = $this->localPath . static::METADATA_DIRECTORY_NAME;
+
+        if (!is_dir($path))
+        {
+            if (!mkdir($path))
+            {
+                throw new Exception();
+            }
+        }
+
+        return $path . DIRECTORY_SEPARATOR;
+    }
+
+    protected function getLastLocalIndexFilePath(): string
+    {
+        return $this->initMetadataDirectory() . sprintf(static::LAST_LOCAL_INDEX_FILE_NAME, $this->getTitle());
     }
 }

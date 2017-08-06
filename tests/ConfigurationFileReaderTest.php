@@ -17,6 +17,9 @@ class ConfigurationFileReaderTest extends TestCase
         $configFilePath = $this->writeConfig(<<<JSON
 {
     "path": "/some/path",
+    "exclude": [
+        "to/be/excluded"
+    ],
     "vaults": [
         {
             "title": "Test",
@@ -36,6 +39,7 @@ JSON
 
         $this->assertInstanceOf(Configuration::class, $config);
         $this->assertEquals('/some/path', $config->getLocalPath());
+        $this->assertEquals(['to/be/excluded'], $config->getExclusions());
 
         $connectionConfig = $config->getConnectionConfigurationByTitle('Test');
 
