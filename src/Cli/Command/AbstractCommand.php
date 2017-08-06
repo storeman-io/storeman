@@ -2,14 +2,13 @@
 
 namespace Archivr\Cli\Command;
 
-use Archivr\Configuration;
 use Archivr\ConfigurationFileReader;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 
 abstract class AbstractCommand extends Command
 {
-    protected function getConfiguration(InputInterface $input): Configuration
+    protected function getConfiguration(InputInterface $input)
     {
         $reader = new ConfigurationFileReader();
 
