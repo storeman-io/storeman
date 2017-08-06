@@ -15,6 +15,8 @@ class ConfigurationFileReader
             throw new Exception(sprintf('Configuration file path "%s" does not exist or is not readable.', $configurationFilePath));
         }
 
+        $configurationFilePath = realpath($configurationFilePath);
+
         $json = file_get_contents($configurationFilePath);
 
         if (!$json)
