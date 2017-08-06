@@ -16,7 +16,6 @@ class FlysystemConnectionAdapter implements ConnectionAdapterInterface
     public function __construct(Filesystem $filesystem)
     {
         $this->filesystem = $filesystem;
-        //$this->filesystem->getConfig()->set('disable_asserts', true);
     }
 
     public function read(string $relativePath): string
