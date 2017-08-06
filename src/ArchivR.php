@@ -166,20 +166,26 @@ class ArchivR
 
     public function synchronize(SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
     {
+        // acquire all locks in advance to reduce chance of deadlocks
+        foreach ($this->getVaults() as $vault)
+        {
+            while (!$vault->getLockAdapter()->acquireLock(Vault::LOCK_SYNC))
+            {
+                sleep(5);
+            }
+        }
+
         $return = new OperationResultCollection();
 
         foreach ($this->getVaults() as $vault)
         {
-            $lockAdapter = $vault->getLockAdapter();
-
-            while (!$lockAdapter->acquireLock(Vault::LOCK_SYNC))
-            {
-                sleep(5);
-            }
-
             $return->append($vault->synchronize($progressionListener));
+        }
 
-            $lockAdapter->releaseLock(Vault::LOCK_SYNC);
+        // release lock at the last moment to further reduce change of deadlocks
+        foreach ($this->getVaults() as $vault)
+        {
+            $vault->getLockAdapter()->releaseLock(Vault::LOCK_SYNC);
         }
 
         return $return;
