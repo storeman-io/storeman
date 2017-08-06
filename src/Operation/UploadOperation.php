@@ -3,6 +3,7 @@
 namespace Archivr\Operation;
 
 use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
+use Archivr\Exception\Exception;
 
 class UploadOperation implements OperationInterface
 {
@@ -24,15 +25,15 @@ class UploadOperation implements OperationInterface
         try
         {
             $this->vaultConnection->writeStream($this->blobId, $localStream);
+
+            fclose($localStream);
+
+            return true;
         }
-        catch (\RuntimeException $exception)
+        catch (Exception $exception)
         {
             return false;
         }
-
-        fclose($localStream);
-
-        return true;
     }
 
     /**

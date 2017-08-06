@@ -2,7 +2,7 @@
 
 namespace Archivr\Exception;
 
-class ConfigurationException extends \RuntimeException
+class ConfigurationException extends Exception
 {
 
 }

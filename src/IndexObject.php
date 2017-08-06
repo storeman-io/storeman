@@ -2,6 +2,8 @@
 
 namespace Archivr;
 
+use Archivr\Exception\Exception;
+
 class IndexObject
 {
     const TYPE_DIR = 1;
@@ -172,7 +174,7 @@ class IndexObject
 
         if (!($stat = lstat($absolutePath)))
         {
-            throw new \RuntimeException();
+            throw new Exception();
         }
 
         $object->mtime = $stat['mtime'];

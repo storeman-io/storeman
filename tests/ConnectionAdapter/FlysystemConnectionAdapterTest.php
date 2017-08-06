@@ -3,6 +3,7 @@
 namespace Archivr\Test\ConnectionAdapter;
 
 use Archivr\ConnectionAdapter\FlysystemConnectionAdapter;
+use Archivr\Exception\Exception;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use League\Flysystem\Adapter\Local;
 use PHPUnit\Framework\TestCase;
@@ -26,7 +27,7 @@ class FlysystemConnectionAdapterTest extends TestCase
 
         $this->assertEquals($fileContent, $adapter->read($fileName));
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(Exception::class);
 
         $adapter->read('non-existent.ext');
     }
@@ -79,7 +80,7 @@ class FlysystemConnectionAdapterTest extends TestCase
 
         $this->assertFalse(is_file($filePath));
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(Exception::class);
 
         $adapter->unlink('non-existent.ext');
     }
@@ -95,7 +96,7 @@ class FlysystemConnectionAdapterTest extends TestCase
 
         $this->assertEquals($fileContent, stream_get_contents($stream));
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(Exception::class);
 
         $adapter->getReadStream('non-existent.ext');
     }

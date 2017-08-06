@@ -2,6 +2,8 @@
 
 namespace Archivr\ConnectionAdapter;
 
+use Archivr\Exception\Exception;
+use League\Flysystem\Exception as FlysystemException;
 use League\Flysystem\Filesystem;
 
 class FlysystemConnectionAdapter implements ConnectionAdapterInterface
@@ -14,16 +16,23 @@ class FlysystemConnectionAdapter implements ConnectionAdapterInterface
     public function __construct(Filesystem $filesystem)
     {
         $this->filesystem = $filesystem;
-        $this->filesystem->getConfig()->set('disable_asserts', true);
+        //$this->filesystem->getConfig()->set('disable_asserts', true);
     }
 
     public function read(string $relativePath): string
     {
-        $content = @$this->filesystem->read($relativePath);
-
-        if (!is_string($content))
+        try
         {
-            throw new \RuntimeException(sprintf('read() failed for %s.', $relativePath));
+            $content = $this->filesystem->read($relativePath);
+
+            if (!is_string($content))
+            {
+                throw new Exception(sprintf('read() failed for %s.', $relativePath));
+            }
+        }
+        catch (FlysystemException $exception)
+        {
+            throw new Exception($exception->getMessage(), 0, $exception);
         }
 
         return $content;
@@ -31,48 +40,83 @@ class FlysystemConnectionAdapter implements ConnectionAdapterInterface
 
     public function write(string $relativePath, string $content)
     {
-        $success = @$this->filesystem->put($relativePath, $content);
-
-        if (!$success)
+        try
         {
-            throw new \RuntimeException(sprintf('write() failed for %s.', $relativePath));
+            $success = $this->filesystem->put($relativePath, $content);
+
+            if (!$success)
+            {
+                throw new Exception(sprintf('write() failed for %s.', $relativePath));
+            }
+        }
+        catch (FlysystemException $exception)
+        {
+            throw new Exception($exception->getMessage(), 0, $exception);
         }
     }
 
     public function writeStream(string $relativePath, $stream)
     {
-        $success = @$this->filesystem->putStream($relativePath, $stream);
-
-        if (!$success)
+        try
         {
-            throw new \RuntimeException(sprintf('writeStream() failed for %s.', $relativePath));
+            $success = $this->filesystem->putStream($relativePath, $stream);
+
+            if (!$success)
+            {
+                throw new Exception(sprintf('writeStream() failed for %s.', $relativePath));
+            }
+        }
+        catch (FlysystemException $exception)
+        {
+            throw new Exception($exception->getMessage(), 0, $exception);
         }
     }
 
     public function exists(string $relativePath): bool
     {
-        return $this->filesystem->has($relativePath);
+        try
+        {
+            return $this->filesystem->has($relativePath);
+        }
+        catch (FlysystemException $exception)
+        {
+            throw new Exception($exception->getMessage(), 0, $exception);
+        }
     }
 
     public function unlink(string $relativePath)
     {
-        $success = @$this->filesystem->delete($relativePath);
-
-        if (!$success)
+        try
         {
-            throw new \RuntimeException(sprintf('unlink() failed for %s', $relativePath));
+            $success = $this->filesystem->delete($relativePath);
+
+            if (!$success)
+            {
+                throw new Exception(sprintf('unlink() failed for %s', $relativePath));
+            }
+        }
+        catch (FlysystemException $exception)
+        {
+            throw new Exception($exception->getMessage(), 0, $exception);
         }
     }
 
     public function getReadStream(string $relativePath)
     {
-        $stream = @$this->filesystem->readStream($relativePath);
-
-        if (!is_resource($stream))
+        try
         {
-            throw new \RuntimeException(sprintf('getReadStream() failed for %s.', $relativePath));
-        }
+            $stream = $this->filesystem->readStream($relativePath);
 
-        return $stream;
+            if (!is_resource($stream))
+            {
+                throw new Exception(sprintf('getReadStream() failed for %s.', $relativePath));
+            }
+
+            return $stream;
+        }
+        catch (FlysystemException $exception)
+        {
+            throw new Exception($exception->getMessage(), 0, $exception);
+        }
     }
 }

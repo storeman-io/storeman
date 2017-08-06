@@ -3,6 +3,7 @@
 namespace Archivr;
 
 use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
+use Archivr\Exception\Exception;
 use Archivr\IndexMerger\IndexMergerInterface;
 use Archivr\IndexMerger\StandardIndexMerger;
 use Archivr\LockAdapter\ConnectionBasedLockAdapter;
@@ -144,7 +145,7 @@ class Vault
 
             if (!($indexModificationDate instanceof \DateTime))
             {
-                throw new \RuntimeException();
+                throw new Exception();
             }
 
             $index = $this->readIndexFromStream($stream, $indexModificationDate);
@@ -366,7 +367,7 @@ class Vault
             else
             {
                 // unknown object type
-                throw new \RuntimeException();
+                throw new Exception();
             }
 
 
@@ -400,7 +401,7 @@ class Vault
     {
         if (!is_resource($stream))
         {
-            throw new \RuntimeException();
+            throw new Exception();
         }
 
         $index = new Index($created);
@@ -424,7 +425,7 @@ class Vault
 
             if (fputcsv($stream, $object->getIndexRecord()) === false)
             {
-                throw new \RuntimeException();
+                throw new Exception();
             }
         }
 

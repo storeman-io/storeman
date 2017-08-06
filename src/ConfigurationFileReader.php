@@ -3,24 +3,30 @@
 namespace Archivr;
 
 use Archivr\Exception\ConfigurationException;
+use Archivr\Exception\Exception;
 use Zend\Stdlib\ArrayUtils;
 
 class ConfigurationFileReader
 {
     public function getConfiguration(string $configurationFilePath)
     {
-        $json = @file_get_contents($configurationFilePath);
+        if (!is_file($configurationFilePath) || !is_readable($configurationFilePath))
+        {
+            throw new Exception(sprintf('Configuration file path "%s" does not exist or is not readable.', $configurationFilePath));
+        }
+
+        $json = file_get_contents($configurationFilePath);
 
         if (!$json)
         {
-            throw new \RuntimeException(sprintf('Configuration file path "%s" does not exist or is not readable.', $configurationFilePath));
+            throw new Exception(sprintf('Failed to read config file "%s".', $configurationFilePath));
         }
 
         $array = json_decode($json, true);
 
         if ($array === null)
         {
-            throw new \RuntimeException(sprintf('Invalid configuration file: %s.', $configurationFilePath));
+            throw new Exception(sprintf('Invalid configuration file: %s.', $configurationFilePath));
         }
 
         $array = ArrayUtils::merge([

@@ -2,6 +2,7 @@
 
 namespace Archivr\IndexMerger;
 
+use Archivr\Exception\Exception;
 use Archivr\Index;
 use Archivr\IndexObject;
 
@@ -47,7 +48,7 @@ class StandardIndexMerger implements IndexMergerInterface
 
                 else
                 {
-                    throw new \RuntimeException("Collision at path {$localObject->getRelativePath()}");
+                    throw new Exception("Collision at path {$localObject->getRelativePath()}");
                 }
             }
         }

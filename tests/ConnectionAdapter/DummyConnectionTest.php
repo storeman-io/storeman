@@ -3,13 +3,14 @@
 namespace Archivr\Test\ConnectionAdapter;
 
 use Archivr\ConnectionAdapter\DummyConnectionAdapter;
+use Archivr\Exception\Exception;
 use PHPUnit\Framework\TestCase;
 
 class DummyConnectionTest extends TestCase
 {
     public function testRead()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(Exception::class);
 
         $connection = new DummyConnectionAdapter();
         $connection->read('x');
@@ -17,7 +18,7 @@ class DummyConnectionTest extends TestCase
 
     public function testWrite()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(Exception::class);
 
         $connection = new DummyConnectionAdapter();
         $connection->write('x', 'x');
@@ -25,7 +26,7 @@ class DummyConnectionTest extends TestCase
 
     public function testWriteStream()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(Exception::class);
 
         $connection = new DummyConnectionAdapter();
         $connection->writeStream('x', fopen('php://memory', 'r+'));
@@ -33,7 +34,7 @@ class DummyConnectionTest extends TestCase
 
     public function testExists()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(Exception::class);
 
         $connection = new DummyConnectionAdapter();
         $connection->exists('x');
@@ -41,7 +42,7 @@ class DummyConnectionTest extends TestCase
 
     public function testUnlink()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(Exception::class);
 
         $connection = new DummyConnectionAdapter();
         $connection->unlink('x');
@@ -49,7 +50,7 @@ class DummyConnectionTest extends TestCase
 
     public function testGetReadStream()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(Exception::class);
 
         $connection = new DummyConnectionAdapter();
         $connection->getReadStream('x');
