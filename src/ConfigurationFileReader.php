@@ -9,7 +9,7 @@ class ConfigurationFileReader
 {
     public function getConfiguration(string $configurationFilePath)
     {
-        $json = file_get_contents($configurationFilePath);
+        $json = @file_get_contents($configurationFilePath);
 
         if (!$json)
         {
@@ -17,6 +17,12 @@ class ConfigurationFileReader
         }
 
         $array = json_decode($json, true);
+
+        if ($array === null)
+        {
+            throw new \RuntimeException(sprintf('Invalid configuration file: %s.', $configurationFilePath));
+        }
+
         $array = ArrayUtils::merge([
             'path' => dirname($configurationFilePath)
         ], $array);
@@ -53,6 +59,11 @@ class ConfigurationFileReader
 
             $connectionConfig = new ConnectionConfiguration($vaultConfig['adapter'], $lockAdapter);
             $connectionConfig->setSettings($vaultConfig['settings'] ?: []);
+
+            if (!empty($vaultConfig['title']))
+            {
+                $connectionConfig->setTitle($vaultConfig['title']);
+            }
 
             $configuration->addConnectionConfiguration($connectionConfig);
         }
