@@ -37,7 +37,7 @@ class ConnectionBasedLockAdapter extends AbstractLockAdapter
 
     public function releaseLock(string $name): bool
     {
-        if ($index = array_search($name, $this->acquiredLocks))
+        if (($index = array_search($name, $this->acquiredLocks)) !== false)
         {
             $this->connectionAdapter->unlink($this->getLockFileName($name));
 
