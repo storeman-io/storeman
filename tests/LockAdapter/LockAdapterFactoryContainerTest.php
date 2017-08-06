@@ -3,6 +3,7 @@
 namespace LockAdapter\Test\LockAdapter;
 
 use Archivr\ConnectionConfiguration;
+use Archivr\Exception\Exception;
 use Archivr\LockAdapter\LockAdapterFactoryContainer;
 use Archivr\LockAdapter\LockAdapterInterface;
 use PHPUnit\Framework\TestCase;
@@ -49,7 +50,7 @@ class LockAdapterFactoryContainerTest extends TestCase
             }
         ]);
 
-        $this->expectException(\LogicException::class);
+        $this->expectException(Exception::class);
 
         $container->get('test', $config);
     }

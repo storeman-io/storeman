@@ -5,6 +5,7 @@ namespace Archivr\Test\ConnectionAdapter;
 use Archivr\ConnectionAdapter\ConnectionAdapterFactoryContainer;
 use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
 use Archivr\ConnectionConfiguration;
+use Archivr\Exception\Exception;
 use PHPUnit\Framework\TestCase;
 
 class ConnectionAdapterFactoryContainerTest extends TestCase
@@ -49,7 +50,7 @@ class ConnectionAdapterFactoryContainerTest extends TestCase
             }
         ]);
 
-        $this->expectException(\LogicException::class);
+        $this->expectException(Exception::class);
 
         $container->get('test', $config);
     }

@@ -2,6 +2,8 @@
 
 namespace Archivr;
 
+use Archivr\Exception\Exception;
+
 class Configuration
 {
     /**
@@ -78,7 +80,7 @@ class Configuration
     {
         if (isset($this->connectionConfigurations[$configuration->getTitle()]))
         {
-            throw new \InvalidArgumentException(sprintf('Trying to add connection configration with duplicate title %s.', $configuration->getTitle()));
+            throw new Exception(sprintf('Trying to add connection configration with duplicate title %s.', $configuration->getTitle()));
         }
 
         $this->connectionConfigurations[$configuration->getTitle()] = $configuration;

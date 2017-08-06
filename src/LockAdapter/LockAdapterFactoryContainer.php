@@ -4,6 +4,7 @@ namespace Archivr\LockAdapter;
 
 use Archivr\AbstractServiceFactoryContainer;
 use Archivr\ConnectionConfiguration;
+use Archivr\Exception\Exception;
 
 class LockAdapterFactoryContainer extends AbstractServiceFactoryContainer
 {
@@ -18,7 +19,7 @@ class LockAdapterFactoryContainer extends AbstractServiceFactoryContainer
 
         if (!($lockAdapter instanceof LockAdapterInterface))
         {
-            throw new \LogicException(sprintf('Factory closure for lock adapter "%s" does not return an instance of %s!', $name, LockAdapterInterface::class));
+            throw new Exception(sprintf('Factory closure for lock adapter "%s" does not return an instance of %s!', $name, LockAdapterInterface::class));
         }
 
         return $lockAdapter;

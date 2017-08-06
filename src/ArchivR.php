@@ -6,6 +6,7 @@ use Archivr\ConnectionAdapter\ConnectionAdapterFactoryContainer;
 use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
 use Archivr\ConnectionAdapter\FlysystemConnectionAdapter;
 use Archivr\Exception\ConfigurationException;
+use Archivr\Exception\Exception;
 use Archivr\LockAdapter\ConnectionBasedLockAdapter;
 use Archivr\LockAdapter\LockAdapterFactoryContainer;
 use Archivr\LockAdapter\LockAdapterInterface;
@@ -89,7 +90,7 @@ class ArchivR
 
         if ($connectionConfiguration === null)
         {
-            throw new \InvalidArgumentException(sprintf('Unknown connection title: "%s".', $vaultTitle));
+            throw new Exception(sprintf('Unknown connection title: "%s".', $vaultTitle));
         }
 
         $connection = $this->connectionAdapterFactoryContainer->get($connectionConfiguration->getVaultAdapter(), $connectionConfiguration);
@@ -108,7 +109,7 @@ class ArchivR
 
         if ($connectionConfiguration === null)
         {
-            throw new \InvalidArgumentException(sprintf('Unknown connection title: "%s".', $vaultTitle));
+            throw new Exception(sprintf('Unknown connection title: "%s".', $vaultTitle));
         }
 
         $lockAdapter = $this->lockAdapterFactoryContainer->get($connectionConfiguration->getLockAdapter(), $connectionConfiguration);

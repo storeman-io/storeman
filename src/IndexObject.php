@@ -169,7 +169,7 @@ class IndexObject
         }
         else
         {
-            throw new \InvalidArgumentException(sprintf('File %s does not exist!', $absolutePath));
+            throw new Exception(sprintf('File %s does not exist!', $absolutePath));
         }
 
         if (!($stat = lstat($absolutePath)))

@@ -2,6 +2,7 @@
 
 namespace Archivr;
 
+use Archivr\Exception\Exception;
 use Ramsey\Uuid\Uuid;
 
 class Index implements \Countable, \IteratorAggregate
@@ -36,11 +37,11 @@ class Index implements \Countable, \IteratorAggregate
 
             if ($parent === null)
             {
-                throw new \InvalidArgumentException();
+                throw new Exception();
             }
             elseif (!$parent->isDirectory())
             {
-                throw new \InvalidArgumentException();
+                throw new Exception();
             }
         }
 
