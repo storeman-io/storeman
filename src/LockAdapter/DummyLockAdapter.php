@@ -18,7 +18,7 @@ class DummyLockAdapter extends AbstractLockAdapter
 
     public function releaseLock(string $name): bool
     {
-        if ($index = array_search($name, $this->acquiredLocks))
+        if (($index = array_search($name, $this->acquiredLocks)) !== false)
         {
             unset($this->acquiredLocks[$index]);
         }
