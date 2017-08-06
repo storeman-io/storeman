@@ -5,8 +5,12 @@ namespace Archivr\Test;
 use Archivr\ConnectionAdapter\DummyConnectionAdapter;
 use Archivr\ConnectionAdapter\FlysystemConnectionAdapter;
 use Archivr\Index;
+use Archivr\IndexMerger\IndexMergerInterface;
+use Archivr\IndexMerger\StandardIndexMerger;
 use Archivr\IndexObject;
+use Archivr\LockAdapter\ConnectionBasedLockAdapter;
 use Archivr\LockAdapter\DummyLockAdapter;
+use Archivr\LockAdapter\LockAdapterInterface;
 use Archivr\OperationResultCollection;
 use Archivr\Vault;
 use League\Flysystem\Adapter\Local;
@@ -18,6 +22,30 @@ class VaultTest extends TestCase
 {
     use TemporaryPathGeneratorProviderTrait;
     use TestVaultGeneratorProviderTrait;
+
+    public function testIndexMergerInjection()
+    {
+        $vault = new Vault($this->getTemporaryPathGenerator()->getTemporaryDirectory(), new DummyConnectionAdapter(), new DummyLockAdapter());
+
+        $this->assertEquals(StandardIndexMerger::class, get_class($vault->getIndexMerger()));
+
+        $newIndexMerger = $this->createMock(IndexMergerInterface::class);
+        $vault->setIndexMerger($newIndexMerger);
+
+        $this->assertEquals($newIndexMerger, $vault->getIndexMerger());
+    }
+
+    public function testLockAdapterInjection()
+    {
+        $vault = new Vault($this->getTemporaryPathGenerator()->getTemporaryDirectory(), new DummyConnectionAdapter(), new DummyLockAdapter());
+
+        $this->assertEquals(ConnectionBasedLockAdapter::class, get_class($vault->getLockAdapter()));
+
+        $newLockAdapter = $this->createMock(LockAdapterInterface::class);
+        $vault->setLockAdapter($newLockAdapter);
+
+        $this->assertEquals($newLockAdapter, $vault->getLockAdapter());
+    }
 
     public function testBuildLocalIndex()
     {
