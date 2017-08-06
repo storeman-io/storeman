@@ -14,14 +14,6 @@ abstract class AbstractServiceFactoryContainer
         $this->map = $map;
     }
 
-    /**
-     * @return callable[]
-     */
-    public function getMap(): array
-    {
-        return $this->map;
-    }
-
     public function register(string $name, callable $factoryClosure): AbstractServiceFactoryContainer
     {
         $this->map[$name] = $factoryClosure;
