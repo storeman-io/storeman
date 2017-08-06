@@ -24,7 +24,7 @@ class InfoCommand extends AbstractCommand
         {
             $output->writeln(sprintf('This does not seem to be an archive!'));
 
-            return;
+            return 1;
         }
 
         $archivr = new ArchivR($configuration);
@@ -39,5 +39,7 @@ class InfoCommand extends AbstractCommand
         {
             $output->writeln('<info>Everything is up to date!</info>');
         }
+
+        return 0;
     }
 }

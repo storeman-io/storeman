@@ -25,7 +25,7 @@ class SynchronizeCommand extends AbstractCommand
         {
             $output->writeln(sprintf('This does not seem to be an archive!'));
 
-            return;
+            return 1;
         }
 
         $archivr = new ArchivR($configuration);
@@ -33,5 +33,7 @@ class SynchronizeCommand extends AbstractCommand
         $archivr->synchronize(new SynchronizationProgressListener($output));
 
         $output->writeln(PHP_EOL . '<info>Done!</info>');
+
+        return 0;
     }
 }
