@@ -25,6 +25,7 @@ class Vault
 
     const LAST_LOCAL_INDEX_FILE_NAME = '.lastLocalIndex';
     const REMOTE_INDEX_FILE_NAME = 'index';
+    const LOCK_SYNC = 'sync';
 
     /**
      * @var ConnectionAdapterInterface
@@ -205,6 +206,7 @@ class Vault
      * @param SynchronizationProgressListenerInterface $progressionListener
      *
      * @return OperationResultCollection
+     * @throws Exception
      */
     public function synchronize(SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
     {
@@ -216,7 +218,10 @@ class Vault
         $localIndex = $this->buildLocalIndex();
         $lastLocalIndex = $this->loadLastLocalIndex();
 
-        $this->getLockAdapter()->acquireLock('sync');
+        if (!$this->getLockAdapter()->acquireLock(static::LOCK_SYNC))
+        {
+            throw new Exception('Failed to acquire lock.');
+        }
 
         $remoteIndex = $this->loadRemoteIndex();
 
@@ -261,7 +266,10 @@ class Vault
 
         $progressionListener->advance();
 
-        $this->getLockAdapter()->releaseLock('sync');
+        if (!$this->getLockAdapter()->releaseLock(static::LOCK_SYNC))
+        {
+            throw new Exception('Failed to release lock.');
+        }
 
         $progressionListener->advance();
         $progressionListener->finish();

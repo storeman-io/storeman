@@ -168,7 +168,16 @@ class ArchivR
 
         foreach ($this->getVaults() as $vault)
         {
+            $lockAdapter = $vault->getLockAdapter();
+
+            while (!$lockAdapter->acquireLock(Vault::LOCK_SYNC))
+            {
+                sleep(5);
+            }
+
             $return->append($vault->synchronize($progressionListener));
+
+            $lockAdapter->releaseLock(Vault::LOCK_SYNC);
         }
 
         return $return;
