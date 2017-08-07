@@ -164,29 +164,77 @@ class ArchivR
         return $this->vaults[$vaultTitle];
     }
 
-    public function synchronize(SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
+    public function synchronize(array $vaultTitles = [], SynchronizationProgressListenerInterface $progressListener = null): OperationResultCollection
     {
-        // acquire all locks in advance to reduce chance of deadlocks
+        $lastRevision = 0;
+
+        // fallback to all vaults
+        $vaultTitles = $vaultTitles ?: array_map(function(Vault $vault) { return $vault->getTitle(); }, $this->getVaults());
+
+        // acquire all locks and retrieve highest existing revision
         foreach ($this->getVaults() as $vault)
         {
-            while (!$vault->getLockAdapter()->acquireLock(Vault::LOCK_SYNC))
+            // lock is only required for vaults that we want to synchronize with
+            if (in_array($vault->getTitle(), $vaultTitles))
             {
-                sleep(5);
+                while (!$vault->getLockAdapter()->acquireLock(Vault::LOCK_SYNC))
+                {
+                    sleep(5);
+                }
+            }
+
+            // highest revision should be build across all vaults
+            $synchronizationList = $vault->loadSynchronizationList();
+            if ($synchronizationList && $synchronizationList->getLastSynchronization())
+            {
+                $lastRevision = max($lastRevision, $synchronizationList->getLastSynchronization()->getRevision());
             }
         }
 
-        $return = new OperationResultCollection();
+        // new revision is one plus the highest existing revision across all vaults
+        $newRevision = $lastRevision + 1;
 
-        foreach ($this->getVaults() as $vault)
+        // actual synchronization
+        $return = new OperationResultCollection();
+        foreach ($vaultTitles as $vaultTitle)
         {
-            $return->append($vault->synchronize($progressionListener));
+            $return->append($this->getVault($vaultTitle)->synchronize($newRevision, $this->configuration->getIdentity(), $progressListener));
         }
 
         // release lock at the last moment to further reduce change of deadlocks
+        foreach ($vaultTitles as $vaultTitle)
+        {
+            $this->getVault($vaultTitle)->getLockAdapter()->releaseLock(Vault::LOCK_SYNC);
+        }
+
+        return $return;
+    }
+
+    /**
+     * @return Synchronization[][]
+     */
+    public function buildSynchronizationHistory(): array
+    {
+        $return = [];
+
         foreach ($this->getVaults() as $vault)
         {
-            $vault->getLockAdapter()->releaseLock(Vault::LOCK_SYNC);
+            $list = $vault->loadSynchronizationList();
+
+            if (!$list)
+            {
+                continue;
+            }
+
+            foreach ($list as $synchronization)
+            {
+                /** @var Synchronization $synchronization */
+
+                $return[$synchronization->getRevision()][$vault->getTitle()] = $synchronization;
+            }
         }
+
+        ksort($return);
 
         return $return;
     }

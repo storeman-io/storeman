@@ -55,6 +55,7 @@ class ConfigurationFileReader
 
         $configuration = new Configuration();
         $configuration->setLocalPath($array['path']);
+        $configuration->setIdentity(empty($array['identity']) ? sprintf('%s@%s', get_current_user(), gethostname()) : $array['identity']);
 
         if (!empty($array['exclude']))
         {

@@ -4,6 +4,7 @@ namespace Archivr\Cli\Command;
 
 use Archivr\ArchivR;
 use Archivr\Cli\SynchronizationProgressListener;
+use Archivr\Configuration;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -14,23 +15,16 @@ class SynchronizeCommand extends AbstractCommand
     {
         $this->setName('sync');
         $this->setDescription('Synchronizes the local state with the vault state.');
-        $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Configuration file to use.');
+        $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Configuration file to use. Defaults to "archivr.json".');
+        $this->addOption('vaults', null, InputOption::VALUE_REQUIRED, 'Comma-separated list of vault titles to synchronize with. Defaults to all configured.');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function executePrepared(InputInterface $input, OutputInterface $output, Configuration $configuration): int
     {
-        $configuration = $this->getConfiguration($input);
-
-        if ($configuration === null)
-        {
-            $output->writeln(sprintf('This does not seem to be an archive!'));
-
-            return 1;
-        }
+        $vaultTitles = $input->getOption('vaults') ? explode(',', $input->getOption('vaults')) : [];
 
         $archivr = new ArchivR($configuration);
-
-        $archivr->synchronize(new SynchronizationProgressListener($output));
+        $archivr->synchronize($vaultTitles, new SynchronizationProgressListener($output));
 
         $output->writeln(PHP_EOL . '<info>Done!</info>');
 

@@ -4,7 +4,7 @@ namespace Archivr\Cli;
 
 class Application extends \Symfony\Component\Console\Application
 {
-    protected $logo = <<<TXT
+    const LOGO =  <<<TXT
    ___           __   _      ___ 
   / _ | ________/ /  (_)  __/ _ \
  / __ |/ __/ __/ _ \/ / |/ / , _/
@@ -15,6 +15,6 @@ TXT;
 
     public function getHelp()
     {
-        return $this->logo . parent::getHelp();
+        return static::LOGO . parent::getHelp();
     }
 }

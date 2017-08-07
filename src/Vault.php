@@ -8,6 +8,7 @@ use Archivr\IndexMerger\IndexMergerInterface;
 use Archivr\IndexMerger\StandardIndexMerger;
 use Archivr\LockAdapter\ConnectionBasedLockAdapter;
 use Archivr\LockAdapter\LockAdapterInterface;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Archivr\Operation\ChmodOperation;
@@ -24,8 +25,7 @@ class Vault
     use TildeExpansionTrait;
 
     const METADATA_DIRECTORY_NAME = '.archivr';
-    const LAST_LOCAL_INDEX_FILE_NAME = 'lastLocalIndex-%s';
-    const REMOTE_INDEX_FILE_NAME = 'index';
+    const SYNCHRONIZATION_LIST_FILE_NAME = 'index';
     const LOCK_SYNC = 'sync';
 
     /**
@@ -146,6 +146,7 @@ class Vault
         $finder->ignoreDotFiles(false);
         $finder->ignoreVCS(true);
         $finder->exclude(static::METADATA_DIRECTORY_NAME);
+        $finder->notPath('archivr.json');
 
         foreach ($this->exclusions as $path)
         {
@@ -203,24 +204,27 @@ class Vault
     /**
      * Reads and returns the current remote index.
      *
+     * @param int $revision Revision to load. Defaults to the last revision.
+     *
      * @return Index
      */
-    public function loadRemoteIndex()
+    public function loadRemoteIndex(int $revision = null)
     {
-        $index = null;
+        $list = null;
 
-        if ($this->vaultConnection->exists(static::REMOTE_INDEX_FILE_NAME))
+        if ($revision === null)
         {
-            $stream = $this->vaultConnection->getReadStream(static::REMOTE_INDEX_FILE_NAME);
+            $list = $this->loadSynchronizationList();
 
-            stream_filter_append($stream, 'zlib.inflate');
+            if (!$list || !$list->getLastSynchronization())
+            {
+                return null;
+            }
 
-            $index = $this->readIndexFromStream($stream);
-
-            fclose($stream);
+            $revision = $list->getLastSynchronization()->getRevision();
         }
 
-        return $index;
+        return $this->doLoadRemoteIndex($revision, $list);
     }
 
     /**
@@ -248,12 +252,14 @@ class Vault
     /**
      * Synchronizes the local with the remote state by executing all operations returned by getOperationCollection() (broadly speaking).
      *
+     * @param int $newRevision
+     * @param string $identity
      * @param SynchronizationProgressListenerInterface $progressionListener
      *
      * @return OperationResultCollection
      * @throws Exception
      */
-    public function synchronize(SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
+    public function synchronize(int $newRevision = null, string $identity = null, SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
     {
         if ($progressionListener === null)
         {
@@ -263,12 +269,30 @@ class Vault
         $localIndex = $this->buildLocalIndex();
         $lastLocalIndex = $this->loadLastLocalIndex();
 
+
         if (!$this->getLockAdapter()->acquireLock(static::LOCK_SYNC))
         {
             throw new Exception('Failed to acquire lock.');
         }
 
-        $remoteIndex = $this->loadRemoteIndex();
+
+        $synchronizationList = $this->loadSynchronizationList() ?: new SynchronizationList();
+        $lastSynchronization = $synchronizationList->getLastSynchronization();
+
+        if ($lastSynchronization)
+        {
+            $newRevision = $newRevision ?: ($lastSynchronization->getRevision() + 1);
+            $remoteIndex = $this->doLoadRemoteIndex($lastSynchronization->getRevision(), $synchronizationList);
+        }
+        else
+        {
+            $newRevision = $newRevision ?: 1;
+            $remoteIndex = null;
+        }
+
+        $synchronization = new Synchronization($newRevision, $this->generateNewBlobId(), new \DateTime(), $identity);
+        $synchronizationList->addSynchronization($synchronization);
+
 
         $mergedIndex = $this->doBuildMergedIndex($localIndex, $lastLocalIndex, $remoteIndex);
         $operationCollection = $this->doGetOperationCollection($localIndex, $remoteIndex, $mergedIndex);
@@ -279,8 +303,9 @@ class Vault
         // merged index write +
         // copy merged index to vault +
         // save merged index as last local index +
+        // upload synchronization list +
         // release lock
-        $progressionListener->start(count($operationCollection) + 4);
+        $progressionListener->start(count($operationCollection) + 5);
 
         foreach ($operationCollection as $operation)
         {
@@ -294,18 +319,21 @@ class Vault
             $progressionListener->advance();
         }
 
+        // dump new index
         $mergedIndexFilePath = $this->writeIndexToTemporaryFile($mergedIndex);
 
         $progressionListener->advance();
 
+        // upload new index
         $readStream = fopen($mergedIndexFilePath, 'rb');
         $compressionFilter = stream_filter_append($readStream, 'zlib.deflate');
-        $this->vaultConnection->writeStream(static::REMOTE_INDEX_FILE_NAME, $readStream);
+        $this->vaultConnection->writeStream($synchronization->getBlobId(), $readStream);
         rewind($readStream);
         stream_filter_remove($compressionFilter);
 
         $progressionListener->advance();
 
+        // save new index locally
         $writeStream = fopen($this->getLastLocalIndexFilePath(), 'wb');
         stream_copy_to_stream($readStream, $writeStream);
         fclose($writeStream);
@@ -313,6 +341,14 @@ class Vault
 
         $progressionListener->advance();
 
+        // upload new synchronization list
+        $synchronizationListFilePath = $this->writeSynchronizationListToTemporaryFile($synchronizationList);
+        $readStream = fopen($synchronizationListFilePath, 'rb');
+        stream_filter_append($readStream, 'zlib.deflate');
+        $this->vaultConnection->writeStream(static::SYNCHRONIZATION_LIST_FILE_NAME, $readStream);
+        fclose($readStream);
+
+        // release lock
         if (!$this->getLockAdapter()->releaseLock(static::LOCK_SYNC))
         {
             throw new Exception('Failed to release lock.');
@@ -322,6 +358,59 @@ class Vault
         $progressionListener->finish();
 
         return $operationResultCollection;
+    }
+
+    /**
+     * Loads and returns the list of synchronizations from the vault.
+     *
+     * @return SynchronizationList
+     */
+    public function loadSynchronizationList()
+    {
+        $list = null;
+
+        if ($this->vaultConnection->exists(static::SYNCHRONIZATION_LIST_FILE_NAME))
+        {
+            $stream = $this->vaultConnection->getReadStream(static::SYNCHRONIZATION_LIST_FILE_NAME);
+
+            stream_filter_append($stream, 'zlib.inflate');
+
+            $list = $this->readSynchronizationListFromStream($stream);
+
+            fclose($stream);
+        }
+
+        return $list;
+    }
+
+    protected function doLoadRemoteIndex(int $revision, SynchronizationList $synchronizationList = null)
+    {
+        if ($synchronizationList === null)
+        {
+            $synchronizationList = $this->loadSynchronizationList();
+        }
+
+        $synchronization = $synchronizationList->getSynchronizationByRevision($revision);
+
+        if (!$synchronization)
+        {
+            return null;
+        }
+
+        $index = null;
+
+        if ($this->vaultConnection->exists($synchronization->getBlobId()))
+        {
+            $stream = $this->vaultConnection->getReadStream($synchronization->getBlobId());
+
+            stream_filter_append($stream, 'zlib.inflate');
+
+            $index = $this->readIndexFromStream($stream);
+
+            fclose($stream);
+        }
+
+        return $index;
     }
 
     protected function doBuildMergedIndex(Index $localIndex = null, Index $lastLocalIndex = null, Index $remoteIndex = null)
@@ -496,6 +585,54 @@ class Vault
         return $path;
     }
 
+    protected function readSynchronizationListFromStream($stream): SynchronizationList
+    {
+        if (!is_resource($stream))
+        {
+            throw new Exception();
+        }
+
+        $list = new SynchronizationList();
+
+        while (($row = fgetcsv($stream)) !== false)
+        {
+            $list->addSynchronization(Synchronization::fromRecord($row));
+        }
+
+        return $list;
+    }
+
+    protected function writeSynchronizationListToTemporaryFile(SynchronizationList $synchronizationList): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'synchronizationList');
+        $stream = fopen($path, 'wb');
+
+        foreach ($synchronizationList as $synchronization)
+        {
+            /** @var Synchronization $synchronization */
+
+            if (fputcsv($stream, $synchronization->getRecord()) === false)
+            {
+                throw new Exception();
+            }
+        }
+
+        fclose($stream);
+
+        return $path;
+    }
+
+    protected function generateNewBlobId(): string
+    {
+        do
+        {
+            $blobId = Uuid::uuid4()->toString();
+        }
+        while ($this->vaultConnection->exists($blobId));
+
+        return $blobId;
+    }
+
     protected function initMetadataDirectory(): string
     {
         $path = $this->localPath . static::METADATA_DIRECTORY_NAME;
@@ -513,6 +650,6 @@ class Vault
 
     protected function getLastLocalIndexFilePath(): string
     {
-        return $this->initMetadataDirectory() . sprintf(static::LAST_LOCAL_INDEX_FILE_NAME, $this->getTitle());
+        return $this->initMetadataDirectory() . sprintf('lastLocalIndex-%s', $this->getTitle());
     }
 }

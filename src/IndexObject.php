@@ -149,7 +149,7 @@ class IndexObject
 
     public static function fromPath(string $basePath, string $relativePath): IndexObject
     {
-        $absolutePath = $basePath . DIRECTORY_SEPARATOR . $relativePath;
+        $absolutePath = rtrim($basePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $relativePath;
 
         $object = new static;
         $object->relativePath = $relativePath;

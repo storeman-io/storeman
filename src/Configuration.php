@@ -17,6 +17,11 @@ class Configuration
     protected $exclusions = [];
 
     /**
+     * @var string
+     */
+    protected $identity;
+
+    /**
      * @var ConnectionConfiguration[]
      */
     protected $connectionConfigurations = [];
@@ -69,6 +74,26 @@ class Configuration
     public function addExclusion(string $path): Configuration
     {
         $this->exclusions[] = $path;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIdentity()
+    {
+        return $this->identity;
+    }
+
+    /**
+     * @param string $identity
+     *
+     * @return Configuration
+     */
+    public function setIdentity(string $identity): Configuration
+    {
+        $this->identity = $identity;
 
         return $this;
     }
