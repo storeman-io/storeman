@@ -70,50 +70,59 @@ class InfoCommand extends AbstractCommand
     protected function displaySynchronizationHistory(ArchivR $archivR, OutputInterface $output)
     {
         $output->writeln('');
-        $output->writeln('Last synchronizations (recent first):');
 
         $history = array_reverse($archivR->buildSynchronizationHistory(), true);
 
-        $table = new Table($output);
-        $table->setHeaders(['Revision', 'Time (Start)', 'Identity', 'Vault(s)']);
-
-        foreach ($history as $revision => $synchronizations)
+        if (count($history))
         {
-            $time = \DateTime::createFromFormat('U', 0);
-            $identity = null;
+            $output->writeln('Last synchronizations (recent first):');
 
-            foreach ($synchronizations as $vaultTitle => $synchronization)
+            $table = new Table($output);
+            $table->setHeaders(['Revision', 'Time (Start)', 'Identity', 'Vault(s)']);
+
+            foreach ($history as $revision => $synchronizations)
             {
-                /** @var Synchronization $synchronization */
+                $time = \DateTime::createFromFormat('U', 0);
+                $identity = null;
 
-                $identity = $synchronization->getIdentity();
-                $time = max($time, $synchronization->getTime());
+                foreach ($synchronizations as $vaultTitle => $synchronization)
+                {
+                    /** @var Synchronization $synchronization */
+
+                    $identity = $synchronization->getIdentity();
+                    $time = max($time, $synchronization->getTime());
+                }
+
+                $table->addRow([
+                    $revision,
+                    $time->format('r'),
+                    $identity,
+                    implode(',', array_unique(array_keys($synchronizations)))
+                ]);
             }
 
-            $table->addRow([
-                $revision,
-                $time->format('r'),
-                $identity,
-                implode(',', array_unique(array_keys($synchronizations)))
-            ]);
+            $table->render();
         }
-
-        $table->render();
+        else
+        {
+            $output->writeln('No synchronizations so far.');
+        }
     }
 
     protected function displayOutstandingOperations(ArchivR $archivR, OutputInterface $output)
     {
         $output->writeln('');
+        $output->write('Current state: ');
 
         $operationCollection = $archivR->buildOperationCollection();
 
         if (count($operationCollection))
         {
-            $output->writeln(sprintf('Current state: <bold>There are %d outstanding operations.</bold>', count($operationCollection)));
+            $output->writeln(sprintf('<bold>There are %d outstanding operations.</bold>', count($operationCollection)));
         }
         else
         {
-            $output->writeln('Current state: <info>Everything is up to date!</info>');
+            $output->writeln('<info>Everything is up to date!</info>');
         }
     }
 }
