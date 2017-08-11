@@ -216,7 +216,7 @@ class Vault
         {
             $list = $this->loadSynchronizationList();
 
-            if (!$list || !$list->getLastSynchronization())
+            if (!$list->getLastSynchronization())
             {
                 return null;
             }
@@ -276,7 +276,7 @@ class Vault
         }
 
 
-        $synchronizationList = $this->loadSynchronizationList() ?: new SynchronizationList();
+        $synchronizationList = $this->loadSynchronizationList();
         $lastSynchronization = $synchronizationList->getLastSynchronization();
 
         if ($lastSynchronization)
@@ -320,7 +320,8 @@ class Vault
         }
 
         // dump new index
-        $mergedIndexFilePath = $this->writeIndexToTemporaryFile($mergedIndex);
+        $mergedIndexFilePath = tempnam(sys_get_temp_dir(), 'index');
+        $this->writeIndexToFile($mergedIndex, $mergedIndexFilePath);
 
         $progressionListener->advance();
 
@@ -365,7 +366,7 @@ class Vault
      *
      * @return SynchronizationList
      */
-    public function loadSynchronizationList()
+    public function loadSynchronizationList(): SynchronizationList
     {
         $list = null;
 
@@ -378,9 +379,87 @@ class Vault
             $list = $this->readSynchronizationListFromStream($stream);
 
             fclose($stream);
+
+            return $list;
         }
 
-        return $list;
+        return new SynchronizationList();
+    }
+
+    /**
+     * Restores the local state at the given revision from the vault.
+     *
+     * @param int $revision
+     * @param SynchronizationProgressListenerInterface $progressionListener
+     *
+     * @return OperationResultCollection
+     * @throws Exception
+     */
+    public function restore(int $revision = null, SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
+    {
+        if ($progressionListener === null)
+        {
+            $progressionListener = new DummySynchronizationProgressListener();
+        }
+
+        if (!$this->getLockAdapter()->acquireLock(static::LOCK_SYNC))
+        {
+            throw new Exception('Failed to acquire lock.');
+        }
+
+        if ($revision === null)
+        {
+            $synchronizationList = $this->loadSynchronizationList();
+
+            if (!$synchronizationList->getLastSynchronization())
+            {
+                throw new Exception('No revision to restore from.');
+            }
+
+            $revision = $synchronizationList->getLastSynchronization()->getRevision();
+        }
+
+        $remoteIndex = $this->loadRemoteIndex($revision);
+
+        if ($remoteIndex === null)
+        {
+            throw new Exception("Unknown revision: {$revision}");
+        }
+
+        $operationCollection = $this->doGetOperationCollection(null, $remoteIndex, $remoteIndex, true);
+
+        $operationResultCollection = new OperationResultCollection();
+
+        // operation count +
+        // save merged index as last local index +
+        // release lock
+        $progressionListener->start(count($operationCollection) + 2);
+
+        foreach ($operationCollection as $operation)
+        {
+            /** @var OperationInterface $operation */
+
+            $success = $operation->execute();
+
+            $operationResult = new OperationResult($operation, $success);
+            $operationResultCollection->addOperationResult($operationResult);
+
+            $progressionListener->advance();
+        }
+
+        $this->writeIndexToFile($remoteIndex, $this->getLastLocalIndexFilePath());
+
+        $progressionListener->advance();
+
+        if (!$this->getLockAdapter()->releaseLock(static::LOCK_SYNC))
+        {
+            throw new Exception('Failed to release lock.');
+        }
+
+        $progressionListener->advance();
+        $progressionListener->finish();
+
+        return $operationResultCollection;
     }
 
     protected function doLoadRemoteIndex(int $revision, SynchronizationList $synchronizationList = null)
@@ -422,7 +501,7 @@ class Vault
         return $this->getIndexMerger()->merge($localIndex, $lastLocalIndex, $remoteIndex);
     }
 
-    protected function doGetOperationCollection(Index $localIndex = null, Index $remoteIndex = null, Index $mergedIndex = null): OperationCollection
+    protected function doGetOperationCollection(Index $localIndex = null, Index $remoteIndex = null, Index $mergedIndex = null, bool $restoreMode = false): OperationCollection
     {
         $localIndex = $localIndex ?: $this->buildLocalIndex();
         $remoteIndex = $remoteIndex ?: $this->loadRemoteIndex();
@@ -477,7 +556,12 @@ class Vault
             elseif ($mergedIndexObject->isFile())
             {
                 // local file did not exist, hasn't been a file before or is outdated
-                if ($localObject === null || !$localObject->isFile() || $localObject->getMtime() < $mergedIndexObject->getMtime())
+                $doDownloadFile = $localObject === null || !$localObject->isFile() || $localObject->getMtime() < $mergedIndexObject->getMtime();
+
+                // file has to be restored as it does not equal the local version
+                $doDownloadFile |= $restoreMode && $mergedIndexObject->getBlobId() !== $localObject->getBlobId();
+
+                if ($doDownloadFile)
                 {
                     $operationCollection->addOperation(new DownloadOperation($absoluteLocalPath, $mergedIndexObject->getBlobId(), $this->vaultConnection, $downloadStreamFilters));
                     $operationCollection->addOperation(new TouchOperation($absoluteLocalPath, $mergedIndexObject->getMtime()));
@@ -487,7 +571,7 @@ class Vault
                 }
 
                 // local file got created or updated
-                elseif ($remoteObject === null || $mergedIndexObject->getBlobId() !== $remoteObject->getBlobId())
+                elseif ($remoteObject === null || $mergedIndexObject->getBlobId() === null)
                 {
                     // generate blob id
                     do
@@ -563,9 +647,8 @@ class Vault
         return $index;
     }
 
-    protected function writeIndexToTemporaryFile(Index $index): string
+    protected function writeIndexToFile(Index $index, string $path)
     {
-        $path = tempnam(sys_get_temp_dir(), 'index');
         $stream = fopen($path, 'wb');
 
         foreach ($index as $object)
@@ -579,8 +662,6 @@ class Vault
         }
 
         fclose($stream);
-
-        return $path;
     }
 
     protected function readSynchronizationListFromStream($stream): SynchronizationList

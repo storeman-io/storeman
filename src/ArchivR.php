@@ -177,15 +177,12 @@ class ArchivR
             // lock is only required for vaults that we want to synchronize with
             if (in_array($vault->getTitle(), $vaultTitles))
             {
-                while (!$vault->getLockAdapter()->acquireLock(Vault::LOCK_SYNC))
-                {
-                    sleep(5);
-                }
+                $this->waitForLock($vault, Vault::LOCK_SYNC);
             }
 
             // highest revision should be build across all vaults
             $synchronizationList = $vault->loadSynchronizationList();
-            if ($synchronizationList && $synchronizationList->getLastSynchronization())
+            if ($synchronizationList->getLastSynchronization())
             {
                 $lastRevision = max($lastRevision, $synchronizationList->getLastSynchronization()->getRevision());
             }
@@ -221,11 +218,6 @@ class ArchivR
         {
             $list = $vault->loadSynchronizationList();
 
-            if (!$list)
-            {
-                continue;
-            }
-
             foreach ($list as $synchronization)
             {
                 /** @var Synchronization $synchronization */
@@ -237,5 +229,40 @@ class ArchivR
         ksort($return);
 
         return $return;
+    }
+
+    public function restore(int $toRevision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultCollection
+    {
+        if ($fromVault === null)
+        {
+            $vaults = $this->getVaults();
+
+            if (empty($vaults))
+            {
+                throw new ConfigurationException('No vaults defined.');
+            }
+
+            $vault = $vaults[0];
+        }
+        else
+        {
+            $vault = $this->getVault($fromVault);
+        }
+
+        $this->waitForLock($vault, Vault::LOCK_SYNC);
+
+        $resultCollection = $vault->restore($toRevision, $progressListener);
+
+        $vault->getLockAdapter()->releaseLock(Vault::LOCK_SYNC);
+
+        return $resultCollection;
+    }
+
+    protected function waitForLock(Vault $vault, string $name)
+    {
+        while (!$vault->getLockAdapter()->acquireLock($name))
+        {
+            sleep(5);
+        }
     }
 }
