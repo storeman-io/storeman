@@ -438,93 +438,91 @@ class Vault
 
         $operationCollection = new OperationCollection();
 
+        // mtimes to be set for directories are collected and applied afterwards as they get modified by synchronization operations as well
         $directoryMtimes = [];
 
-        foreach ($mergedIndex as $indexObject)
+        // relies on the directory tree structure being traversed in pre-order (or at least a directory appears before its content)
+        foreach ($mergedIndex as $mergedIndexObject)
         {
-            /** @var IndexObject $indexObject */
+            /** @var IndexObject $mergedIndexObject */
 
-            $absoluteLocalPath = $this->localPath . $indexObject->getRelativePath();
+            $absoluteLocalPath = $this->localPath . $mergedIndexObject->getRelativePath();
 
-            $localObject = $localIndex->getObjectByPath($indexObject->getRelativePath());
-            $remoteObject = $remoteIndex ? $remoteIndex->getObjectByPath($indexObject->getRelativePath()) : null;
+            $localObject = $localIndex->getObjectByPath($mergedIndexObject->getRelativePath());
+            $remoteObject = $remoteIndex ? $remoteIndex->getObjectByPath($mergedIndexObject->getRelativePath()) : null;
 
-
-            if ($localObject !== null && $localObject->getType() !== $indexObject->getType())
+            // unlink to-be-overridden local path with different type
+            if ($localObject !== null && $localObject->getType() !== $mergedIndexObject->getType())
             {
                 $operationCollection->addOperation(new UnlinkOperation($absoluteLocalPath));
             }
 
 
-            if ($indexObject->isDirectory())
+            if ($mergedIndexObject->isDirectory())
             {
-                if ($localObject === null)
+                if ($localObject === null || !$localObject->isDirectory())
                 {
-                    $operationCollection->addOperation(new MkdirOperation($absoluteLocalPath, $indexObject->getMode()));
-                }
-                elseif (!$localObject->isDirectory())
-                {
-                    $operationCollection->addOperation(new MkdirOperation($absoluteLocalPath, $indexObject->getMode()));
+                    $operationCollection->addOperation(new MkdirOperation($absoluteLocalPath, $mergedIndexObject->getMode()));
                 }
 
                 if ($localObject !== null && $localObject->isDirectory())
                 {
-                    if ($localObject->getMtime() !== $indexObject->getMtime())
+                    if ($localObject->getMtime() !== $mergedIndexObject->getMtime())
                     {
-                        $directoryMtimes[$absoluteLocalPath] = $indexObject->getMtime();
+                        $directoryMtimes[$absoluteLocalPath] = $mergedIndexObject->getMtime();
                     }
                 }
             }
 
-            elseif ($indexObject->isFile())
+            elseif ($mergedIndexObject->isFile())
             {
                 // local file did not exist, hasn't been a file before or is outdated
-                if ($localObject === null || !$localObject->isFile() || $localObject->getMtime() < $indexObject->getMtime())
+                if ($localObject === null || !$localObject->isFile() || $localObject->getMtime() < $mergedIndexObject->getMtime())
                 {
-                    $operationCollection->addOperation(new DownloadOperation($absoluteLocalPath, $indexObject->getBlobId(), $this->vaultConnection, $downloadStreamFilters));
-                    $operationCollection->addOperation(new TouchOperation($absoluteLocalPath, $indexObject->getMtime()));
-                    $operationCollection->addOperation(new ChmodOperation($absoluteLocalPath, $indexObject->getMode()));
+                    $operationCollection->addOperation(new DownloadOperation($absoluteLocalPath, $mergedIndexObject->getBlobId(), $this->vaultConnection, $downloadStreamFilters));
+                    $operationCollection->addOperation(new TouchOperation($absoluteLocalPath, $mergedIndexObject->getMtime()));
+                    $operationCollection->addOperation(new ChmodOperation($absoluteLocalPath, $mergedIndexObject->getMode()));
 
-                    $directoryMtimes[dirname($absoluteLocalPath)] = $indexObject->getMtime();
+                    $directoryMtimes[dirname($absoluteLocalPath)] = $mergedIndexObject->getMtime();
                 }
 
-                // local file got updated
-                elseif ($remoteObject === null || $indexObject->getBlobId() !== $remoteObject->getBlobId())
+                // local file got created or updated
+                elseif ($remoteObject === null || $mergedIndexObject->getBlobId() !== $remoteObject->getBlobId())
                 {
                     // generate blob id
                     do
                     {
-                        $blobId = $mergedIndex->generateNewBlobId();
+                        $newBlobId = $mergedIndex->generateNewBlobId();
                     }
-                    while ($this->vaultConnection->exists($blobId));
+                    while ($this->vaultConnection->exists($newBlobId));
 
-                    $indexObject->setBlobId($blobId);
+                    $mergedIndexObject->setBlobId($newBlobId);
 
-                    $operationCollection->addOperation(new UploadOperation($absoluteLocalPath, $indexObject->getBlobId(), $this->vaultConnection, $uploadStreamFilters));
+                    $operationCollection->addOperation(new UploadOperation($absoluteLocalPath, $mergedIndexObject->getBlobId(), $this->vaultConnection, $uploadStreamFilters));
                 }
             }
 
-            elseif ($indexObject->isLink())
+            elseif ($mergedIndexObject->isLink())
             {
-                $absoluteLinkTarget = dirname($absoluteLocalPath) . DIRECTORY_SEPARATOR . $indexObject->getLinkTarget();
+                $absoluteLinkTarget = dirname($absoluteLocalPath) . DIRECTORY_SEPARATOR . $mergedIndexObject->getLinkTarget();
 
-                if ($localObject !== null && $localObject->getLinkTarget() !== $indexObject->getLinkTarget())
+                if ($localObject !== null && $localObject->getLinkTarget() !== $mergedIndexObject->getLinkTarget())
                 {
                     $operationCollection->addOperation(new UnlinkOperation($absoluteLocalPath));
-                    $operationCollection->addOperation(new SymlinkOperation($absoluteLocalPath, $absoluteLinkTarget, $indexObject->getMode()));
+                    $operationCollection->addOperation(new SymlinkOperation($absoluteLocalPath, $absoluteLinkTarget, $mergedIndexObject->getMode()));
                 }
             }
 
             else
             {
-                // unknown object type
+                // unknown/invalid object type
                 throw new Exception();
             }
 
 
-            if ($localObject !== null && $localObject->getMode() !== $indexObject->getMode())
+            if ($localObject !== null && $localObject->getMode() !== $mergedIndexObject->getMode())
             {
-                $operationCollection->addOperation(new ChmodOperation($absoluteLocalPath, $indexObject->getMode()));
+                $operationCollection->addOperation(new ChmodOperation($absoluteLocalPath, $mergedIndexObject->getMode()));
             }
         }
 
@@ -539,7 +537,7 @@ class Vault
             }
         }
 
-        // set directory mtimes
+        // set directory mtimes after all other modifications have been performed
         foreach ($directoryMtimes as $absoluteLocalPath => $mtime)
         {
             $operationCollection->addOperation(new TouchOperation($absoluteLocalPath, $mtime));
