@@ -22,17 +22,12 @@ class RestoreCommand extends AbstractCommand
 
     protected function executePrepared(InputInterface $input, OutputInterface $output, Configuration $configuration): int
     {
-        $vaultTitle = $input->getOption('vault') ?: $configuration->getConnectionConfigurations()[0]->getTitle();
-
-        if (!$configuration->getConnectionConfigurationByTitle($vaultTitle))
-        {
-            $output->writeln(sprintf('<error>Unknown vault: %s</error>', $vaultTitle));
-
-            return 2;
-        }
-
         $archivr = new ArchivR($configuration);
-        $archivr->restore($input->hasOption('revision') ? (int)$input->getArgument('revision') : null, new SynchronizationProgressListener($output));
+        $archivr->restore(
+            $input->hasOption('revision') ? (int)$input->getOption('revision') : null,
+            $input->getOption('vault'),
+            new SynchronizationProgressListener($output)
+        );
 
         $output->writeln(PHP_EOL . '<info>Done!</info>');
 
