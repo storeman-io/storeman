@@ -3,31 +3,13 @@
 namespace LockAdapter\Test\LockAdapter;
 
 use Archivr\LockAdapter\DummyLockAdapter;
-use Archivr\Test\TemporaryPathGeneratorProviderTrait;
-use PHPUnit\Framework\TestCase;
+use Archivr\LockAdapter\LockAdapterInterface;
+use LockAdapter\AbstractLockAdapterTest;
 
-class DummyLockAdapterTest extends TestCase
+class DummyLockAdapterTest extends AbstractLockAdapterTest
 {
-    use TemporaryPathGeneratorProviderTrait;
-
-    public function testLocking()
+    protected function getLockAdapter(): LockAdapterInterface
     {
-        $adapter = new DummyLockAdapter();
-
-        $this->assertFalse($adapter->isLocked('x'));
-        $this->assertFalse($adapter->hasLock('x'));
-
-        $this->assertTrue($adapter->acquireLock('x'));
-
-        $this->assertTrue($adapter->isLocked('x'));
-        $this->assertTrue($adapter->hasLock('x'));
-
-        $this->assertFalse($adapter->isLocked('y'));
-        $this->assertFalse($adapter->hasLock('y'));
-
-        $this->assertTrue($adapter->releaseLock('x'));
-
-        $this->assertFalse($adapter->isLocked('x'));
-        $this->assertFalse($adapter->hasLock('x'));
+        return new DummyLockAdapter();
     }
 }

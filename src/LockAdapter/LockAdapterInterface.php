@@ -2,6 +2,10 @@
 
 namespace Archivr\LockAdapter;
 
+/**
+ * A LockAdapter is used to synchronize interaction with a vault across multiple users.
+ * The implementation has to supported "nested" locking as the actual lock is only released after the count of calls to releaseLock() matches the count of calls to acquireLock() for a particular lock name.
+ */
 interface LockAdapterInterface
 {
     /**

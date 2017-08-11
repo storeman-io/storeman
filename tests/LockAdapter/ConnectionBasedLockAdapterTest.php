@@ -4,34 +4,20 @@ namespace LockAdapter\Test\LockAdapter;
 
 use Archivr\ConnectionAdapter\FlysystemConnectionAdapter;
 use Archivr\LockAdapter\ConnectionBasedLockAdapter;
+use Archivr\LockAdapter\LockAdapterInterface;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
-use PHPUnit\Framework\TestCase;
+use LockAdapter\AbstractLockAdapterTest;
 
-class ConnectionBasedLockAdapterTest extends TestCase
+class ConnectionBasedLockAdapterTest extends AbstractLockAdapterTest
 {
     use TemporaryPathGeneratorProviderTrait;
 
-    public function testLocking()
+    protected function getLockAdapter(): LockAdapterInterface
     {
         $connection = new FlysystemConnectionAdapter(new Filesystem(new Local($this->getTemporaryPathGenerator()->getTemporaryDirectory())));
-        $adapter = new ConnectionBasedLockAdapter($connection);
 
-        $this->assertFalse($adapter->isLocked('x'));
-        $this->assertFalse($adapter->hasLock('x'));
-
-        $this->assertTrue($adapter->acquireLock('x'));
-
-        $this->assertTrue($adapter->isLocked('x'));
-        $this->assertTrue($adapter->hasLock('x'));
-
-        $this->assertFalse($adapter->isLocked('y'));
-        $this->assertFalse($adapter->hasLock('y'));
-
-        $this->assertTrue($adapter->releaseLock('x'));
-
-        $this->assertFalse($adapter->isLocked('x'));
-        $this->assertFalse($adapter->hasLock('x'));
+        return new ConnectionBasedLockAdapter($connection);
     }
 }
