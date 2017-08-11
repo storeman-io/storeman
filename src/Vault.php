@@ -413,6 +413,77 @@ class Vault
      */
     public function restore(int $revision = null, SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
     {
+        return $this->doRestore($revision, $progressionListener);
+    }
+
+    /**
+     * @param string $targetPath
+     * @param int $revision
+     * @param SynchronizationProgressListenerInterface|null $progressListener
+     *
+     * @return OperationResultCollection
+     * @throws \Exception
+     */
+    public function dump(string $targetPath, int $revision = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultCollection
+    {
+        $originalLocalPath = $this->localPath;
+        $this->localPath = $targetPath;
+
+        try
+        {
+            return $this->doRestore($revision, $progressListener, true);
+        }
+        catch (\Exception $exception)
+        {
+            throw $exception;
+        }
+        finally
+        {
+            $this->localPath = $originalLocalPath;
+        }
+    }
+
+    protected function doLoadRemoteIndex(int $revision, SynchronizationList $synchronizationList = null)
+    {
+        if ($synchronizationList === null)
+        {
+            $synchronizationList = $this->loadSynchronizationList();
+        }
+
+        $synchronization = $synchronizationList->getSynchronizationByRevision($revision);
+
+        if (!$synchronization)
+        {
+            return null;
+        }
+
+        $index = null;
+
+        if ($this->vaultConnection->exists($synchronization->getBlobId()))
+        {
+            $stream = $this->vaultConnection->getReadStream($synchronization->getBlobId());
+
+            stream_filter_append($stream, 'zlib.inflate');
+
+            $index = $this->readIndexFromStream($stream);
+
+            fclose($stream);
+        }
+
+        return $index;
+    }
+
+    protected function doBuildMergedIndex(Index $localIndex = null, Index $lastLocalIndex = null, Index $remoteIndex = null)
+    {
+        $localIndex = $localIndex ?: $this->buildLocalIndex();
+        $lastLocalIndex = $lastLocalIndex ?: $this->loadLastLocalIndex();
+        $remoteIndex = $remoteIndex ?: $this->loadRemoteIndex();
+
+        return $this->getIndexMerger()->merge($localIndex, $lastLocalIndex, $remoteIndex);
+    }
+
+    protected function doRestore(int $revision = null, SynchronizationProgressListenerInterface $progressionListener = null, bool $skipLastLocalIndexUpdate = false): OperationResultCollection
+    {
         if ($progressionListener === null)
         {
             $progressionListener = new DummySynchronizationProgressListener();
@@ -463,7 +534,10 @@ class Vault
             $progressionListener->advance();
         }
 
-        $this->writeIndexToFile($remoteIndex, $this->getLastLocalIndexFilePath());
+        if (!$skipLastLocalIndexUpdate)
+        {
+            $this->writeIndexToFile($remoteIndex, $this->getLastLocalIndexFilePath());
+        }
 
         $progressionListener->advance();
 
@@ -476,45 +550,6 @@ class Vault
         $progressionListener->finish();
 
         return $operationResultCollection;
-    }
-
-    protected function doLoadRemoteIndex(int $revision, SynchronizationList $synchronizationList = null)
-    {
-        if ($synchronizationList === null)
-        {
-            $synchronizationList = $this->loadSynchronizationList();
-        }
-
-        $synchronization = $synchronizationList->getSynchronizationByRevision($revision);
-
-        if (!$synchronization)
-        {
-            return null;
-        }
-
-        $index = null;
-
-        if ($this->vaultConnection->exists($synchronization->getBlobId()))
-        {
-            $stream = $this->vaultConnection->getReadStream($synchronization->getBlobId());
-
-            stream_filter_append($stream, 'zlib.inflate');
-
-            $index = $this->readIndexFromStream($stream);
-
-            fclose($stream);
-        }
-
-        return $index;
-    }
-
-    protected function doBuildMergedIndex(Index $localIndex = null, Index $lastLocalIndex = null, Index $remoteIndex = null)
-    {
-        $localIndex = $localIndex ?: $this->buildLocalIndex();
-        $lastLocalIndex = $lastLocalIndex ?: $this->loadLastLocalIndex();
-        $remoteIndex = $remoteIndex ?: $this->loadRemoteIndex();
-
-        return $this->getIndexMerger()->merge($localIndex, $lastLocalIndex, $remoteIndex);
     }
 
     protected function doGetOperationCollection(Index $localIndex = null, Index $remoteIndex = null, Index $mergedIndex = null, bool $restoreMode = false): OperationCollection
@@ -575,7 +610,7 @@ class Vault
                 $doDownloadFile = $localObject === null || !$localObject->isFile() || $localObject->getMtime() < $mergedIndexObject->getMtime();
 
                 // file has to be restored as it does not equal the local version
-                $doDownloadFile |= $restoreMode && $mergedIndexObject->getBlobId() !== $localObject->getBlobId();
+                $doDownloadFile |= $restoreMode && $localObject !== null && $mergedIndexObject->getBlobId() !== $localObject->getBlobId();
 
                 if ($doDownloadFile)
                 {

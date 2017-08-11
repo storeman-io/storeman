@@ -234,21 +234,7 @@ class ArchivR
 
     public function restore(int $toRevision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultCollection
     {
-        if ($fromVault === null)
-        {
-            $vaults = $this->getVaults();
-
-            if (empty($vaults))
-            {
-                throw new ConfigurationException('No vaults defined.');
-            }
-
-            $vault = $vaults[0];
-        }
-        else
-        {
-            $vault = $this->getVault($fromVault);
-        }
+        $vault = $fromVault ? $this->getVault($fromVault) : $this->getAnyVault();
 
         $this->waitForLock($vault, Vault::LOCK_SYNC);
 
@@ -257,6 +243,31 @@ class ArchivR
         $vault->getLockAdapter()->releaseLock(Vault::LOCK_SYNC);
 
         return $resultCollection;
+    }
+
+    public function dump(string $targetPath, int $revision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultCollection
+    {
+        $vault = $fromVault ? $this->getVault($fromVault) : $this->getAnyVault();
+
+        $this->waitForLock($vault, Vault::LOCK_SYNC);
+
+        $resultCollection = $vault->dump($targetPath, $revision, $progressListener);
+
+        $vault->getLockAdapter()->releaseLock(Vault::LOCK_SYNC);
+
+        return $resultCollection;
+    }
+
+    protected function getAnyVault(): Vault
+    {
+        $vaults = $this->getVaults();
+
+        if (empty($vaults))
+        {
+            throw new ConfigurationException('No vaults defined.');
+        }
+
+        return $vaults[0];
     }
 
     protected function waitForLock(Vault $vault, string $name)

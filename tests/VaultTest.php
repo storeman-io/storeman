@@ -140,6 +140,22 @@ class VaultTest extends TestCase
         $this->assertEquals($originalContent, file_get_contents($testVault->getBasePath() . 'test.ext'));
     }
 
+    public function testDump()
+    {
+        $testVault = $this->getTestVaultGenerator()->generate();
+
+        $vault = $this->getLocalVault($testVault->getBasePath(), $this->getTemporaryPathGenerator()->getTemporaryDirectory());
+        $vault->synchronize();
+
+        $dumpTarget = $this->getTemporaryPathGenerator()->getTemporaryDirectory();
+
+        $vault->dump($dumpTarget);
+
+        $verificationVault = $this->getLocalVault($dumpTarget, $this->getTemporaryPathGenerator()->getTemporaryDirectory());
+
+        $this->assertIndexEqualsTestVault($testVault, $verificationVault->buildLocalIndex());
+    }
+
     private function assertIndexEqualsTestVault(TestVault $testVault, Index $index)
     {
         $this->assertTestVaultContainsIndex($testVault, $index);

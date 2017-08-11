@@ -24,6 +24,7 @@ unset ($autoloaderFound);
 
 
 $application = new \Archivr\Cli\Application('ArchivR', 'alpha');
+$application->add(new \Archivr\Cli\Command\DumpCommand());
 $application->add(new \Archivr\Cli\Command\InfoCommand());
 $application->add(new \Archivr\Cli\Command\RestoreCommand());
 $application->add(new \Archivr\Cli\Command\SynchronizeCommand());
