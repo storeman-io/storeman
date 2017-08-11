@@ -157,6 +157,7 @@ class ArchivR
             );
             $vault->setLockAdapter($this->getLockAdapter($vaultTitle));
             $vault->setExclusions($this->configuration->getExclusions());
+            $vault->setIdentity($this->configuration->getIdentity());
 
             $this->vaults[$vaultTitle] = $vault;
         }
@@ -195,7 +196,7 @@ class ArchivR
         $return = new OperationResultCollection();
         foreach ($vaultTitles as $vaultTitle)
         {
-            $return->append($this->getVault($vaultTitle)->synchronize($newRevision, $this->configuration->getIdentity(), $progressListener));
+            $return->append($this->getVault($vaultTitle)->synchronize($newRevision, $progressListener));
         }
 
         // release lock at the last moment to further reduce change of deadlocks

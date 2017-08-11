@@ -58,6 +58,11 @@ class Vault
      */
     protected $exclusions = [];
 
+    /**
+     * @var string
+     */
+    protected $identity;
+
 
     public function __construct(string $title, string $localPath, ConnectionAdapterInterface $vaultConnection)
     {
@@ -130,6 +135,18 @@ class Vault
     public function setExclusions(array $paths): Vault
     {
         $this->exclusions = array_values($paths);
+
+        return $this;
+    }
+
+    public function getIdentity(): string
+    {
+        return $this->identity;
+    }
+
+    public function setIdentity(string $identity = null): Vault
+    {
+        $this->identity = $identity;
 
         return $this;
     }
@@ -253,13 +270,12 @@ class Vault
      * Synchronizes the local with the remote state by executing all operations returned by getOperationCollection() (broadly speaking).
      *
      * @param int $newRevision
-     * @param string $identity
      * @param SynchronizationProgressListenerInterface $progressionListener
      *
      * @return OperationResultCollection
      * @throws Exception
      */
-    public function synchronize(int $newRevision = null, string $identity = null, SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
+    public function synchronize(int $newRevision = null, SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
     {
         if ($progressionListener === null)
         {
@@ -290,7 +306,7 @@ class Vault
             $remoteIndex = null;
         }
 
-        $synchronization = new Synchronization($newRevision, $this->generateNewBlobId(), new \DateTime(), $identity);
+        $synchronization = new Synchronization($newRevision, $this->generateNewBlobId(), new \DateTime(), $this->identity);
         $synchronizationList->addSynchronization($synchronization);
 
 
