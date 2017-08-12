@@ -14,7 +14,7 @@ class DumpCommand extends AbstractCommand
 {
     protected function configure()
     {
-        $this->setName('restore');
+        $this->setName('dump');
         $this->setDescription('Dump the contents of a vault.');
         $this->addArgument('path', InputArgument::REQUIRED, 'Target path.');
         $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Configuration file to use. Defaults to "archivr.json".');
