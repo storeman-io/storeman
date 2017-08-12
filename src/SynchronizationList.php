@@ -11,7 +11,7 @@ class SynchronizationList implements \Countable, \IteratorAggregate
      *
      * @var Synchronization[]
      */
-    protected $synchronizations;
+    protected $synchronizations = [];
 
     /**
      * @param Synchronization[] $synchronizations
