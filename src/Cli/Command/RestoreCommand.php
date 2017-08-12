@@ -24,7 +24,7 @@ class RestoreCommand extends AbstractCommand
     {
         $archivr = new ArchivR($configuration);
         $archivr->restore(
-            $input->hasOption('revision') ? (int)$input->getOption('revision') : null,
+            $input->getOption('revision') ? (int)$input->getOption('revision') : null,
             $input->getOption('vault'),
             new SynchronizationProgressListener($output)
         );
