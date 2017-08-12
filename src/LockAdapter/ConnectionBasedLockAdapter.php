@@ -16,22 +16,27 @@ class ConnectionBasedLockAdapter extends AbstractLockAdapter
         $this->connectionAdapter = $connectionAdapter;
     }
 
-    protected function doesLockExist(string $name): bool
+    protected function doGetLock(string $name)
     {
-        return $this->connectionAdapter->exists($name . '.lock');
+        if (!$this->connectionAdapter->exists($this->getLockFileName($name)))
+        {
+            return null;
+        }
+
+        return Lock::fromPayload($this->connectionAdapter->read($this->getLockFileName($name)));
     }
 
     protected function doAcquireLock(string $name): bool
     {
         $lockFileName = $this->getLockFileName($name);
-        $lockLabel = $this->getLockLabel();
+        $payload = $this->getNewLockPayload($name);
 
         if ($this->connectionAdapter->exists($lockFileName))
         {
             return false;
         }
 
-        $this->connectionAdapter->write($lockFileName, $lockLabel);
+        $this->connectionAdapter->write($lockFileName, $payload);
 
         return true;
     }

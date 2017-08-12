@@ -6,6 +6,7 @@ use Archivr\ArchivR;
 use Archivr\Cli\Application;
 use Archivr\Configuration;
 use Archivr\Synchronization;
+use Archivr\Vault;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -45,11 +46,14 @@ class InfoCommand extends AbstractCommand
 
         foreach ($config->getConnectionConfigurations() as $index => $connectionConfiguration)
         {
+            $vault = $archivR->getVault($connectionConfiguration->getTitle());
+            $currentLock = $vault->getLockAdapter()->getLock(Vault::LOCK_SYNC);
+
             $table->addRow([
-                sprintf('Vault <bold>#%d</bold>', $index),
-                sprintf(
-                    "Title: <bold>%s</bold>\nAdapter: <bold>%s</bold>\nLocking: <bold>%s</bold>\nSettings: <bold>%s</bold>",
-                    $connectionConfiguration->getTitle(),
+                "Vault #{$index}",
+                "Title:\nAdapter:\nLock Adapter:\nSettings:\nCurrent lock:",
+                implode("\n", [
+                    "<info>{$vault->getTitle()}</info>",
                     $connectionConfiguration->getVaultAdapter(),
                     $connectionConfiguration->getLockAdapter(),
                     implode(
@@ -59,8 +63,9 @@ class InfoCommand extends AbstractCommand
                             array_keys($connectionConfiguration->getSettings()),
                             array_values($connectionConfiguration->getSettings())
                         )
-                    )
-                )
+                    ) ?: '-',
+                    $currentLock ? "Locked {$currentLock->getAcquired()->format('c')} by {$currentLock->getIdentity()}" : '-'
+                ])
             ]);
         }
 

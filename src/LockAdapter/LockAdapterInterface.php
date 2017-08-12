@@ -27,6 +27,15 @@ interface LockAdapterInterface
     public function hasLock(string $name): bool;
 
     /**
+     * Returns an eventually currently existing lock.
+     *
+     * @param string $name
+     *
+     * @return Lock
+     */
+    public function getLock(string $name);
+
+    /**
      * Tries to acquire a lock.
      * Returns true on success and false on failure.
      *
@@ -45,4 +54,18 @@ interface LockAdapterInterface
      * @return bool
      */
     public function releaseLock(string $name): bool;
+
+    /**
+     * Sets an identity string to be used to identify a lock.
+     *
+     * @param string $identity
+     *
+     * @return LockAdapterInterface
+     */
+    public function setIdentity(string $identity): LockAdapterInterface;
+
+    /**
+     * @return string
+     */
+    public function getIdentity();
 }

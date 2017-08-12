@@ -9,14 +9,24 @@ abstract class AbstractLockAdapter implements LockAdapterInterface
      */
     protected $lockDepthMap = [];
 
+    /**
+     * @var string
+     */
+    protected $identity;
+
     public function isLocked(string $name): bool
     {
-        return $this->hasLock($name) || $this->doesLockExist($name);
+        return $this->hasLock($name) || $this->doGetLock($name) !== null;
     }
 
     public function hasLock(string $name): bool
     {
         return isset($this->lockDepthMap[$name]);
+    }
+
+    public function getLock(string $name)
+    {
+        return $this->doGetLock($name);
     }
 
     public function acquireLock(string $name): bool
@@ -53,6 +63,18 @@ abstract class AbstractLockAdapter implements LockAdapterInterface
         return true;
     }
 
+    public function setIdentity(string $identity): LockAdapterInterface
+    {
+        $this->identity = $identity;
+
+        return $this;
+    }
+
+    public function getIdentity(): string
+    {
+        return $this->identity;
+    }
+
     public function __destruct()
     {
         $this->releaseAcquiredLocks();
@@ -68,15 +90,12 @@ abstract class AbstractLockAdapter implements LockAdapterInterface
         $this->lockDepthMap = [];
     }
 
-    protected function getLockLabel(): string
+    protected function getNewLockPayload(string $name): string
     {
-        return json_encode([
-            'acquired' => time(),
-            'user' => get_current_user()
-        ]);
+        return (new Lock($name, $this->identity))->getPayload();
     }
 
-    abstract protected function doesLockExist(string $name): bool;
+    abstract protected function doGetLock(string $name);
     abstract protected function doAcquireLock(string $name): bool;
     abstract protected function doReleaseLock(string $name);
 }

@@ -2,6 +2,7 @@
 
 namespace LockAdapter;
 
+use Archivr\LockAdapter\Lock;
 use Archivr\LockAdapter\LockAdapterInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -54,6 +55,22 @@ abstract class AbstractLockAdapterTest extends TestCase
 
         $this->assertFalse($adapter->hasLock('x'));
         $this->assertFalse($adapter->isLocked('x'));
+    }
+
+    public function testLockPayload()
+    {
+        $identity = md5(rand());
+
+        $adapter = $this->getLockAdapter();
+        $adapter->setIdentity($identity);
+        $adapter->acquireLock('x');
+
+        $lock = $adapter->getLock('x');
+
+        $this->assertInstanceof(Lock::class, $lock);
+        $this->assertEquals('x', $lock->getName());
+        $this->assertEquals($identity, $lock->getIdentity());
+        $this->assertInstanceof(\DateTime::class, $lock->getAcquired());
     }
 
     abstract protected function getLockAdapter(): LockAdapterInterface;
