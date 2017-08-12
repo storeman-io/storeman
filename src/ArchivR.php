@@ -260,7 +260,7 @@ class ArchivR
 
     protected function getAnyVault(): Vault
     {
-        $vaults = $this->getVaults();
+        $vaults = array_values($this->getVaults());
 
         if (empty($vaults))
         {
