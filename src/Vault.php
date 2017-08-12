@@ -427,7 +427,7 @@ class Vault
     public function dump(string $targetPath, int $revision = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultCollection
     {
         $originalLocalPath = $this->localPath;
-        $this->localPath = $targetPath;
+        $this->localPath =  rtrim($this->expandTildePath($targetPath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 
         try
         {
