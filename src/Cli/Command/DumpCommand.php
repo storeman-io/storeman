@@ -27,7 +27,7 @@ class DumpCommand extends AbstractCommand
         $archivr = new ArchivR($configuration);
         $archivr->dump(
             $input->getArgument('path'),
-            $input->hasOption('revision') ? (int)$input->getOption('revision') : null,
+            $input->getOption(  'revision') ? (int)$input->getOption('revision') : null,
             $input->getOption('vault'),
             new SynchronizationProgressListener($output)
         );
