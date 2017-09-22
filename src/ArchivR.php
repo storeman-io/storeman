@@ -165,7 +165,7 @@ class ArchivR
         return $this->vaults[$vaultTitle];
     }
 
-    public function synchronize(array $vaultTitles = [], SynchronizationProgressListenerInterface $progressListener = null): OperationResultCollection
+    public function synchronize(array $vaultTitles = [], bool $preferLocal = false, SynchronizationProgressListenerInterface $progressListener = null): OperationResultCollection
     {
         $lastRevision = 0;
 
@@ -196,7 +196,7 @@ class ArchivR
         $return = new OperationResultCollection();
         foreach ($vaultTitles as $vaultTitle)
         {
-            $return->append($this->getVault($vaultTitle)->synchronize($newRevision, $progressListener));
+            $return->append($this->getVault($vaultTitle)->synchronize($newRevision, $preferLocal, $progressListener));
         }
 
         // release lock at the last moment to further reduce change of deadlocks

@@ -17,6 +17,7 @@ class SynchronizeCommand extends AbstractCommand
         $this->setDescription('Synchronizes the local state with the vault state.');
         $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Configuration file to use. Defaults to "archivr.json".');
         $this->addOption('vaults', null, InputOption::VALUE_REQUIRED, 'Comma-separated list of vault titles to synchronize with. Defaults to all configured.');
+        $this->addOption('prefer-local', null, InputOption::VALUE_NONE, 'Prefer local changes over remote changes.', false);
     }
 
     protected function executePrepared(InputInterface $input, OutputInterface $output, Configuration $configuration): int
@@ -24,7 +25,7 @@ class SynchronizeCommand extends AbstractCommand
         $vaultTitles = $input->getOption('vaults') ? explode(',', $input->getOption('vaults')) : [];
 
         $archivr = new ArchivR($configuration);
-        $archivr->synchronize($vaultTitles, new SynchronizationProgressListener($output));
+        $archivr->synchronize($vaultTitles, $input->getOption('prefer-local'), new SynchronizationProgressListener($output));
 
         $output->writeln(PHP_EOL . '<info>Done!</info>');
 

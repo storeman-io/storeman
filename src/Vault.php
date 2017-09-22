@@ -28,6 +28,10 @@ class Vault
     const SYNCHRONIZATION_LIST_FILE_NAME = 'index';
     const LOCK_SYNC = 'sync';
 
+    // Operations modes for building operation collection
+    const MODE_PREFER_LOCAL = 'local';
+    const MODE_PREFER_REMOTE = 'remote';
+
     /**
      * @var string
      */
@@ -270,12 +274,13 @@ class Vault
      * Synchronizes the local with the remote state by executing all operations returned by getOperationCollection() (broadly speaking).
      *
      * @param int $newRevision
+     * @param bool $preferLocal
      * @param SynchronizationProgressListenerInterface $progressionListener
      *
      * @return OperationResultCollection
      * @throws Exception
      */
-    public function synchronize(int $newRevision = null, SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
+    public function synchronize(int $newRevision = null, bool $preferLocal = false, SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
     {
         if ($progressionListener === null)
         {
@@ -309,8 +314,18 @@ class Vault
         $synchronization = new Synchronization($newRevision, $this->generateNewBlobId(), new \DateTime(), $this->identity);
         $synchronizationList->addSynchronization($synchronization);
 
+        // don't merge indices but just use local
+        if ($preferLocal)
+        {
+            $mergedIndex = $localIndex;
+        }
 
-        $mergedIndex = $this->doBuildMergedIndex($localIndex, $lastLocalIndex, $remoteIndex);
+        // compute merged index
+        else
+        {
+            $mergedIndex = $this->doBuildMergedIndex($localIndex, $lastLocalIndex, $remoteIndex);
+        }
+
         $operationCollection = $this->doGetOperationCollection($localIndex, $remoteIndex, $mergedIndex);
 
         $operationResultCollection = new OperationResultCollection();
