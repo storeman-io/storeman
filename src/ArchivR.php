@@ -157,6 +157,7 @@ class ArchivR
             );
             $vault->setLockAdapter($this->getLockAdapter($vaultTitle));
             $vault->setExclusions($this->configuration->getExclusions());
+            $vault->setIdentity($this->configuration->getIdentity());
 
             $this->vaults[$vaultTitle] = $vault;
         }
@@ -164,7 +165,7 @@ class ArchivR
         return $this->vaults[$vaultTitle];
     }
 
-    public function synchronize(array $vaultTitles = [], SynchronizationProgressListenerInterface $progressListener = null): OperationResultCollection
+    public function synchronize(array $vaultTitles = [], bool $preferLocal = false, SynchronizationProgressListenerInterface $progressListener = null): OperationResultCollection
     {
         $lastRevision = 0;
 
@@ -177,15 +178,12 @@ class ArchivR
             // lock is only required for vaults that we want to synchronize with
             if (in_array($vault->getTitle(), $vaultTitles))
             {
-                while (!$vault->getLockAdapter()->acquireLock(Vault::LOCK_SYNC))
-                {
-                    sleep(5);
-                }
+                $this->waitForLock($vault, Vault::LOCK_SYNC);
             }
 
             // highest revision should be build across all vaults
             $synchronizationList = $vault->loadSynchronizationList();
-            if ($synchronizationList && $synchronizationList->getLastSynchronization())
+            if ($synchronizationList->getLastSynchronization())
             {
                 $lastRevision = max($lastRevision, $synchronizationList->getLastSynchronization()->getRevision());
             }
@@ -198,7 +196,7 @@ class ArchivR
         $return = new OperationResultCollection();
         foreach ($vaultTitles as $vaultTitle)
         {
-            $return->append($this->getVault($vaultTitle)->synchronize($newRevision, $this->configuration->getIdentity(), $progressListener));
+            $return->append($this->getVault($vaultTitle)->synchronize($newRevision, $preferLocal, $progressListener));
         }
 
         // release lock at the last moment to further reduce change of deadlocks
@@ -221,11 +219,6 @@ class ArchivR
         {
             $list = $vault->loadSynchronizationList();
 
-            if (!$list)
-            {
-                continue;
-            }
-
             foreach ($list as $synchronization)
             {
                 /** @var Synchronization $synchronization */
@@ -237,5 +230,51 @@ class ArchivR
         ksort($return);
 
         return $return;
+    }
+
+    public function restore(int $toRevision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultCollection
+    {
+        $vault = $fromVault ? $this->getVault($fromVault) : $this->getAnyVault();
+
+        $this->waitForLock($vault, Vault::LOCK_SYNC);
+
+        $resultCollection = $vault->restore($toRevision, $progressListener);
+
+        $vault->getLockAdapter()->releaseLock(Vault::LOCK_SYNC);
+
+        return $resultCollection;
+    }
+
+    public function dump(string $targetPath, int $revision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultCollection
+    {
+        $vault = $fromVault ? $this->getVault($fromVault) : $this->getAnyVault();
+
+        $this->waitForLock($vault, Vault::LOCK_SYNC);
+
+        $resultCollection = $vault->dump($targetPath, $revision, $progressListener);
+
+        $vault->getLockAdapter()->releaseLock(Vault::LOCK_SYNC);
+
+        return $resultCollection;
+    }
+
+    protected function getAnyVault(): Vault
+    {
+        $vaults = array_values($this->getVaults());
+
+        if (empty($vaults))
+        {
+            throw new ConfigurationException('No vaults defined.');
+        }
+
+        return $vaults[0];
+    }
+
+    protected function waitForLock(Vault $vault, string $name)
+    {
+        while (!$vault->getLockAdapter()->acquireLock($name))
+        {
+            sleep(5);
+        }
     }
 }

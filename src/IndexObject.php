@@ -10,8 +10,8 @@ class IndexObject
     const TYPE_FILE = 2;
     const TYPE_LINK = 3;
 
-    const CMP_IGNORE_BLOB_ID = 1;
-    const CMP_IGNORE_CTIME = 2;
+    const CMP_INCLUDE_BLOB_ID = 1;
+    const CMP_INCLUDE_CTIME = 2;
 
     /**
      * @var string
@@ -48,9 +48,7 @@ class IndexObject
      */
     protected $blobId;
 
-    protected function __construct()
-    {
-    }
+    protected function __construct() {}
 
     public function getRelativePath(): string
     {
@@ -127,8 +125,8 @@ class IndexObject
         $equals &= ($this->getMtime() === $other->getMtime());
         $equals &= ($this->getMode() === $other->getMode());
         $equals &= ($this->getLinkTarget() === $other->getLinkTarget());
-        $equals &= (($flags & self::CMP_IGNORE_BLOB_ID) || ($this->getBlobId() === $other->getBlobId()));
-        $equals &= (($flags & self::CMP_IGNORE_CTIME) || ($this->getCtime() === $other->getCtime()));
+        $equals &= (!($flags & self::CMP_INCLUDE_BLOB_ID) || ($this->getBlobId() === $other->getBlobId()));
+        $equals &= (!($flags & self::CMP_INCLUDE_CTIME) || ($this->getCtime() === $other->getCtime()));
 
         return $equals;
     }

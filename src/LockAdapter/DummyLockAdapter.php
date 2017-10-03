@@ -4,25 +4,30 @@ namespace Archivr\LockAdapter;
 
 class DummyLockAdapter extends AbstractLockAdapter
 {
-    public function isLocked(string $name): bool
+    /**
+     * @var Lock[]
+     */
+    protected $lockMap = [];
+
+    protected function doGetExistingLockNames(): array
     {
-        return $this->hasLock($name);
+        return array_keys($this->lockMap);
     }
 
-    public function acquireLock(string $name): bool
+    protected function doGetLock(string $name)
     {
-        $this->acquiredLocks[] = $name;
+        return isset($this->lockMap[$name]) ? $this->lockMap[$name] : null;
+    }
+
+    protected function doAcquireLock(string $name): bool
+    {
+        $this->lockMap[$name] = new Lock($name, $this->identity);
 
         return true;
     }
 
-    public function releaseLock(string $name): bool
+    protected function doReleaseLock(string $name)
     {
-        if (($index = array_search($name, $this->acquiredLocks)) !== false)
-        {
-            unset($this->acquiredLocks[$index]);
-        }
-
-        return true;
+        unset($this->lockMap[$name]);
     }
 }

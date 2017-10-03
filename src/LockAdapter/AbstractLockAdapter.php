@@ -5,13 +5,74 @@ namespace Archivr\LockAdapter;
 abstract class AbstractLockAdapter implements LockAdapterInterface
 {
     /**
-     * @var string[]
+     * @var int[]
      */
-    protected $acquiredLocks = [];
+    protected $lockDepthMap = [];
+
+    /**
+     * @var string
+     */
+    protected $identity;
+
+    public function isLocked(string $name): bool
+    {
+        return $this->hasLock($name) || $this->doGetLock($name) !== null;
+    }
 
     public function hasLock(string $name): bool
     {
-        return in_array($name, $this->acquiredLocks);
+        return isset($this->lockDepthMap[$name]);
+    }
+
+    public function getLock(string $name)
+    {
+        return $this->doGetLock($name);
+    }
+
+    public function acquireLock(string $name): bool
+    {
+        if (!isset($this->lockDepthMap[$name]))
+        {
+            $success = $this->doAcquireLock($name);
+
+            if (!$success)
+            {
+                return false;
+            }
+
+            $this->lockDepthMap[$name] = 0;
+        }
+
+        $this->lockDepthMap[$name]++;
+
+        return true;
+    }
+
+    public function releaseLock(string $name): bool
+    {
+        if (isset($this->lockDepthMap[$name]))
+        {
+            if (--$this->lockDepthMap[$name] === 0)
+            {
+                $this->doReleaseLock($name);
+
+                unset($this->lockDepthMap[$name]);
+            }
+        }
+
+        return true;
+    }
+
+    public function setIdentity(string $identity): LockAdapterInterface
+    {
+        $this->identity = $identity;
+
+        return $this;
+    }
+
+    public function getIdentity(): string
+    {
+        return $this->identity;
     }
 
     public function __destruct()
@@ -21,19 +82,20 @@ abstract class AbstractLockAdapter implements LockAdapterInterface
 
     protected function releaseAcquiredLocks()
     {
-        foreach ($this->acquiredLocks as $acquiredLock)
+        foreach (array_keys($this->lockDepthMap) as $lockName)
         {
-            $this->releaseLock($acquiredLock);
+            $this->doReleaseLock($lockName);
         }
 
-        $this->acquiredLocks = [];
+        $this->lockDepthMap = [];
     }
 
-    protected function getLockLabel(): string
+    protected function getNewLockPayload(string $name): string
     {
-        return json_encode([
-            'acquired' => time(),
-            'user' => get_current_user()
-        ]);
+        return (new Lock($name, $this->identity))->getPayload();
     }
+
+    abstract protected function doGetLock(string $name);
+    abstract protected function doAcquireLock(string $name): bool;
+    abstract protected function doReleaseLock(string $name);
 }
