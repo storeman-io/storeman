@@ -28,6 +28,7 @@
         "psr-4": {"Archivr\\Test\\": "tests/"}
     },
     "scripts": {
+        "build": "@php -d phar.readonly=0 bin/build",
         "test": "phpunit --colors=always --verbose"
     },
     "bin": [
