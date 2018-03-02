@@ -1,3 +1,5 @@
+build/*
+!build/.gitkeep
 composer.lock
 coverage.xml
 vendor/
