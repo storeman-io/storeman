@@ -533,7 +533,7 @@ class Vault
             throw new Exception("Unknown revision: {$revision}");
         }
 
-        $operationCollection = $this->doGetOperationCollection(null, $remoteIndex, $remoteIndex, true);
+        $operationCollection = $this->doGetOperationCollection(null, $remoteIndex, $remoteIndex);
 
         $operationResultCollection = new OperationResultCollection();
 
@@ -572,8 +572,9 @@ class Vault
         return $operationResultCollection;
     }
 
-    protected function doGetOperationCollection(Index $localIndex = null, Index $remoteIndex = null, Index $mergedIndex = null, bool $restoreMode = false): OperationCollection
+    protected function doGetOperationCollection(Index $localIndex = null, Index $remoteIndex = null, Index $mergedIndex = null): OperationCollection
     {
+        $noUpload = $localIndex === null;
         $localIndex = $localIndex ?: $this->buildLocalIndex();
         $remoteIndex = $remoteIndex ?: $this->loadRemoteIndex();
         $mergedIndex = $mergedIndex ?: $this->doBuildMergedIndex($localIndex, $this->loadLastLocalIndex(), $remoteIndex);
@@ -630,7 +631,7 @@ class Vault
                 $doDownloadFile = $localObject === null || !$localObject->isFile() || $localObject->getMtime() < $mergedIndexObject->getMtime();
 
                 // file has to be restored as it does not equal the local version
-                $doDownloadFile |= $restoreMode && $localObject !== null && $mergedIndexObject->getBlobId() !== $localObject->getBlobId();
+                $doDownloadFile |= $noUpload && $localObject !== null && $mergedIndexObject->getBlobId() !== $localObject->getBlobId();
 
                 if ($doDownloadFile)
                 {
