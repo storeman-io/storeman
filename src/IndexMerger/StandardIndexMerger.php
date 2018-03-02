@@ -31,27 +31,22 @@ class StandardIndexMerger implements IndexMergerInterface
         return $this->conflictHandler;
     }
 
-    public function merge(Index $localIndex, Index $lastLocalIndex = null, Index $remoteIndex = null): Index
+    public function merge(Index $remoteIndex, Index $localIndex, Index $lastLocalIndex = null): Index
     {
         $mergedIndex = new Index();
         $conflictHandler = $this->getConflictHandler();
 
-        // build new index from local index
         foreach ($localIndex as $localObject)
         {
             /** @var IndexObject $localObject */
 
-            $remoteObject = $remoteIndex ? $remoteIndex->getObjectByPath($localObject->getRelativePath()) : null;
+            $remoteObject = $remoteIndex->getObjectByPath($localObject->getRelativePath());
 
             $localObjectModified = $lastLocalIndex ? ($localObject->getMtime() > $lastLocalIndex->getCreated()->getTimestamp()) : true;
 
             if ($remoteObject === null)
             {
                 if ($localObjectModified)
-                {
-                    $mergedIndex->addObject($localObject);
-                }
-                elseif ($remoteIndex === null)
                 {
                     $mergedIndex->addObject($localObject);
                 }
@@ -77,22 +72,18 @@ class StandardIndexMerger implements IndexMergerInterface
             }
         }
 
-        if ($remoteIndex !== null)
+        foreach ($remoteIndex as $remoteObject)
         {
-            // add remote index content
-            foreach ($remoteIndex as $remoteObject)
+            /** @var IndexObject $remoteObject */
+
+            $localObject = $localIndex->getObjectByPath($remoteObject->getRelativePath());
+            $lastLocalObject = $lastLocalIndex ? $lastLocalIndex->getObjectByPath($remoteObject->getRelativePath()) : null;
+
+            if ($localObject === null)
             {
-                /** @var IndexObject $remoteObject */
-
-                $localObject = $localIndex->getObjectByPath($remoteObject->getRelativePath());
-                $lastLocalObject = $lastLocalIndex ? $lastLocalIndex->getObjectByPath($remoteObject->getRelativePath()) : null;
-
-                if ($localObject === null)
+                if ($lastLocalObject === null)
                 {
-                    if ($lastLocalObject === null)
-                    {
-                        $mergedIndex->addObject($remoteObject);
-                    }
+                    $mergedIndex->addObject($remoteObject);
                 }
             }
         }

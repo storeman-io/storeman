@@ -19,11 +19,11 @@ interface IndexMergerInterface
     public function getConflictHandler(): ConflictHandlerInterface;
 
     /**
+     * @param Index $remoteIndex
      * @param Index $localIndex
      * @param Index $lastLocalIndex
-     * @param Index $remoteIndex
      *
      * @return Index
      */
-    public function merge(Index $localIndex, Index $lastLocalIndex = null, Index $remoteIndex = null): Index;
+    public function merge(Index $remoteIndex, Index $localIndex, Index $lastLocalIndex = null): Index;
 }

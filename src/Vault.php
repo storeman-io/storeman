@@ -494,7 +494,12 @@ class Vault
         $lastLocalIndex = $lastLocalIndex ?: $this->loadLastLocalIndex();
         $remoteIndex = $remoteIndex ?: $this->loadRemoteIndex();
 
-        return $this->getIndexMerger()->merge($localIndex, $lastLocalIndex, $remoteIndex);
+        if ($remoteIndex === null)
+        {
+            return $localIndex;
+        }
+
+        return $this->getIndexMerger()->merge($remoteIndex, $localIndex, $lastLocalIndex);
     }
 
     protected function doRestore(int $revision = null, SynchronizationProgressListenerInterface $progressionListener = null, bool $skipLastLocalIndexUpdate = false): OperationResultCollection
@@ -571,7 +576,7 @@ class Vault
     {
         $localIndex = $localIndex ?: $this->buildLocalIndex();
         $remoteIndex = $remoteIndex ?: $this->loadRemoteIndex();
-        $mergedIndex = $mergedIndex ?: $this->doBuildMergedIndex($localIndex, $remoteIndex);
+        $mergedIndex = $mergedIndex ?: $this->doBuildMergedIndex($localIndex, $this->loadLastLocalIndex(), $remoteIndex);
 
         $uploadStreamFilters = [
             'zlib.deflate' => []
