@@ -2,7 +2,7 @@
 
 namespace Archivr\Test\Tree;
 
-abstract class AbstractTreeGeneratorInterface implements TreeGeneratorInterface
+abstract class AbstractTreeGenerator implements TreeGeneratorInterface
 {
     protected function generateChildName(TreeNode $treeNode): string
     {

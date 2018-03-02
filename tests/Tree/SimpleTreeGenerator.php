@@ -2,7 +2,7 @@
 
 namespace Archivr\Test\Tree;
 
-class SimpleTreeGenerator extends AbstractTreeGeneratorInterface
+class SimpleTreeGenerator extends AbstractTreeGenerator
 {
     /**
      * @var int
