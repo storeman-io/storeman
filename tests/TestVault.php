@@ -46,9 +46,9 @@ class TestVault implements \IteratorAggregate
         return $this;
     }
 
-    public function touch(string $relativePath, int $ctime = null): TestVault
+    public function touch(string $relativePath, int $mtime = null): TestVault
     {
-        $this->filesystem->touch($this->getAbsolutePath($relativePath), $ctime);
+        $this->filesystem->touch($this->getAbsolutePath($relativePath), $mtime);
 
         return $this;
     }
