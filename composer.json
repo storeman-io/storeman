@@ -11,6 +11,7 @@
     ],
     "require": {
         "php": "^7.0",
+        "symfony/filesystem": "^3.3",
         "symfony/finder": "^3.2",
         "ramsey/uuid": "^3.6",
         "symfony/console": "^3.3",
@@ -18,8 +19,7 @@
         "league/flysystem": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^6.1",
-        "symfony/filesystem": "^3.3"
+        "phpunit/phpunit": "^6.1"
     },
     "autoload": {
         "psr-4": {"Archivr\\": "src/"}
