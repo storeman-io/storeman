@@ -2,15 +2,39 @@
 
 namespace Archivr\IndexMerger;
 
-use Archivr\Exception\Exception;
+use Archivr\ConflictHandler\ConflictHandlerInterface;
+use Archivr\ConflictHandler\PanickingConflictHandler;
 use Archivr\Index;
 use Archivr\IndexObject;
 
 class StandardIndexMerger implements IndexMergerInterface
 {
+    /**
+     * @var ConflictHandlerInterface
+     */
+    protected $conflictHandler;
+
+    public function setConflictHandler(ConflictHandlerInterface $conflictHandler = null): IndexMergerInterface
+    {
+        $this->conflictHandler = $conflictHandler;
+
+        return $this;
+    }
+
+    public function getConflictHandler(): ConflictHandlerInterface
+    {
+        if ($this->conflictHandler === null)
+        {
+            $this->setConflictHandler(new PanickingConflictHandler());
+        }
+
+        return $this->conflictHandler;
+    }
+
     public function merge(Index $localIndex, Index $lastLocalIndex = null, Index $remoteIndex = null): Index
     {
         $mergedIndex = new Index();
+        $conflictHandler = $this->getConflictHandler();
 
         // build new index from local index
         foreach ($localIndex as $localObject)
@@ -48,7 +72,7 @@ class StandardIndexMerger implements IndexMergerInterface
 
                 else
                 {
-                    throw new Exception("Collision at path {$localObject->getRelativePath()}");
+                    $conflictHandler->handleConflict($remoteObject, $localObject, $lastLocalIndex ? $lastLocalIndex->getObjectByPath($localObject->getRelativePath()) : null);
                 }
             }
         }
