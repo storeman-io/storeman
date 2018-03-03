@@ -99,7 +99,7 @@ class Index implements \Countable, \IteratorAggregate
         return $this->isSubsetOf($other) && $other->isSubsetOf($this);
     }
 
-    public function isSubsetOf(Index $other, int $flags = 0): bool
+    public function isSubsetOf(Index $other): bool
     {
         foreach ($this as $indexObject)
         {
@@ -112,7 +112,7 @@ class Index implements \Countable, \IteratorAggregate
                 return false;
             }
 
-            if (!$otherIndexObject->equals($indexObject, $flags))
+            if (!$otherIndexObject->equals($indexObject))
             {
                 return false;
             }

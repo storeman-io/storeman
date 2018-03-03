@@ -10,9 +10,6 @@ class IndexObject
     const TYPE_FILE = 2;
     const TYPE_LINK = 3;
 
-    const CMP_INCLUDE_BLOB_ID = 1;
-    const CMP_INCLUDE_CTIME = 2;
-
     /**
      * @var string
      */
@@ -122,7 +119,7 @@ class IndexObject
         return [$this->relativePath, $this->type, $this->mtime, $this->ctime, $this->mode, $this->size, $this->blobId, $this->linkTarget];
     }
 
-    public function equals(IndexObject $other = null, int $flags = 0): bool
+    public function equals(IndexObject $other = null): bool
     {
         if ($other === null)
         {
@@ -133,11 +130,11 @@ class IndexObject
         $equals &= ($this->getRelativePath() === $other->getRelativePath());
         $equals &= ($this->getType() === $other->getType());
         $equals &= ($this->getMtime() === $other->getMtime());
+        $equals &= ($this->getCtime() === $other->getCtime());
         $equals &= ($this->getMode() === $other->getMode());
         $equals &= ($this->getSize() === $other->getSize());
         $equals &= ($this->getLinkTarget() === $other->getLinkTarget());
-        $equals &= (!($flags & self::CMP_INCLUDE_BLOB_ID) || ($this->getBlobId() === $other->getBlobId()));
-        $equals &= (!($flags & self::CMP_INCLUDE_CTIME) || ($this->getCtime() === $other->getCtime()));
+        $equals &= ($this->getBlobId() === $other->getBlobId());
 
         return $equals;
     }
