@@ -1,6 +1,8 @@
 <?php
 
-namespace Archivr;
+namespace Archivr\SynchronizationProgressListener;
+
+use Archivr\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 
 class DummySynchronizationProgressListener implements SynchronizationProgressListenerInterface
 {

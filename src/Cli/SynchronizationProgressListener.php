@@ -2,7 +2,7 @@
 
 namespace Archivr\Cli;
 
-use Archivr\SynchronizationProgressListenerInterface;
+use Archivr\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;
 

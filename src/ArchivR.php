@@ -10,6 +10,7 @@ use Archivr\Exception\Exception;
 use Archivr\LockAdapter\ConnectionBasedLockAdapter;
 use Archivr\LockAdapter\LockAdapterFactoryContainer;
 use Archivr\LockAdapter\LockAdapterInterface;
+use Archivr\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 

@@ -8,6 +8,8 @@ use Archivr\IndexMerger\IndexMergerInterface;
 use Archivr\IndexMerger\StandardIndexMerger;
 use Archivr\LockAdapter\ConnectionBasedLockAdapter;
 use Archivr\LockAdapter\LockAdapterInterface;
+use Archivr\SynchronizationProgressListener\DummySynchronizationProgressListener;
+use Archivr\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
