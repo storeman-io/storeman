@@ -43,7 +43,10 @@ class TestVaultGenerator
 
         foreach ($treeIterator as $node)
         {
-            $testVault->fwrite($this->getCurrentPath($treeIterator), random_bytes(4096 * 2));
+            $path = $this->getCurrentPath($treeIterator);
+
+            $testVault->fwrite($path, random_bytes(4096 * 2));
+            $testVault->touch($path, random_int(1, time()));
         }
 
         return $testVault;
