@@ -12,7 +12,7 @@ class IndexObjectTest extends TestCase
         $fileName = 'Some File.ext';
 
         $testVault = new TestVault();
-        $testVault->fwrite($fileName);
+        $testVault->fwrite($fileName, random_bytes(random_int(0, 1024)));
 
         $filePath = $testVault->getBasePath() . $fileName;
         $fileIndexObject = IndexObject::fromPath($testVault->getBasePath(), $fileName);
@@ -23,6 +23,7 @@ class IndexObjectTest extends TestCase
         $this->assertEquals(filectime($filePath), $fileIndexObject->getCtime());
         $this->assertEquals(filemtime($filePath), $fileIndexObject->getMtime());
         $this->assertEquals(fileperms($filePath), $fileIndexObject->getMode());
+        $this->assertEquals(filesize($filePath), $fileIndexObject->getSize());
     }
 
     public function testDirectoryFromPath()
@@ -41,6 +42,7 @@ class IndexObjectTest extends TestCase
         $this->assertEquals(filectime($dirPath), $fileIndexObject->getCtime());
         $this->assertEquals(filemtime($dirPath), $fileIndexObject->getMtime());
         $this->assertEquals(fileperms($dirPath), $fileIndexObject->getMode());
+        $this->assertNull($fileIndexObject->getSize());
     }
 
     public function testFromNonExistentPath()

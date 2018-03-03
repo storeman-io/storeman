@@ -39,6 +39,11 @@ class IndexObject
     protected $mode;
 
     /**
+     * @var int
+     */
+    protected $size;
+
+    /**
      * @var string
      */
     protected $linkTarget;
@@ -90,6 +95,11 @@ class IndexObject
         return $this->mode;
     }
 
+    public function getSize(): ?int
+    {
+        return $this->size;
+    }
+
     public function getLinkTarget()
     {
         return $this->linkTarget;
@@ -109,7 +119,7 @@ class IndexObject
 
     public function getIndexRecord(): array
     {
-        return [$this->relativePath, $this->type, $this->mtime, $this->ctime, $this->mode, $this->blobId, $this->linkTarget];
+        return [$this->relativePath, $this->type, $this->mtime, $this->ctime, $this->mode, $this->size, $this->blobId, $this->linkTarget];
     }
 
     public function equals(IndexObject $other = null, int $flags = 0): bool
@@ -124,6 +134,7 @@ class IndexObject
         $equals &= ($this->getType() === $other->getType());
         $equals &= ($this->getMtime() === $other->getMtime());
         $equals &= ($this->getMode() === $other->getMode());
+        $equals &= ($this->getSize() === $other->getSize());
         $equals &= ($this->getLinkTarget() === $other->getLinkTarget());
         $equals &= (!($flags & self::CMP_INCLUDE_BLOB_ID) || ($this->getBlobId() === $other->getBlobId()));
         $equals &= (!($flags & self::CMP_INCLUDE_CTIME) || ($this->getCtime() === $other->getCtime()));
@@ -139,8 +150,9 @@ class IndexObject
         $object->mtime = (int)$row[2];
         $object->ctime = (int)$row[3];
         $object->mode = (int)$row[4];
-        $object->blobId = $row[5];
-        $object->linkTarget = $row[6];
+        $object->size = (int)$row[5];
+        $object->blobId = $row[6];
+        $object->linkTarget = $row[7];
 
         return $object;
     }
@@ -149,12 +161,21 @@ class IndexObject
     {
         $absolutePath = rtrim($basePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $relativePath;
 
+        if (!($stat = @lstat($absolutePath)))
+        {
+            throw new Exception();
+        }
+
         $object = new static;
         $object->relativePath = $relativePath;
+        $object->mtime = $stat['mtime'];
+        $object->ctime = $stat['ctime'];
+        $object->mode = $stat['mode'];
 
         if (is_file($absolutePath))
         {
             $object->type = static::TYPE_FILE;
+            $object->size = (int)$stat['size'];
         }
         elseif (is_dir($absolutePath))
         {
@@ -167,17 +188,8 @@ class IndexObject
         }
         else
         {
-            throw new Exception(sprintf('File %s does not exist!', $absolutePath));
+            throw new \LogicException();
         }
-
-        if (!($stat = lstat($absolutePath)))
-        {
-            throw new Exception();
-        }
-
-        $object->mtime = $stat['mtime'];
-        $object->ctime = $stat['ctime'];
-        $object->mode = $stat['mode'];
 
         return $object;
     }
