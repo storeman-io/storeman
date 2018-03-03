@@ -127,14 +127,14 @@ class IndexObject
         }
 
         $equals = true;
-        $equals &= ($this->getRelativePath() === $other->getRelativePath());
-        $equals &= ($this->getType() === $other->getType());
-        $equals &= ($this->getMtime() === $other->getMtime());
-        $equals &= ($this->getCtime() === $other->getCtime());
-        $equals &= ($this->getMode() === $other->getMode());
-        $equals &= ($this->getSize() === $other->getSize());
-        $equals &= ($this->getLinkTarget() === $other->getLinkTarget());
-        $equals &= ($this->getBlobId() === $other->getBlobId());
+        $equals = $equals && ($this->getRelativePath() === $other->getRelativePath());
+        $equals = $equals && ($this->getType() === $other->getType());
+        $equals = $equals && ($this->getMtime() === $other->getMtime());
+        $equals = $equals && ($this->getCtime() === $other->getCtime());
+        $equals = $equals && ($this->getMode() === $other->getMode());
+        $equals = $equals && ($this->getSize() === $other->getSize());
+        $equals = $equals && ($this->getLinkTarget() === $other->getLinkTarget());
+        $equals = $equals && ($this->getBlobId() === $other->getBlobId());
 
         return $equals;
     }
