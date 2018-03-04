@@ -8,19 +8,14 @@ use Archivr\IndexMerger\IndexMergerInterface;
 use Archivr\IndexMerger\StandardIndexMerger;
 use Archivr\LockAdapter\ConnectionBasedLockAdapter;
 use Archivr\LockAdapter\LockAdapterInterface;
+use Archivr\OperationCollectionBuilder\OperationCollectionBuilderInterface;
+use Archivr\OperationCollectionBuilder\StandardOperationCollectionBuilder;
 use Archivr\SynchronizationProgressListener\DummySynchronizationProgressListener;
 use Archivr\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use Archivr\Operation\ChmodOperation;
-use Archivr\Operation\DownloadOperation;
-use Archivr\Operation\MkdirOperation;
 use Archivr\Operation\OperationInterface;
-use Archivr\Operation\SymlinkOperation;
-use Archivr\Operation\TouchOperation;
-use Archivr\Operation\UnlinkOperation;
-use Archivr\Operation\UploadOperation;
 
 class Vault
 {
@@ -58,6 +53,11 @@ class Vault
      * @var IndexMergerInterface
      */
     protected $indexMerger;
+
+    /**
+     * @var OperationCollectionBuilderInterface
+     */
+    protected $operationCollectionBuilder;
 
     /**
      * @var string[]
@@ -102,6 +102,23 @@ class Vault
         }
 
         return $this->indexMerger;
+    }
+
+    public function getOperationCollectionBuilder(): OperationCollectionBuilderInterface
+    {
+        if ($this->operationCollectionBuilder === null)
+        {
+            $this->operationCollectionBuilder = new StandardOperationCollectionBuilder($this);
+        }
+
+        return $this->operationCollectionBuilder;
+    }
+
+    public function setOperationCollectionBuilder(OperationCollectionBuilderInterface $operationCollectionBuilder = null): Vault
+    {
+        $this->operationCollectionBuilder = $operationCollectionBuilder;
+
+        return $this;
     }
 
     public function setLockAdapter(LockAdapterInterface $lockAdapter = null): Vault
@@ -271,7 +288,13 @@ class Vault
      */
     public function getOperationCollection(): OperationCollection
     {
-        return $this->doGetOperationCollection();
+        $localIndex = $this->buildLocalIndex();
+        $lastLocalIndex = $this->loadLastLocalIndex();
+        $remoteIndex = $this->loadRemoteIndex();
+
+        $mergedIndex = $this->doBuildMergedIndex($localIndex, $lastLocalIndex, $remoteIndex);
+
+        return $this->getOperationCollectionBuilder()->buildOperationCollection($mergedIndex, $localIndex, $remoteIndex);
     }
 
     /**
@@ -330,7 +353,7 @@ class Vault
             $mergedIndex = $this->doBuildMergedIndex($localIndex, $lastLocalIndex, $remoteIndex);
         }
 
-        $operationCollection = $this->doGetOperationCollection($localIndex, $remoteIndex, $mergedIndex);
+        $operationCollection = $this->getOperationCollectionBuilder()->buildOperationCollection($mergedIndex, $localIndex, $remoteIndex);
 
         $operationResultCollection = new OperationResultCollection();
 
@@ -537,7 +560,9 @@ class Vault
             throw new Exception("Unknown revision: {$revision}");
         }
 
-        $operationCollection = $this->doGetOperationCollection(null, $remoteIndex, $remoteIndex);
+        $localIndex = $this->buildLocalIndex();
+
+        $operationCollection = $this->getOperationCollectionBuilder()->buildOperationCollection($remoteIndex, $localIndex, $remoteIndex);
 
         $operationResultCollection = new OperationResultCollection();
 
@@ -574,136 +599,6 @@ class Vault
         $progressionListener->finish();
 
         return $operationResultCollection;
-    }
-
-    protected function doGetOperationCollection(Index $localIndex = null, Index $remoteIndex = null, Index $mergedIndex = null): OperationCollection
-    {
-        $noUpload = $localIndex === null;
-        $localIndex = $localIndex ?: $this->buildLocalIndex();
-        $remoteIndex = $remoteIndex ?: $this->loadRemoteIndex();
-        $mergedIndex = $mergedIndex ?: $this->doBuildMergedIndex($localIndex, $this->loadLastLocalIndex(), $remoteIndex);
-
-        $uploadStreamFilters = [
-            'zlib.deflate' => []
-        ];
-        $downloadStreamFilters = [
-            'zlib.inflate' => []
-        ];
-
-
-        $operationCollection = new OperationCollection();
-
-        // mtimes to be set for directories are collected and applied afterwards as they get modified by synchronization operations as well
-        $directoryMtimes = [];
-
-        // relies on the directory tree structure being traversed in pre-order (or at least a directory appears before its content)
-        foreach ($mergedIndex as $mergedIndexObject)
-        {
-            /** @var IndexObject $mergedIndexObject */
-
-            $absoluteLocalPath = $this->localPath . $mergedIndexObject->getRelativePath();
-
-            $localObject = $localIndex->getObjectByPath($mergedIndexObject->getRelativePath());
-            $remoteObject = $remoteIndex ? $remoteIndex->getObjectByPath($mergedIndexObject->getRelativePath()) : null;
-
-            // unlink to-be-overridden local path with different type
-            if ($localObject !== null && $localObject->getType() !== $mergedIndexObject->getType())
-            {
-                $operationCollection->addOperation(new UnlinkOperation($absoluteLocalPath));
-            }
-
-
-            if ($mergedIndexObject->isDirectory())
-            {
-                if ($localObject === null || !$localObject->isDirectory())
-                {
-                    $operationCollection->addOperation(new MkdirOperation($absoluteLocalPath, $mergedIndexObject->getMode()));
-                }
-
-                if ($localObject !== null && $localObject->isDirectory())
-                {
-                    if ($localObject->getMtime() !== $mergedIndexObject->getMtime())
-                    {
-                        $directoryMtimes[$absoluteLocalPath] = $mergedIndexObject->getMtime();
-                    }
-                }
-            }
-
-            elseif ($mergedIndexObject->isFile())
-            {
-                // local file did not exist, hasn't been a file before or is outdated
-                $doDownloadFile = $localObject === null || !$localObject->isFile() || $localObject->getMtime() < $mergedIndexObject->getMtime();
-
-                // file has to be restored as it does not equal the local version
-                $doDownloadFile |= $noUpload && $localObject !== null && $mergedIndexObject->getBlobId() !== $localObject->getBlobId();
-
-                if ($doDownloadFile)
-                {
-                    $operationCollection->addOperation(new DownloadOperation($absoluteLocalPath, $mergedIndexObject->getBlobId(), $this->vaultConnection, $downloadStreamFilters));
-                    $operationCollection->addOperation(new TouchOperation($absoluteLocalPath, $mergedIndexObject->getMtime()));
-                    $operationCollection->addOperation(new ChmodOperation($absoluteLocalPath, $mergedIndexObject->getMode()));
-
-                    $directoryMtimes[dirname($absoluteLocalPath)] = $mergedIndexObject->getMtime();
-                }
-
-                // local file got created or updated
-                elseif ($remoteObject === null || $mergedIndexObject->getBlobId() === null)
-                {
-                    // generate blob id
-                    do
-                    {
-                        $newBlobId = $mergedIndex->generateNewBlobId();
-                    }
-                    while ($this->vaultConnection->exists($newBlobId));
-
-                    $mergedIndexObject->setBlobId($newBlobId);
-
-                    $operationCollection->addOperation(new UploadOperation($absoluteLocalPath, $mergedIndexObject->getBlobId(), $this->vaultConnection, $uploadStreamFilters));
-                }
-            }
-
-            elseif ($mergedIndexObject->isLink())
-            {
-                $absoluteLinkTarget = dirname($absoluteLocalPath) . DIRECTORY_SEPARATOR . $mergedIndexObject->getLinkTarget();
-
-                if ($localObject !== null && $localObject->getLinkTarget() !== $mergedIndexObject->getLinkTarget())
-                {
-                    $operationCollection->addOperation(new UnlinkOperation($absoluteLocalPath));
-                    $operationCollection->addOperation(new SymlinkOperation($absoluteLocalPath, $absoluteLinkTarget, $mergedIndexObject->getMode()));
-                }
-            }
-
-            else
-            {
-                // unknown/invalid object type
-                throw new Exception();
-            }
-
-
-            if ($localObject !== null && $localObject->getMode() !== $mergedIndexObject->getMode())
-            {
-                $operationCollection->addOperation(new ChmodOperation($absoluteLocalPath, $mergedIndexObject->getMode()));
-            }
-        }
-
-        // remove superfluous local files
-        foreach ($localIndex as $localObject)
-        {
-            /** @var IndexObject $localObject */
-
-            if ($mergedIndex->getObjectByPath($localObject->getRelativePath()) === null)
-            {
-                $operationCollection->addOperation(new UnlinkOperation($this->localPath . $localObject->getRelativePath()));
-            }
-        }
-
-        // set directory mtimes after all other modifications have been performed
-        foreach ($directoryMtimes as $absoluteLocalPath => $mtime)
-        {
-            $operationCollection->addOperation(new TouchOperation($absoluteLocalPath, $mtime));
-        }
-
-        return $operationCollection;
     }
 
     protected function readIndexFromStream($stream, \DateTime $created = null): Index
