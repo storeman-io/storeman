@@ -37,19 +37,9 @@ class Vault
     protected $vaultConfiguration;
 
     /**
-     * @var StorageDriverFactory
-     */
-    protected $storageDriverFactory;
-
-    /**
      * @var StorageDriverInterface
      */
     protected $storageDriver;
-
-    /**
-     * @var LockAdapterFactory
-     */
-    protected $lockAdapterFactory;
 
     /**
      * @var LockAdapterInterface
@@ -57,19 +47,14 @@ class Vault
     protected $lockAdapter;
 
     /**
-     * @var IndexMergerFactory
-     */
-    protected $indexMergerFactory;
-
-    /**
      * @var IndexMergerInterface
      */
     protected $indexMerger;
 
     /**
-     * @var ConflictHandlerFactory
+     * @var ConflictHandlerInterface
      */
-    protected $conflictHandlerFactory;
+    protected $conflictHandler;
 
     /**
      * @var OperationListBuilderInterface
@@ -133,9 +118,14 @@ class Vault
 
     public function getConflictHandler(): ConflictHandlerInterface
     {
-        return ConflictHandlerFactory::create(
-            $this->vaultConfiguration->getConflictHandler()
-        );
+        if ($this->conflictHandler === null)
+        {
+            $this->conflictHandler = ConflictHandlerFactory::create(
+                $this->vaultConfiguration->getConflictHandler()
+            );
+        }
+
+        return $this->conflictHandler;
     }
 
     public function getOperationListBuilder(): OperationListBuilderInterface
