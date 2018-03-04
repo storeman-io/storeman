@@ -25,10 +25,6 @@ class Vault
     const SYNCHRONIZATION_LIST_FILE_NAME = 'index';
     const LOCK_SYNC = 'sync';
 
-    // Operations modes for building operation list
-    const MODE_PREFER_LOCAL = 'local';
-    const MODE_PREFER_REMOTE = 'remote';
-
     /**
      * @var string
      */
