@@ -2,20 +2,31 @@
 
 namespace Archivr\Operation;
 
+use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
+
 class MkdirOperation implements OperationInterface
 {
-    protected $absolutePath;
+    /**
+     * @var string
+     */
+    protected $relativePath;
+
+    /**
+     * @var int
+     */
     protected $mode;
 
-    public function __construct(string $absolutePath, int $mode)
+    public function __construct(string $relativePath, int $mode)
     {
-        $this->absolutePath = $absolutePath;
+        $this->relativePath = $relativePath;
         $this->mode = $mode;
     }
 
-    public function execute(): bool
+    public function execute(string $localBasePath, ConnectionAdapterInterface $connection): bool
     {
-        return mkdir($this->absolutePath, $this->mode, true);
+        $absolutePath = $localBasePath . $this->relativePath;
+
+        return mkdir($absolutePath, $this->mode, true);
     }
 
     /**
@@ -23,6 +34,6 @@ class MkdirOperation implements OperationInterface
      */
     public function __toString(): string
     {
-        return sprintf('Mkdir %s (mode: %s)', $this->absolutePath, decoct($this->mode));
+        return sprintf('Mkdir %s (mode: %s)', $this->relativePath, decoct($this->mode));
     }
 }

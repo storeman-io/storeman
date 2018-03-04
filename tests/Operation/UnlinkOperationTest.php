@@ -2,6 +2,7 @@
 
 namespace Archivr\Test\Operation;
 
+use Archivr\ConnectionAdapter\DummyConnectionAdapter;
 use Archivr\Operation\UnlinkOperation;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use PHPUnit\Framework\TestCase;
@@ -16,8 +17,8 @@ class UnlinkOperationTest extends TestCase
 
         $this->assertTrue(is_file($tempFile));
 
-        $operation = new UnlinkOperation($tempFile);
-        $operation->execute();
+        $operation = new UnlinkOperation(basename($tempFile));
+        $operation->execute(dirname($tempFile) . DIRECTORY_SEPARATOR, new DummyConnectionAdapter());
 
         $this->assertFalse(is_file($tempFile));
     }

@@ -2,6 +2,7 @@
 
 namespace Archivr\Test\Operation;
 
+use Archivr\ConnectionAdapter\DummyConnectionAdapter;
 use Archivr\Operation\SymlinkOperation;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use PHPUnit\Framework\TestCase;
@@ -13,16 +14,19 @@ class SymlinkOperationTest extends TestCase
     public function testExecution()
     {
         $tempDir = $this->getTemporaryPathGenerator()->getTemporaryDirectory();
-        $target = $this->getTemporaryPathGenerator()->getTemporaryFile();
-
+        $targetName = 'myTarget';
         $linkName = 'test';
-        $absoluteLinkPath = $tempDir . DIRECTORY_SEPARATOR . $linkName;
 
-        $operation = new SymlinkOperation($absoluteLinkPath, $target, 0754);
-        $operation->execute();
+        $absoluteTargetPath = $tempDir . $targetName;
+        $absoluteLinkPath = $tempDir . $linkName;
+
+        $this->assertTrue(touch($absoluteTargetPath));
+
+        $operation = new SymlinkOperation($linkName, $targetName, 0754);
+        $operation->execute($tempDir, new DummyConnectionAdapter());
 
         $this->assertTrue(is_link($absoluteLinkPath));
         $this->assertEquals(0754, fileperms($absoluteLinkPath) & 0777);
-        $this->assertEquals($target, readlink($absoluteLinkPath));
+        $this->assertEquals($absoluteTargetPath, readlink($absoluteLinkPath));
     }
 }

@@ -2,18 +2,20 @@
 
 namespace Archivr\Operation;
 
+use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
+
 class UnlinkOperation implements OperationInterface
 {
-    protected $absolutePath;
+    protected $relativePath;
 
-    public function __construct(string $absolutePath)
+    public function __construct(string $relativePath)
     {
-        $this->absolutePath = $absolutePath;
+        $this->relativePath = $relativePath;
     }
 
-    public function execute(): bool
+    public function execute(string $localBasePath, ConnectionAdapterInterface $connection): bool
     {
-        return unlink($this->absolutePath);
+        return unlink($localBasePath . $this->relativePath);
     }
 
     /**
@@ -21,6 +23,6 @@ class UnlinkOperation implements OperationInterface
      */
     public function __toString(): string
     {
-        return "Unlink {$this->absolutePath}";
+        return "Unlink {$this->relativePath}";
     }
 }

@@ -108,7 +108,7 @@ class Vault
     {
         if ($this->operationCollectionBuilder === null)
         {
-            $this->operationCollectionBuilder = new StandardOperationCollectionBuilder($this);
+            $this->operationCollectionBuilder = new StandardOperationCollectionBuilder();
         }
 
         return $this->operationCollectionBuilder;
@@ -361,7 +361,7 @@ class Vault
         {
             /** @var OperationInterface $operation */
 
-            $success = $operation->execute();
+            $success = $operation->execute($this->getLocalPath(), $this->getVaultConnection());
 
             $operationResult = new OperationResult($operation, $success);
             $operationResultCollection->addOperationResult($operationResult);
@@ -567,7 +567,7 @@ class Vault
         {
             /** @var OperationInterface $operation */
 
-            $success = $operation->execute();
+            $success = $operation->execute($this->getLocalPath(), $this->getVaultConnection());
 
             $operationResult = new OperationResult($operation, $success);
             $operationResultCollection->addOperationResult($operationResult);

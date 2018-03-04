@@ -2,20 +2,31 @@
 
 namespace Archivr\Operation;
 
+use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
+
 class ChmodOperation implements OperationInterface
 {
-    protected $absolutePath;
+    /**
+     * @var string
+     */
+    protected $relativePath;
+
+    /**
+     * @var int
+     */
     protected $mode;
 
-    public function __construct(string $absolutePath, int $mode)
+    public function __construct(string $relativePath, int $mode)
     {
-        $this->absolutePath = $absolutePath;
+        $this->relativePath = $relativePath;
         $this->mode = $mode;
     }
 
-    public function execute(): bool
+    public function execute(string $localBasePath, ConnectionAdapterInterface $connection): bool
     {
-        return chmod($this->absolutePath, $this->mode);
+        $absolutePath = $localBasePath . $this->relativePath;
+
+        return chmod($absolutePath, $this->mode);
     }
 
     /**
@@ -23,6 +34,6 @@ class ChmodOperation implements OperationInterface
      */
     public function __toString(): string
     {
-        return sprintf('Chmod %s to %s', $this->absolutePath, decoct($this->mode));
+        return sprintf('Chmod %s to %s', $this->relativePath, decoct($this->mode));
     }
 }

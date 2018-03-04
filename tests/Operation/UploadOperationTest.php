@@ -26,8 +26,8 @@ class UploadOperationTest extends TestCase
         $testVault = new TestVault();
         $testVaultConnection = new FlysystemConnectionAdapter(new Filesystem(new Local($testVault->getBasePath())));
 
-        $operation = new UploadOperation($testFilePath, $testBlobId, $testVaultConnection);
-        $operation->execute();
+        $operation = new UploadOperation(basename($testFilePath), $testBlobId);
+        $operation->execute(dirname($testFilePath) . DIRECTORY_SEPARATOR, $testVaultConnection);
 
         $uploadedFileContent = $testVaultConnection->read($testBlobId);
 
@@ -46,10 +46,10 @@ class UploadOperationTest extends TestCase
         $testVault = new TestVault();
         $testVaultConnection = new FlysystemConnectionAdapter(new Filesystem(new Local($testVault->getBasePath())));
 
-        $operation = new UploadOperation($testFilePath, $testBlobId, $testVaultConnection, [
+        $operation = new UploadOperation(basename($testFilePath), $testBlobId, [
             'string.rot13' => []
         ]);
-        $operation->execute();
+        $operation->execute(dirname($testFilePath) . DIRECTORY_SEPARATOR, $testVaultConnection);
 
         $uploadedFileContent = $testVaultConnection->read($testBlobId);
 

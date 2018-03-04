@@ -7,22 +7,33 @@ use Archivr\Exception\Exception;
 
 class UploadOperation implements OperationInterface
 {
-    protected $absolutePath;
+    /**
+     * @var string
+     */
+    protected $relativePath;
+
+    /**
+     * @var string
+     */
     protected $blobId;
-    protected $vaultConnection;
+
+    /**
+     * @var array
+     */
     protected $streamFilterConfigMap;
 
-    public function __construct(string $absolutePath, string $blobId, ConnectionAdapterInterface $vaultConnection, array $streamFilterConfigMap = [])
+    public function __construct(string $relativePath, string $blobId, array $streamFilterConfigMap = [])
     {
-        $this->absolutePath = $absolutePath;
+        $this->relativePath = $relativePath;
         $this->blobId = $blobId;
-        $this->vaultConnection = $vaultConnection;
         $this->streamFilterConfigMap = $streamFilterConfigMap;
     }
 
-    public function execute(): bool
+    public function execute(string $localBasePath, ConnectionAdapterInterface $connection): bool
     {
-        $localStream = fopen($this->absolutePath, 'rb');
+        $absolutePath = $localBasePath . $this->relativePath;
+
+        $localStream = fopen($absolutePath, 'rb');
 
         foreach ($this->streamFilterConfigMap as $filterName => $filterParams)
         {
@@ -31,7 +42,7 @@ class UploadOperation implements OperationInterface
 
         try
         {
-            $this->vaultConnection->writeStream($this->blobId, $localStream);
+            $connection->writeStream($this->blobId, $localStream);
 
             fclose($localStream);
 
@@ -50,6 +61,6 @@ class UploadOperation implements OperationInterface
     {
         $filterNames = implode(',', array_keys($this->streamFilterConfigMap)) ?: '-';
 
-        return sprintf('Upload %s (blobId %s, filters: %s)', $this->absolutePath, $this->blobId, $filterNames);
+        return sprintf('Upload %s (blobId %s, filters: %s)', $this->relativePath, $this->blobId, $filterNames);
     }
 }

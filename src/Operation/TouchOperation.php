@@ -2,20 +2,29 @@
 
 namespace Archivr\Operation;
 
+use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
+
 class TouchOperation implements OperationInterface
 {
-    protected $absolutePath;
+    /**
+     * @var string
+     */
+    protected $relativePath;
+
+    /**
+     * @var int
+     */
     protected $mtime;
 
-    public function __construct(string $absolutePath, int $mtime)
+    public function __construct(string $relativePath, int $mtime)
     {
-        $this->absolutePath = $absolutePath;
+        $this->relativePath = $relativePath;
         $this->mtime = $mtime;
     }
 
-    public function getAbsolutePath(): string
+    public function getRelativePath(): string
     {
-        return $this->absolutePath;
+        return $this->relativePath;
     }
 
     public function getMtime(): int
@@ -23,9 +32,11 @@ class TouchOperation implements OperationInterface
         return $this->mtime;
     }
 
-    public function execute(): bool
+    public function execute(string $localBasePath, ConnectionAdapterInterface $connection): bool
     {
-        return touch($this->absolutePath, $this->mtime);
+        $absolutePath = $localBasePath . $this->relativePath;
+
+        return touch($absolutePath, $this->mtime);
     }
 
     /**
@@ -33,6 +44,6 @@ class TouchOperation implements OperationInterface
      */
     public function __toString(): string
     {
-        return sprintf('Touch %s to mtime = %s', $this->absolutePath, date('c', $this->mtime));
+        return sprintf('Touch %s to mtime = %s', $this->relativePath, date('c', $this->mtime));
     }
 }

@@ -2,22 +2,38 @@
 
 namespace Archivr\Operation;
 
+use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
+
 class SymlinkOperation implements OperationInterface
 {
-    protected $absolutePath;
-    protected $absoluteLinkTarget;
+    /**
+     * @var string
+     */
+    protected $relativePath;
+
+    /**
+     * @var string
+     */
+    protected $relativeLinkTarget;
+
+    /**
+     * @var int
+     */
     protected $mode;
 
-    public function __construct(string $absolutePath, string $absoluteLinkTarget, int $mode)
+    public function __construct(string $relativePath, string $relativeLinkTarget, int $mode)
     {
-        $this->absolutePath = $absolutePath;
-        $this->absoluteLinkTarget = $absoluteLinkTarget;
+        $this->relativePath = $relativePath;
+        $this->relativeLinkTarget = $relativeLinkTarget;
         $this->mode = $mode;
     }
 
-    public function execute(): bool
+    public function execute(string $localBasePath, ConnectionAdapterInterface $connection): bool
     {
-        return symlink($this->absoluteLinkTarget, $this->absolutePath) && chmod($this->absolutePath, $this->mode);
+        $absolutePath = $localBasePath . $this->relativePath;
+        $absoluteLinkTarget = $localBasePath . $this->relativeLinkTarget;
+
+        return symlink($absoluteLinkTarget, $absolutePath) && chmod($absolutePath, $this->mode);
     }
 
     /**
@@ -25,6 +41,6 @@ class SymlinkOperation implements OperationInterface
      */
     public function __toString(): string
     {
-        return sprintf('Symlink %s to %s (mode %s)', $this->absolutePath, $this->absoluteLinkTarget, $this->mode);
+        return sprintf('Symlink %s to %s (mode %s)', $this->relativePath, $this->relativeLinkTarget, $this->mode);
     }
 }

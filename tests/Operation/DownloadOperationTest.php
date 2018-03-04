@@ -27,8 +27,8 @@ class DownloadOperationTest extends TestCase
 
         $targetFilePath = $this->getTemporaryPathGenerator()->getTemporaryFile();
 
-        $operation = new DownloadOperation($targetFilePath, $testBlobId, $testVaultConnection);
-        $operation->execute();
+        $operation = new DownloadOperation(basename($targetFilePath), $testBlobId);
+        $operation->execute(dirname($targetFilePath) . DIRECTORY_SEPARATOR, $testVaultConnection);
 
         $this->assertEquals($testFileContent, file_get_contents($targetFilePath));
     }
@@ -45,10 +45,10 @@ class DownloadOperationTest extends TestCase
 
         $targetFilePath = $this->getTemporaryPathGenerator()->getTemporaryFile();
 
-        $operation = new DownloadOperation($targetFilePath, $testBlobId, $testVaultConnection, [
+        $operation = new DownloadOperation(basename($targetFilePath), $testBlobId, [
             'string.rot13' => []
         ]);
-        $operation->execute();
+        $operation->execute(dirname($targetFilePath) . DIRECTORY_SEPARATOR, $testVaultConnection);
 
         $this->assertEquals($testFileContent, file_get_contents($targetFilePath));
     }

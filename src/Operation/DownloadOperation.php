@@ -6,23 +6,32 @@ use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
 
 class DownloadOperation implements OperationInterface
 {
-    protected $absolutePath;
+    /**
+     * @var string
+     */
+    protected $relativePath;
+
+    /**
+     * @var string
+     */
     protected $blobId;
-    protected $vaultConnection;
+
+    /**
+     * @var array
+     */
     protected $streamFilterConfigMap;
 
-    public function __construct(string $absolutePath, string $blobId, ConnectionAdapterInterface $vaultConnection, array $streamFilterConfigMap = [])
+    public function __construct(string $relativePath, string $blobId, array $streamFilterConfigMap = [])
     {
-        $this->absolutePath = $absolutePath;
+        $this->relativePath = $relativePath;
         $this->blobId = $blobId;
-        $this->vaultConnection = $vaultConnection;
         $this->streamFilterConfigMap = $streamFilterConfigMap;
     }
 
-    public function execute(): bool
+    public function execute(string $localBasePath, ConnectionAdapterInterface $connection): bool
     {
-        $localStream = fopen($this->absolutePath, 'wb');
-        $remoteStream = $this->vaultConnection->getReadStream($this->blobId);
+        $localStream = fopen($localBasePath . $this->relativePath, 'wb');
+        $remoteStream = $connection->getReadStream($this->blobId);
 
         foreach ($this->streamFilterConfigMap as $filterName => $filterParams)
         {
@@ -44,6 +53,6 @@ class DownloadOperation implements OperationInterface
     {
         $filterNames = implode(',', array_keys($this->streamFilterConfigMap)) ?: '-';
 
-        return sprintf('Download %s (blobId %s, filters: %s)', $this->absolutePath, $this->blobId, $filterNames);
+        return sprintf('Download %s (blobId %s, filters: %s)', $this->relativePath, $this->blobId, $filterNames);
     }
 }
