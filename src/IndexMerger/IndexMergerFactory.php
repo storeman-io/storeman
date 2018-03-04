@@ -6,13 +6,20 @@ use Archivr\AbstractFactory;
 
 class IndexMergerFactory extends AbstractFactory
 {
-    protected static $requiresInstanceOf = IndexMergerInterface::class;
-
-    public function __construct()
+    protected static function requiresInstanceOf(): string
     {
-        $this->factoryMap['standard'] = function()
+        return IndexMergerInterface::class;
+    }
+
+    protected static function getFactoryMap(): array
+    {
+        $return = [];
+
+        $return['standard'] = function()
         {
             return new StandardIndexMerger();
         };
+
+        return $return;
     }
 }

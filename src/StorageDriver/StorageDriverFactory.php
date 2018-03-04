@@ -11,16 +11,21 @@ use League\Flysystem\Filesystem;
 
 class StorageDriverFactory extends AbstractFactory
 {
-    protected static $requiresInstanceOf = StorageDriverInterface::class;
-
-    public function __construct()
+    protected static function requiresInstanceOf(): string
     {
-        $this->factoryMap['dummy'] = function ()
+        return StorageDriverInterface::class;
+    }
+
+    protected static function getFactoryMap(): array
+    {
+        $return = [];
+
+        $return['dummy'] = function ()
         {
             return new DummyStorageDriver();
         };
 
-        $this->factoryMap['local'] = function(VaultConfiguration $vaultConfiguration)
+        $return['local'] = function(VaultConfiguration $vaultConfiguration)
         {
             $path = TildeExpansion::expand($vaultConfiguration->getSetting('path'));
 
@@ -34,5 +39,7 @@ class StorageDriverFactory extends AbstractFactory
 
             return new FlysystemStorageDriver($filesystem);
         };
+
+        return $return;
     }
 }

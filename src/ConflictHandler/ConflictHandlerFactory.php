@@ -6,23 +6,30 @@ use Archivr\AbstractFactory;
 
 class ConflictHandlerFactory extends AbstractFactory
 {
-    protected static $requiresInstanceOf = ConflictHandlerInterface::class;
-
-    public function __construct()
+    protected static function requiresInstanceOf(): string
     {
-        $this->factoryMap['panicking'] = function()
+        return ConflictHandlerInterface::class;
+    }
+
+    protected static function getFactoryMap(): array
+    {
+        $return = [];
+
+        $return['panicking'] = function()
         {
             return new PanickingConflictHandler();
         };
 
-        $this->factoryMap['preferLocal'] = function()
+        $return['preferLocal'] = function()
         {
             return new PreferLocalConflictHandler();
         };
 
-        $this->factoryMap['preferRemote'] = function()
+        $return['preferRemote'] = function()
         {
             return new PreferRemoteConflictHandler();
         };
+
+        return $return;
     }
 }

@@ -92,28 +92,11 @@ class Vault
         return $this->vaultConfiguration;
     }
 
-    public function getStorageDriverFactory(): StorageDriverFactory
-    {
-        if ($this->storageDriverFactory === null)
-        {
-            $this->setStorageDriverFactory(new StorageDriverFactory());
-        }
-
-        return $this->storageDriverFactory;
-    }
-
-    public function setStorageDriverFactory(StorageDriverFactory $storageDriverFactory): Vault
-    {
-        $this->storageDriverFactory = $storageDriverFactory;
-
-        return $this;
-    }
-
     public function getStorageDriver(): StorageDriverInterface
     {
         if ($this->storageDriver === null)
         {
-            $this->storageDriver = $this->getStorageDriverFactory()->create(
+            $this->storageDriver = StorageDriverFactory::create(
                 $this->vaultConfiguration->getStorageDriver(),
                 $this->vaultConfiguration
             );
@@ -122,28 +105,11 @@ class Vault
         return $this->storageDriver;
     }
 
-    public function getLockAdapterFactory(): LockAdapterFactory
-    {
-        if ($this->lockAdapterFactory === null)
-        {
-            $this->setLockAdapterFactory(new LockAdapterFactory());
-        }
-
-        return $this->lockAdapterFactory;
-    }
-
-    public function setLockAdapterFactory(LockAdapterFactory $lockAdapterFactory): Vault
-    {
-        $this->lockAdapterFactory = $lockAdapterFactory;
-
-        return $this;
-    }
-
     public function getLockAdapter(): LockAdapterInterface
     {
         if ($this->lockAdapter === null)
         {
-            $this->lockAdapter = $this->getLockAdapterFactory()->create(
+            $this->lockAdapter = LockAdapterFactory::create(
                 $this->vaultConfiguration->getLockAdapter(),
                 $this->vaultConfiguration,
                 $this->getStorageDriver()
@@ -153,28 +119,11 @@ class Vault
         return $this->lockAdapter;
     }
 
-    public function getIndexMergerFactory(): IndexMergerFactory
-    {
-        if ($this->indexMergerFactory === null)
-        {
-            $this->setIndexMergerFactory(new IndexMergerFactory());
-        }
-
-        return $this->indexMergerFactory;
-    }
-
-    public function setIndexMergerFactory(IndexMergerFactory $indexMergerFactory): Vault
-    {
-        $this->indexMergerFactory = $indexMergerFactory;
-
-        return $this;
-    }
-
     public function getIndexMerger(): IndexMergerInterface
     {
         if ($this->indexMerger === null)
         {
-            $this->indexMerger = $this->getIndexMergerFactory()->create(
+            $this->indexMerger = IndexMergerFactory::create(
                 $this->vaultConfiguration->getIndexMerger()
             );
         }
@@ -182,26 +131,9 @@ class Vault
         return $this->indexMerger;
     }
 
-    public function getConflictHandlerFactory(): ConflictHandlerFactory
-    {
-        if ($this->conflictHandlerFactory === null)
-        {
-            $this->conflictHandlerFactory = new ConflictHandlerFactory();
-        }
-
-        return $this->conflictHandlerFactory;
-    }
-
-    public function setConflictHandlerFactory(ConflictHandlerFactory $conflictHandlerFactory = null): Vault
-    {
-        $this->conflictHandlerFactory = $conflictHandlerFactory;
-
-        return $this;
-    }
-
     public function getConflictHandler(): ConflictHandlerInterface
     {
-        return $this->getConflictHandlerFactory()->create(
+        return ConflictHandlerFactory::create(
             $this->vaultConfiguration->getConflictHandler()
         );
     }
