@@ -34,41 +34,62 @@ class StandardIndexMerger implements IndexMergerInterface
     public function merge(Index $remoteIndex, Index $localIndex, Index $lastLocalIndex = null): Index
     {
         $mergedIndex = new Index();
-        $conflictHandler = $this->getConflictHandler();
+
+        if ($lastLocalIndex === null)
+        {
+            // lets make our life easier
+            $lastLocalIndex = new Index(new \DateTime('@0'));
+        }
 
         foreach ($localIndex as $localObject)
         {
             /** @var IndexObject $localObject */
 
             $remoteObject = $remoteIndex->getObjectByPath($localObject->getRelativePath());
+            $lastLocalObject = $lastLocalIndex->getObjectByPath($localObject->getRelativePath());
 
-            $localObjectModified = $lastLocalIndex ? ($localObject->getMtime() > $lastLocalIndex->getCreated()->getTimestamp()) : true;
 
-            if ($remoteObject === null)
+            // compare existing to known object
+            if ($lastLocalObject)
             {
-                if ($localObjectModified)
-                {
-                    $mergedIndex->addObject($localObject);
-                }
+                $localObjectModified = false;
+                $localObjectModified = $localObjectModified || ($localObject->getType() !== $lastLocalObject->getType());
+                $localObjectModified = $localObjectModified || ($localObject->getMtime() !== $lastLocalObject->getMtime());
+                $localObjectModified = $localObjectModified || ($localObject->getCtime() !== $lastLocalObject->getCtime());
+                $localObjectModified = $localObjectModified || ($localObject->getMode() !== $lastLocalObject->getMode());
+                $localObjectModified = $localObjectModified || ($localObject->getSize() !== $lastLocalObject->getSize());
+                $localObjectModified = $localObjectModified || ($localObject->getLinkTarget() !== $lastLocalObject->getLinkTarget());
+
+                // remote object has been modified if it does not equal the object on its last synchronization
+                $remoteObjectModified = !$lastLocalObject->equals($remoteObject);
             }
+
+            // object has been created
             else
             {
-                $remoteObjectModified = $lastLocalIndex ? ($remoteObject->getMtime() > $lastLocalIndex->getCreated()->getTimestamp()) : false;
+                $localObjectModified = true;
 
-                if (!$localObjectModified)
-                {
-                    $mergedIndex->addObject($remoteObject);
-                }
+                // object has been created since last synchronization
+                $remoteObjectModified = $remoteObject !== null;
+            }
 
-                elseif (!$remoteObjectModified)
-                {
-                    $mergedIndex->addObject($localObject);
-                }
 
-                else
-                {
-                    $conflictHandler->handleConflict($remoteObject, $localObject, $lastLocalIndex ? $lastLocalIndex->getObjectByPath($localObject->getRelativePath()) : null);
-                }
+            // conflict if both the local and the remote object has been changed
+            if ($localObjectModified && $remoteObjectModified)
+            {
+                $this->conflict($mergedIndex, $remoteObject, $localObject, $lastLocalObject);
+            }
+
+            // add the remote object if only it has been modified
+            elseif ($remoteObjectModified)
+            {
+                $mergedIndex->addObject($remoteObject);
+            }
+
+            // add the local object otherwise if only it or none has been modified
+            else
+            {
+                $mergedIndex->addObject($localObject);
             }
         }
 
@@ -77,11 +98,38 @@ class StandardIndexMerger implements IndexMergerInterface
             /** @var IndexObject $remoteObject */
 
             $localObject = $localIndex->getObjectByPath($remoteObject->getRelativePath());
-            $lastLocalObject = $lastLocalIndex ? $lastLocalIndex->getObjectByPath($remoteObject->getRelativePath()) : null;
+            $lastLocalObject = $lastLocalIndex->getObjectByPath($remoteObject->getRelativePath());
 
-            if ($localObject === null)
+            // only consider objects not existing locally as those are already considered by the first loop
+            if (!$localObject)
             {
-                if ($lastLocalObject === null)
+                if ($lastLocalObject)
+                {
+                    // local object has been deleted
+                    $localObjectModified = true;
+
+                    // compare remote object to object state at last sync
+                    $remoteObjectModified = !$remoteObject->equals($lastLocalObject);
+                }
+
+                else
+                {
+                    // object already didn't exist locally at the last sync
+                    $localObjectModified = false;
+
+                    // another client added the remote object
+                    $remoteObjectModified = true;
+                }
+
+
+                // conflict if both the local and the remote object has been changed
+                if ($localObjectModified && $remoteObjectModified)
+                {
+                    $this->conflict($mergedIndex, $remoteObject, $localObject, $lastLocalObject);
+                }
+
+                // another client added the remote object
+                elseif (!$lastLocalObject)
                 {
                     $mergedIndex->addObject($remoteObject);
                 }
@@ -89,5 +137,35 @@ class StandardIndexMerger implements IndexMergerInterface
         }
 
         return $mergedIndex;
+    }
+
+    protected function conflict(Index $mergedIndex, IndexObject $remoteObject, IndexObject $localObject = null, IndexObject $lastLocalObject = null): void
+    {
+        $solution = $this->getConflictHandler()->handleConflict($remoteObject, $localObject, $lastLocalObject);
+
+        switch ($solution)
+        {
+            case ConflictHandlerInterface::USE_LOCAL:
+
+                if ($localObject)
+                {
+                    $mergedIndex->addObject($localObject);
+                }
+
+                break;
+
+            case ConflictHandlerInterface::USE_REMOTE:
+
+                if ($remoteObject)
+                {
+                    $mergedIndex->addObject($remoteObject);
+                }
+
+                break;
+
+            default:
+
+                throw new \LogicException();
+        }
     }
 }

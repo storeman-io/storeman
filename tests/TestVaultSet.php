@@ -1,0 +1,36 @@
+<?php
+
+namespace Archivr\Test;
+
+use Archivr\Index;
+
+class TestVaultSet
+{
+    /**
+     * @var TestVault[]
+     */
+    protected $testVaults = [];
+
+    public function __construct(int $count)
+    {
+        for ($i = 0; $i < $count; $i++)
+        {
+            $this->testVaults[] = new TestVault();
+        }
+    }
+
+    public function getTestVault(int $index): TestVault
+    {
+        if (!isset($this->testVaults[$index]))
+        {
+            throw new \OutOfRangeException();
+        }
+
+        return $this->testVaults[$index];
+    }
+
+    public function getIndex(int $index, \DateTime $created = null): Index
+    {
+        return $this->getTestVault($index)->getIndex($created);
+    }
+}

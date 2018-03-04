@@ -2,6 +2,8 @@
 
 namespace Archivr\Test;
 
+use Archivr\Index;
+use Archivr\IndexObject;
 use Archivr\Vault;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -65,6 +67,20 @@ class TestVault implements \IteratorAggregate
         $this->filesystem->remove($this->getAbsolutePath($relativePath));
 
         return $this;
+    }
+
+    public function getIndex(\DateTime $created = null): Index
+    {
+        $index = new Index($created);
+
+        foreach ($this->getIterator() as $fileInfo)
+        {
+            /** @var SplFileInfo $fileInfo */
+
+            $index->addObject(IndexObject::fromPath($this->getBasePath(), $fileInfo->getRelativePathname()));
+        }
+
+        return $index;
     }
 
     public function getIterator(bool $filterMetaFiles = true): \Iterator
