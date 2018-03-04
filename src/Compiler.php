@@ -6,6 +6,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
 /**
+ * Compiles the application into a standalone phar which is suitable for distribution.
  * Based on the composer counterpart: https://github.com/composer/composer/blob/master/src/Composer/Compiler.php
  */
 class Compiler
@@ -97,6 +98,12 @@ class Compiler
         return strtr($relativePath, '\\', '/');
     }
 
+    /**
+     * Reduces file size while preserving line numbers.
+     *
+     * @param string $source
+     * @return string
+     */
     protected function stripWhitespace(string $source): string
     {
         $output = '';
