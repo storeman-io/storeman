@@ -21,7 +21,7 @@ class DumpCommandTest extends AbstractCommandTest
         $config = [
             'vaults' => [
                 [
-                    'adapter' => 'path',
+                    'storage' => 'local',
                     'settings' => [
                         'path' => $this->getTemporaryPathGenerator()->getTemporaryDirectory(),
                     ],

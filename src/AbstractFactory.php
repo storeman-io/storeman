@@ -18,7 +18,7 @@ abstract class AbstractFactory
     {
         if (!isset($this->factoryMap[$name]))
         {
-            throw new \InvalidArgumentException(sprintf("FactoryContainer %s does not provide %s.", get_class($this), $name));
+            throw new \InvalidArgumentException(sprintf('FactoryContainer "%s" does not provide "%s".', get_class($this), $name));
         }
 
         return call_user_func_array($this->factoryMap[$name], $params);

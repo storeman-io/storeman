@@ -16,7 +16,7 @@ class VaultConfiguration
      *
      * @var string
      */
-    protected $vaultAdapter;
+    protected $storageDriver;
 
     /**
      * Identifier for the lock adapter to use.
@@ -26,17 +26,18 @@ class VaultConfiguration
     protected $lockAdapter;
 
     /**
-     * Map with additional vaultAdapter- or lockAdapter-specific settings.
+     * Map with additional storageDriver- or lockAdapter-specific settings.
      *
      * @var array
      */
     protected $settings;
 
-    public function __construct(string $vaultAdapter, string $lockAdapter)
+    public function __construct(string $storageDriver, string $lockAdapter)
     {
-        $this->title = $vaultAdapter;
-        $this->vaultAdapter = $vaultAdapter;
+        $this->storageDriver = $storageDriver;
         $this->lockAdapter = $lockAdapter;
+
+        $this->setTitle($storageDriver);
     }
 
     public function getTitle(): string
@@ -51,14 +52,14 @@ class VaultConfiguration
         return $this;
     }
 
-    public function getVaultAdapter(): string
+    public function getStorageDriver(): string
     {
-        return $this->vaultAdapter;
+        return $this->storageDriver;
     }
 
-    public function setVaultAdapter(string $vaultAdapter): VaultConfiguration
+    public function setStorageDriver(string $storageDriver): VaultConfiguration
     {
-        $this->vaultAdapter = $vaultAdapter;
+        $this->storageDriver = $storageDriver;
 
         return $this;
     }

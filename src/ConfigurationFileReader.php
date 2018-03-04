@@ -69,14 +69,14 @@ class ConfigurationFileReader
 
         foreach ($array['vaults'] as $index => $vaultConfig)
         {
-            if (empty($vaultConfig['adapter']))
+            if (empty($vaultConfig['storage']))
             {
-                throw new ConfigurationException(sprintf('Vault configuration #%d is missing the obligatory \'adapter\' key.', $index));
+                throw new ConfigurationException(sprintf('Vault configuration #%d is missing the obligatory \'storage\' key.', $index));
             }
 
             $lockAdapter = empty($vaultConfig['lockAdapter']) ? 'storage' : $vaultConfig['lockAdapter'];
 
-            $vaultConfiguration = new VaultConfiguration($vaultConfig['adapter'], $lockAdapter);
+            $vaultConfiguration = new VaultConfiguration($vaultConfig['storage'], $lockAdapter);
             $vaultConfiguration->setSettings($vaultConfig['settings'] ?: []);
 
             if (!empty($vaultConfig['title']))

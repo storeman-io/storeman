@@ -49,6 +49,11 @@ class Configuration
      */
     public function setLocalPath(string $localPath): Configuration
     {
+        if (substr($localPath, -1) !== DIRECTORY_SEPARATOR)
+        {
+            $localPath .= DIRECTORY_SEPARATOR;
+        }
+
         $this->localPath = $localPath;
 
         return $this;

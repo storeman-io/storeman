@@ -32,7 +32,7 @@ class ArchivRTest extends TestCase
 
     protected function getTestVaultConfig(): VaultConfiguration
     {
-        $config = new VaultConfiguration('path', 'storage');
+        $config = new VaultConfiguration('local', 'storage');
         $config->setSetting('path', $this->getTemporaryPathGenerator()->getTemporaryDirectory());
 
         return $config;

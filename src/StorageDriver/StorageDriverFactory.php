@@ -19,7 +19,7 @@ class StorageDriverFactory extends AbstractFactory
             return new DummyStorageDriver();
         };
 
-        $this->factoryMap['path'] = function(VaultConfiguration $vaultConfiguration)
+        $this->factoryMap['local'] = function(VaultConfiguration $vaultConfiguration)
         {
             $path = TildeExpansion::expand($vaultConfiguration->getSetting('path'));
 
@@ -41,7 +41,7 @@ class StorageDriverFactory extends AbstractFactory
 
         if (!($driver instanceof StorageDriverInterface))
         {
-            throw new Exception(sprintf('Factory closure for driver "%s" does not return an instance of %s!', $name, StorageDriverInterface::class));
+            throw new Exception(sprintf('Factory closure for driver "%s" does not return an instance of "%s"!', $name, StorageDriverInterface::class));
         }
 
         return $driver;

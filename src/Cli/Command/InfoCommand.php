@@ -53,8 +53,8 @@ class InfoCommand extends AbstractCommand
                 "Vault #{$index}",
                 "Title:\nAdapter:\nLock Adapter:\nSettings:\nCurrent lock:",
                 implode("\n", [
-                    "<info>{$vault->getTitle()}</info>",
-                    $vaultConfiguration->getVaultAdapter(),
+                    "<info>{$vault->getVaultConfiguration()->getTitle()}</info>",
+                    $vaultConfiguration->getStorageDriver(),
                     $vaultConfiguration->getLockAdapter(),
                     implode(
                         ',',

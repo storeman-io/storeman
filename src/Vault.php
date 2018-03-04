@@ -2,11 +2,12 @@
 
 namespace Archivr;
 
+use Archivr\LockAdapter\LockAdapterFactory;
+use Archivr\StorageDriver\StorageDriverFactory;
 use Archivr\StorageDriver\StorageDriverInterface;
 use Archivr\Exception\Exception;
 use Archivr\IndexMerger\IndexMergerInterface;
 use Archivr\IndexMerger\StandardIndexMerger;
-use Archivr\LockAdapter\StorageBasedLockAdapter;
 use Archivr\LockAdapter\LockAdapterInterface;
 use Archivr\OperationListBuilder\OperationListBuilderInterface;
 use Archivr\OperationListBuilder\StandardOperationListBuilder;
@@ -24,19 +25,29 @@ class Vault
     const LOCK_SYNC = 'sync';
 
     /**
-     * @var string
+     * @var VaultConfiguration
      */
-    protected $title;
+    protected $vaultConfiguration;
+
+    /**
+     * @var Configuration
+     */
+    protected $configuration;
+
+    /**
+     * @var StorageDriverFactory
+     */
+    protected $storageDriverFactory;
+
+    /**
+     * @var LockAdapterFactory
+     */
+    protected $lockAdapterFactory;
 
     /**
      * @var StorageDriverInterface
      */
     protected $storageDriver;
-
-    /**
-     * @var string
-     */
-    protected $localPath;
 
     /**
      * @var LockAdapterInterface
@@ -53,32 +64,50 @@ class Vault
      */
     protected $operationListBuilder;
 
-    /**
-     * @var string[]
-     */
-    protected $exclusions = [];
-
-    /**
-     * @var string
-     */
-    protected $identity;
-
-
-    public function __construct(string $title, string $localPath, StorageDriverInterface $storageDriver)
+    public function __construct(Configuration $configuration, VaultConfiguration $vaultConfiguration)
     {
-        $this->title = $title;
-        $this->storageDriver = $storageDriver;
-        $this->localPath = rtrim(TildeExpansion::expand($localPath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $this->configuration = $configuration;
+        $this->vaultConfiguration = $vaultConfiguration;
     }
 
-    public function getTitle(): string
+    public function getConfiguration(): Configuration
     {
-        return $this->title;
+        return $this->configuration;
     }
 
-    public function getLocalPath(): string
+    public function getVaultConfiguration(): VaultConfiguration
     {
-        return $this->localPath;
+        return $this->vaultConfiguration;
+    }
+
+    public function getStorageDriverFactory(): StorageDriverFactory
+    {
+        if ($this->storageDriverFactory === null)
+        {
+            $this->setStorageDriverFactory(new StorageDriverFactory());
+        }
+
+        return $this->storageDriverFactory;
+    }
+
+    public function setStorageDriverFactory(StorageDriverFactory $storageDriverFactory)
+    {
+        $this->storageDriverFactory = $storageDriverFactory;
+    }
+
+    public function getLockAdapterFactory(): LockAdapterFactory
+    {
+        if ($this->lockAdapterFactory === null)
+        {
+            $this->setLockAdapterFactory(new LockAdapterFactory());
+        }
+
+        return $this->lockAdapterFactory;
+    }
+
+    public function setLockAdapterFactory(LockAdapterFactory $lockAdapterFactory)
+    {
+        $this->lockAdapterFactory = $lockAdapterFactory;
     }
 
     public function setIndexMerger(IndexMergerInterface $indexMerger = null)
@@ -115,57 +144,31 @@ class Vault
         return $this;
     }
 
-    public function setLockAdapter(LockAdapterInterface $lockAdapter = null): Vault
+    public function getStorageDriver(): StorageDriverInterface
     {
-        $this->lockAdapter = $lockAdapter;
+        if ($this->storageDriver === null)
+        {
+            $this->storageDriver = $this->getStorageDriverFactory()->create(
+                $this->vaultConfiguration->getStorageDriver(),
+                $this->vaultConfiguration
+            );
+        }
 
-        return $this;
+        return $this->storageDriver;
     }
 
     public function getLockAdapter(): LockAdapterInterface
     {
         if ($this->lockAdapter === null)
         {
-            $this->lockAdapter = new StorageBasedLockAdapter($this->storageDriver);
+            $this->lockAdapter = $this->getLockAdapterFactory()->create(
+                $this->vaultConfiguration->getLockAdapter(),
+                $this->vaultConfiguration,
+                $this->getStorageDriver()
+            );
         }
 
         return $this->lockAdapter;
-    }
-
-    public function getStorageDriver(): StorageDriverInterface
-    {
-        return $this->storageDriver;
-    }
-
-    public function getExclusions(): array
-    {
-        return $this->exclusions;
-    }
-
-    public function addExclusion(string $path): Vault
-    {
-        $this->exclusions[] = $path;
-
-        return $this;
-    }
-
-    public function setExclusions(array $paths): Vault
-    {
-        $this->exclusions = array_values($paths);
-
-        return $this;
-    }
-
-    public function getIdentity(): string
-    {
-        return $this->identity;
-    }
-
-    public function setIdentity(string $identity = null): Vault
-    {
-        $this->identity = $identity;
-
-        return $this;
     }
 
     /**
@@ -175,35 +178,7 @@ class Vault
      */
     public function buildLocalIndex(): Index
     {
-        $finder = new Finder();
-        $finder->in($this->localPath);
-        $finder->ignoreDotFiles(false);
-        $finder->ignoreVCS(true);
-        $finder->exclude(static::METADATA_DIRECTORY_NAME);
-        $finder->notPath('archivr.json');
-
-        foreach ($this->exclusions as $path)
-        {
-            $finder->notPath($path);
-        }
-
-        $index = new Index();
-
-        foreach ($finder->directories() as $fileInfo)
-        {
-            /** @var SplFileInfo $fileInfo */
-
-            $index->addObject(IndexObject::fromPath($this->localPath, $fileInfo->getRelativePathname()));
-        }
-
-        foreach ($finder->files() as $fileInfo)
-        {
-            /** @var SplFileInfo $fileInfo */
-
-            $index->addObject(IndexObject::fromPath($this->localPath, $fileInfo->getRelativePathname()));
-        }
-
-        return $index;
+        return $this->doBuildLocalIndex();
     }
 
     /**
@@ -324,7 +299,7 @@ class Vault
             $remoteIndex = null;
         }
 
-        $synchronization = new Synchronization($newRevision, $this->generateNewBlobId(), new \DateTime(), $this->identity);
+        $synchronization = new Synchronization($newRevision, $this->generateNewBlobId(), new \DateTime(), $this->configuration->getIdentity());
         $synchronizationList->addSynchronization($synchronization);
 
         // don't merge indices but just use local
@@ -355,7 +330,7 @@ class Vault
         {
             /** @var OperationInterface $operation */
 
-            $success = $operation->execute($this->getLocalPath(), $this->getStorageDriver());
+            $success = $operation->execute($this->configuration->getLocalPath(), $this->getStorageDriver());
 
             $operationResult = new OperationResult($operation, $success);
             $operationResultList->addOperationResult($operationResult);
@@ -412,11 +387,12 @@ class Vault
      */
     public function loadSynchronizationList(): SynchronizationList
     {
+        $storageDriver = $this->getStorageDriver();
         $list = null;
 
-        if ($this->storageDriver->exists(static::SYNCHRONIZATION_LIST_FILE_NAME))
+        if ($storageDriver->exists(static::SYNCHRONIZATION_LIST_FILE_NAME))
         {
-            $stream = $this->storageDriver->getReadStream(static::SYNCHRONIZATION_LIST_FILE_NAME);
+            $stream = $storageDriver->getReadStream(static::SYNCHRONIZATION_LIST_FILE_NAME);
 
             stream_filter_append($stream, 'zlib.inflate');
 
@@ -454,21 +430,40 @@ class Vault
      */
     public function dump(string $targetPath, int $revision = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
-        $originalLocalPath = $this->localPath;
-        $this->localPath =  rtrim(TildeExpansion::expand($targetPath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        return $this->doRestore($revision, $progressListener, true, $targetPath);
+    }
 
-        try
+    protected function doBuildLocalIndex(string $path = null): Index
+    {
+        $finder = new Finder();
+        $finder->in($path ?: $this->configuration->getLocalPath());
+        $finder->ignoreDotFiles(false);
+        $finder->ignoreVCS(true);
+        $finder->exclude(static::METADATA_DIRECTORY_NAME);
+        $finder->notPath('archivr.json');
+
+        foreach ($this->configuration->getExclusions() as $path)
         {
-            return $this->doRestore($revision, $progressListener, true);
+            $finder->notPath($path);
         }
-        catch (\Exception $exception)
+
+        $index = new Index();
+
+        foreach ($finder->directories() as $fileInfo)
         {
-            throw $exception;
+            /** @var SplFileInfo $fileInfo */
+
+            $index->addObject(IndexObject::fromPath($this->configuration->getLocalPath(), $fileInfo->getRelativePathname()));
         }
-        finally
+
+        foreach ($finder->files() as $fileInfo)
         {
-            $this->localPath = $originalLocalPath;
+            /** @var SplFileInfo $fileInfo */
+
+            $index->addObject(IndexObject::fromPath($this->configuration->getLocalPath(), $fileInfo->getRelativePathname()));
         }
+
+        return $index;
     }
 
     protected function doLoadRemoteIndex(int $revision, SynchronizationList $synchronizationList = null)
@@ -515,7 +510,7 @@ class Vault
         return $this->getIndexMerger()->merge($remoteIndex, $localIndex, $lastLocalIndex);
     }
 
-    protected function doRestore(int $revision = null, SynchronizationProgressListenerInterface $progressionListener = null, bool $skipLastLocalIndexUpdate = false): OperationResultList
+    protected function doRestore(int $revision = null, SynchronizationProgressListenerInterface $progressionListener = null, bool $skipLastLocalIndexUpdate = false, string $targetPath = null): OperationResultList
     {
         if ($progressionListener === null)
         {
@@ -546,7 +541,9 @@ class Vault
             throw new Exception("Unknown revision: {$revision}");
         }
 
-        $localIndex = $this->buildLocalIndex();
+        $targetPath = $targetPath ?: $this->configuration->getLocalPath();
+
+        $localIndex = $this->doBuildLocalIndex($targetPath);
 
         $operationList = $this->getOperationListBuilder()->buildOperationList($remoteIndex, $localIndex, $remoteIndex);
 
@@ -561,7 +558,7 @@ class Vault
         {
             /** @var OperationInterface $operation */
 
-            $success = $operation->execute($this->getLocalPath(), $this->getStorageDriver());
+            $success = $operation->execute($targetPath, $this->getStorageDriver());
 
             $operationResult = new OperationResult($operation, $success);
             $operationResultList->addOperationResult($operationResult);
@@ -671,7 +668,7 @@ class Vault
 
     protected function initMetadataDirectory(): string
     {
-        $path = $this->localPath . static::METADATA_DIRECTORY_NAME;
+        $path = $this->configuration->getLocalPath() . static::METADATA_DIRECTORY_NAME;
 
         if (!is_dir($path))
         {
@@ -686,6 +683,6 @@ class Vault
 
     protected function getLastLocalIndexFilePath(): string
     {
-        return $this->initMetadataDirectory() . sprintf('lastLocalIndex-%s', $this->getTitle());
+        return $this->initMetadataDirectory() . sprintf('lastLocalIndex-%s', $this->vaultConfiguration->getTitle());
     }
 }

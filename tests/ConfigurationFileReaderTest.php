@@ -24,7 +24,7 @@ class ConfigurationFileReaderTest extends TestCase
     "vaults": [
         {
             "title": "Test",
-            "adapter": "path",
+            "storage": "local",
             "lockAdapter": "storage",
             "settings": {
                 "path": "/another/path"
@@ -39,14 +39,14 @@ JSON
         $config = $reader->getConfiguration($configFilePath);
 
         $this->assertInstanceOf(Configuration::class, $config);
-        $this->assertEquals('/some/path', $config->getLocalPath());
+        $this->assertEquals('/some/path/', $config->getLocalPath());
         $this->assertEquals(['to/be/excluded'], $config->getExclusions());
         $this->assertEquals('some identity', $config->getIdentity());
 
         $vaultConfig = $config->getVaultConfigurationByTitle('Test');
 
         $this->assertInstanceOf(VaultConfiguration::class, $vaultConfig);
-        $this->assertEquals('path', $vaultConfig->getVaultAdapter());
+        $this->assertEquals('local', $vaultConfig->getStorageDriver());
         $this->assertEquals('storage', $vaultConfig->getLockAdapter());
         $this->assertEquals('/another/path', $vaultConfig->getSetting('path'));
         $this->assertEquals(['path' => '/another/path'], $vaultConfig->getSettings());

@@ -23,7 +23,7 @@ class SynchronizationCommandTest extends AbstractCommandTest
             'identity' => 'Someone',
             'vaults' => [
                 [
-                    'adapter' => 'path',
+                    'storage' => 'local',
                     'settings' => [
                         'path' => $vaultPath,
                     ],

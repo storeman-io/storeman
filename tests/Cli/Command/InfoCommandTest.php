@@ -23,7 +23,7 @@ class InfoCommandTest extends AbstractCommandTest
             'vaults' => [
                 [
                     'title' => 'Some Vault Title',
-                    'adapter' => 'path',
+                    'storage' => 'local',
                     'settings' => [
                         'path' => $this->getTemporaryPathGenerator()->getTemporaryDirectory()
                     ],

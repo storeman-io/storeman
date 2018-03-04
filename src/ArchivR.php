@@ -2,9 +2,7 @@
 
 namespace Archivr;
 
-use Archivr\StorageDriver\StorageDriverFactory;
 use Archivr\Exception\ConfigurationException;
-use Archivr\LockAdapter\LockAdapterFactory;
 use Archivr\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 
 class ArchivR
@@ -13,16 +11,6 @@ class ArchivR
      * @var Configuration
      */
     protected $configuration;
-
-    /**
-     * @var StorageDriverFactory
-     */
-    protected $storageDriverFactory;
-
-    /**
-     * @var LockAdapterFactory
-     */
-    protected $lockAdapterFactory;
 
     /**
      * @var Vault[]
@@ -37,36 +25,6 @@ class ArchivR
     public function getConfiguration(): Configuration
     {
         return $this->configuration;
-    }
-
-    public function getStorageDriverFactory(): StorageDriverFactory
-    {
-        if ($this->storageDriverFactory === null)
-        {
-            $this->setStorageDriverFactory(new StorageDriverFactory());
-        }
-
-        return $this->storageDriverFactory;
-    }
-
-    public function setStorageDriverFactory(StorageDriverFactory $storageDriverFactory)
-    {
-        $this->storageDriverFactory = $storageDriverFactory;
-    }
-
-    public function getLockAdapterFactory(): LockAdapterFactory
-    {
-        if ($this->lockAdapterFactory === null)
-        {
-            $this->setLockAdapterFactory(new LockAdapterFactory());
-        }
-
-        return $this->lockAdapterFactory;
-    }
-
-    public function setLockAdapterFactory(LockAdapterFactory $lockAdapterFactory)
-    {
-        $this->lockAdapterFactory = $lockAdapterFactory;
     }
 
     public function buildOperationList(): OperationList
@@ -99,15 +57,7 @@ class ArchivR
         {
             $vaultConfiguration = $this->getConfiguration()->getVaultConfigurationByTitle($vaultTitle);
 
-            $storageDriver = $this->getStorageDriverFactory()->create($vaultConfiguration->getVaultAdapter(), $vaultConfiguration);
-            $lockAdapter = $this->getLockAdapterFactory()->create($vaultConfiguration->getLockAdapter(), $vaultConfiguration, $storageDriver);
-
-            $vault = new Vault($vaultTitle, $this->configuration->getLocalPath(), $storageDriver);
-            $vault->setLockAdapter($lockAdapter);
-            $vault->setExclusions($this->configuration->getExclusions());
-            $vault->setIdentity($this->configuration->getIdentity());
-
-            $this->vaults[$vaultTitle] = $vault;
+            $this->vaults[$vaultTitle] = new Vault($this->configuration, $vaultConfiguration);
         }
 
         return $this->vaults[$vaultTitle];
@@ -118,13 +68,13 @@ class ArchivR
         $lastRevision = 0;
 
         // fallback to all vaults
-        $vaultTitles = $vaultTitles ?: array_map(function(Vault $vault) { return $vault->getTitle(); }, $this->getVaults());
+        $vaultTitles = $vaultTitles ?: array_map(function(Vault $vault) { return $vault->getVaultConfiguration()->getTitle(); }, $this->getVaults());
 
         // acquire all locks and retrieve highest existing revision
         foreach ($this->getVaults() as $vault)
         {
             // lock is only required for vaults that we want to synchronize with
-            if (in_array($vault->getTitle(), $vaultTitles))
+            if (in_array($vault->getVaultConfiguration()->getTitle(), $vaultTitles))
             {
                 $vault->getLockAdapter()->acquireLock(Vault::LOCK_SYNC);
             }
@@ -165,13 +115,14 @@ class ArchivR
 
         foreach ($this->getVaults() as $vault)
         {
+            $vaultConfig = $vault->getVaultConfiguration();
             $list = $vault->loadSynchronizationList();
 
             foreach ($list as $synchronization)
             {
                 /** @var Synchronization $synchronization */
 
-                $return[$synchronization->getRevision()][$vault->getTitle()] = $synchronization;
+                $return[$synchronization->getRevision()][$vaultConfig->getTitle()] = $synchronization;
             }
         }
 

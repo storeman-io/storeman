@@ -2,18 +2,12 @@
 
 namespace Archivr\Test;
 
-use Archivr\StorageDriver\DummyStorageDriver;
-use Archivr\StorageDriver\FlysystemStorageDriver;
+use Archivr\Configuration;
 use Archivr\Index;
-use Archivr\IndexMerger\IndexMergerInterface;
-use Archivr\IndexMerger\StandardIndexMerger;
 use Archivr\IndexObject;
-use Archivr\LockAdapter\StorageBasedLockAdapter;
-use Archivr\LockAdapter\LockAdapterInterface;
 use Archivr\OperationResultList;
 use Archivr\Vault;
-use League\Flysystem\Adapter\Local;
-use League\Flysystem\Filesystem;
+use Archivr\VaultConfiguration;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -21,46 +15,6 @@ class VaultTest extends TestCase
 {
     use TemporaryPathGeneratorProviderTrait;
     use TestVaultGeneratorProviderTrait;
-
-    public function testIndexMergerInjection()
-    {
-        $vault = new Vault('test', $this->getTemporaryPathGenerator()->getTemporaryDirectory(), new DummyStorageDriver());
-
-        $this->assertEquals(StandardIndexMerger::class, get_class($vault->getIndexMerger()));
-
-        $newIndexMerger = $this->createMock(IndexMergerInterface::class);
-        $vault->setIndexMerger($newIndexMerger);
-
-        $this->assertEquals($newIndexMerger, $vault->getIndexMerger());
-    }
-
-    public function testLockAdapterInjection()
-    {
-        $vault = new Vault('test', $this->getTemporaryPathGenerator()->getTemporaryDirectory(), new DummyStorageDriver());
-
-        $this->assertEquals(StorageBasedLockAdapter::class, get_class($vault->getLockAdapter()));
-
-        $newLockAdapter = $this->createMock(LockAdapterInterface::class);
-        $vault->setLockAdapter($newLockAdapter);
-
-        $this->assertEquals($newLockAdapter, $vault->getLockAdapter());
-    }
-
-    public function testBuildLocalIndex()
-    {
-        $testVault = $this->getTestVaultGenerator()->generate();
-        $vault = new Vault('test', $testVault->getBasePath(), new DummyStorageDriver());
-
-        $localIndex = $vault->buildLocalIndex();
-
-        $this->assertInstanceOf(Index::class, $localIndex);
-        $this->assertIndexEqualsTestVault($testVault, $localIndex);
-
-        foreach ($testVault as $testVaultObject)
-        {
-            $this->assertTestVaultObjectIsInIndex($testVaultObject, $localIndex);
-        }
-    }
 
     public function testOnePartySynchronization()
     {
@@ -217,6 +171,12 @@ class VaultTest extends TestCase
 
     private function getLocalVault(string $basePath, string $remotePath): Vault
     {
-        return new Vault('test', $basePath, new FlysystemStorageDriver(new Filesystem(new Local($remotePath))));
+        $configuration = new Configuration();
+        $configuration->setLocalPath($basePath);
+
+        $vaultConfiguration = new VaultConfiguration('local', 'storage');
+        $vaultConfiguration->setSetting('path', $remotePath);
+
+        return new Vault($configuration, $vaultConfiguration);
     }
 }
