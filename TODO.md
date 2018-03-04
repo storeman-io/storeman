@@ -2,21 +2,11 @@
 # Todo
 
 - (Potential) bugs
-    - Sometimes: (probably test vaults are not generated completely distinct)
-    
-        There was 1 failure:
-        
-        1) Archivr\Test\VaultTest::testTwoPartySynchronization
-        Failed asserting that 1502553467 matches expected 1502553466.
-        
-        /home/arne/Repositories/archivr/tests/VaultTest.php:204
-        /home/arne/Repositories/archivr/tests/VaultTest.php:196
-        /home/arne/Repositories/archivr/tests/VaultTest.php:177
-        /home/arne/Repositories/archivr/tests/VaultTest.php:116
     - Deadlock prevention
         - Ensure same locking order of vaults
         - Same lockAdapter across multiple vaults?
 - Features
+    - Use full available mtime/ctime resolution
     - Add "force-local" parameter to synchronization to be able to "keep" restored state
         - Automatically call after restore (can optionally be prevented)
     - More logging verbosity
@@ -49,4 +39,3 @@
 - Code quality
     - Renamed ConnectionConfiguration to VaultConnection
     - Versionable (across archivr versions) Local/Remote index format
-    - Separate OperationCollection building in own class/interface
