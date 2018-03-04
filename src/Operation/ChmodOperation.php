@@ -2,7 +2,7 @@
 
 namespace Archivr\Operation;
 
-use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
+use Archivr\StorageDriver\StorageDriverInterface;
 
 class ChmodOperation implements OperationInterface
 {
@@ -22,7 +22,7 @@ class ChmodOperation implements OperationInterface
         $this->mode = $mode;
     }
 
-    public function execute(string $localBasePath, ConnectionAdapterInterface $connection): bool
+    public function execute(string $localBasePath, StorageDriverInterface $storageDriver): bool
     {
         $absolutePath = $localBasePath . $this->relativePath;
 

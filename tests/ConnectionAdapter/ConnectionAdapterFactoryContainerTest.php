@@ -2,8 +2,8 @@
 
 namespace Archivr\Test\ConnectionAdapter;
 
-use Archivr\ConnectionAdapter\ConnectionAdapterFactoryContainer;
-use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
+use Archivr\StorageDriver\StorageDriverFactoryContainer;
+use Archivr\StorageDriver\StorageDriverInterface;
 use Archivr\VaultConfiguration;
 use Archivr\Exception\Exception;
 use PHPUnit\Framework\TestCase;
@@ -14,9 +14,9 @@ class ConnectionAdapterFactoryContainerTest extends TestCase
     {
         /** @var VaultConfiguration $config */
         $config = $this->createMock(VaultConfiguration::class);
-        $firstAdapter = $this->createMock(ConnectionAdapterInterface::class);
+        $firstAdapter = $this->createMock(StorageDriverInterface::class);
 
-        $container = new ConnectionAdapterFactoryContainer([
+        $container = new StorageDriverFactoryContainer([
             'initial' => function() use ($firstAdapter)
             {
                 return $firstAdapter;
@@ -28,7 +28,7 @@ class ConnectionAdapterFactoryContainerTest extends TestCase
         $this->assertFalse($container->has('x'));
         $this->assertEquals($firstAdapter, $container->get('initial', $config));
 
-        $secondAdapter = $this->createMock(ConnectionAdapterInterface::class);
+        $secondAdapter = $this->createMock(StorageDriverInterface::class);
 
         $container->register('second', function() use ($secondAdapter) {
 
@@ -43,7 +43,7 @@ class ConnectionAdapterFactoryContainerTest extends TestCase
         /** @var VaultConfiguration $config */
         $config = $this->createMock(VaultConfiguration::class);
 
-        $container = new ConnectionAdapterFactoryContainer([
+        $container = new StorageDriverFactoryContainer([
             'test' => function() {
 
                 return new \DateTime();

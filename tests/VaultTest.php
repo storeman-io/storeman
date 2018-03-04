@@ -2,8 +2,8 @@
 
 namespace Archivr\Test;
 
-use Archivr\ConnectionAdapter\DummyConnectionAdapter;
-use Archivr\ConnectionAdapter\FlysystemConnectionAdapter;
+use Archivr\StorageDriver\DummyStorageDriver;
+use Archivr\StorageDriver\FlysystemStorageDriver;
 use Archivr\Index;
 use Archivr\IndexMerger\IndexMergerInterface;
 use Archivr\IndexMerger\StandardIndexMerger;
@@ -24,7 +24,7 @@ class VaultTest extends TestCase
 
     public function testIndexMergerInjection()
     {
-        $vault = new Vault('test', $this->getTemporaryPathGenerator()->getTemporaryDirectory(), new DummyConnectionAdapter());
+        $vault = new Vault('test', $this->getTemporaryPathGenerator()->getTemporaryDirectory(), new DummyStorageDriver());
 
         $this->assertEquals(StandardIndexMerger::class, get_class($vault->getIndexMerger()));
 
@@ -36,7 +36,7 @@ class VaultTest extends TestCase
 
     public function testLockAdapterInjection()
     {
-        $vault = new Vault('test', $this->getTemporaryPathGenerator()->getTemporaryDirectory(), new DummyConnectionAdapter());
+        $vault = new Vault('test', $this->getTemporaryPathGenerator()->getTemporaryDirectory(), new DummyStorageDriver());
 
         $this->assertEquals(ConnectionBasedLockAdapter::class, get_class($vault->getLockAdapter()));
 
@@ -49,7 +49,7 @@ class VaultTest extends TestCase
     public function testBuildLocalIndex()
     {
         $testVault = $this->getTestVaultGenerator()->generate();
-        $vault = new Vault('test', $testVault->getBasePath(), new DummyConnectionAdapter());
+        $vault = new Vault('test', $testVault->getBasePath(), new DummyStorageDriver());
 
         $localIndex = $vault->buildLocalIndex();
 
@@ -217,6 +217,6 @@ class VaultTest extends TestCase
 
     private function getLocalVault(string $basePath, string $remotePath): Vault
     {
-        return new Vault('test', $basePath, new FlysystemConnectionAdapter(new Filesystem(new Local($remotePath))));
+        return new Vault('test', $basePath, new FlysystemStorageDriver(new Filesystem(new Local($remotePath))));
     }
 }

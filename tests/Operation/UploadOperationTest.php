@@ -2,7 +2,7 @@
 
 namespace Archivr\Test\Operation;
 
-use Archivr\ConnectionAdapter\FlysystemConnectionAdapter;
+use Archivr\StorageDriver\FlysystemStorageDriver;
 use Archivr\Operation\UploadOperation;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use Archivr\Test\TestVault;
@@ -24,7 +24,7 @@ class UploadOperationTest extends TestCase
         file_put_contents($testFilePath, $testFileContent);
 
         $testVault = new TestVault();
-        $testVaultConnection = new FlysystemConnectionAdapter(new Filesystem(new Local($testVault->getBasePath())));
+        $testVaultConnection = new FlysystemStorageDriver(new Filesystem(new Local($testVault->getBasePath())));
 
         $operation = new UploadOperation(basename($testFilePath), $testBlobId);
         $operation->execute(dirname($testFilePath) . DIRECTORY_SEPARATOR, $testVaultConnection);
@@ -44,7 +44,7 @@ class UploadOperationTest extends TestCase
         file_put_contents($testFilePath, str_rot13($testFileContent));
 
         $testVault = new TestVault();
-        $testVaultConnection = new FlysystemConnectionAdapter(new Filesystem(new Local($testVault->getBasePath())));
+        $testVaultConnection = new FlysystemStorageDriver(new Filesystem(new Local($testVault->getBasePath())));
 
         $operation = new UploadOperation(basename($testFilePath), $testBlobId, [
             'string.rot13' => []

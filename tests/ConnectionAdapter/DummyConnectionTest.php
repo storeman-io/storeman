@@ -2,7 +2,7 @@
 
 namespace Archivr\Test\ConnectionAdapter;
 
-use Archivr\ConnectionAdapter\DummyConnectionAdapter;
+use Archivr\StorageDriver\DummyStorageDriver;
 use Archivr\Exception\Exception;
 use PHPUnit\Framework\TestCase;
 
@@ -12,7 +12,7 @@ class DummyConnectionTest extends TestCase
     {
         $this->expectException(Exception::class);
 
-        $connection = new DummyConnectionAdapter();
+        $connection = new DummyStorageDriver();
         $connection->read('x');
     }
 
@@ -20,7 +20,7 @@ class DummyConnectionTest extends TestCase
     {
         $this->expectException(Exception::class);
 
-        $connection = new DummyConnectionAdapter();
+        $connection = new DummyStorageDriver();
         $connection->write('x', 'x');
     }
 
@@ -28,7 +28,7 @@ class DummyConnectionTest extends TestCase
     {
         $this->expectException(Exception::class);
 
-        $connection = new DummyConnectionAdapter();
+        $connection = new DummyStorageDriver();
         $connection->writeStream('x', fopen('php://memory', 'r+'));
     }
 
@@ -36,7 +36,7 @@ class DummyConnectionTest extends TestCase
     {
         $this->expectException(Exception::class);
 
-        $connection = new DummyConnectionAdapter();
+        $connection = new DummyStorageDriver();
         $connection->exists('x');
     }
 
@@ -44,7 +44,7 @@ class DummyConnectionTest extends TestCase
     {
         $this->expectException(Exception::class);
 
-        $connection = new DummyConnectionAdapter();
+        $connection = new DummyStorageDriver();
         $connection->unlink('x');
     }
 
@@ -52,7 +52,7 @@ class DummyConnectionTest extends TestCase
     {
         $this->expectException(Exception::class);
 
-        $connection = new DummyConnectionAdapter();
+        $connection = new DummyStorageDriver();
         $connection->getReadStream('x');
     }
 }

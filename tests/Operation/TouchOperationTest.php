@@ -2,7 +2,7 @@
 
 namespace Archivr\Test\Operation;
 
-use Archivr\ConnectionAdapter\DummyConnectionAdapter;
+use Archivr\StorageDriver\DummyStorageDriver;
 use Archivr\Operation\TouchOperation;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use PHPUnit\Framework\TestCase;
@@ -22,7 +22,7 @@ class TouchOperationTest extends TestCase
         $this->assertEquals($originalMTime, filemtime($tempFile));
 
         $operation = new TouchOperation(basename($tempFile), $newMTime);
-        $operation->execute(dirname($tempFile) . DIRECTORY_SEPARATOR, new DummyConnectionAdapter());
+        $operation->execute(dirname($tempFile) . DIRECTORY_SEPARATOR, new DummyStorageDriver());
 
         clearstatcache(null, $tempFile);
 

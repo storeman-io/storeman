@@ -2,7 +2,7 @@
 
 namespace Archivr\Test\ConnectionAdapter;
 
-use Archivr\ConnectionAdapter\FlysystemConnectionAdapter;
+use Archivr\StorageDriver\FlysystemStorageDriver;
 use Archivr\Exception\Exception;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use League\Flysystem\Adapter\Local;
@@ -20,7 +20,7 @@ class FlysystemConnectionAdapterTest extends TestCase
 
     public function testRead()
     {
-        /** @var FlysystemConnectionAdapter $adapter */
+        /** @var FlysystemStorageDriver $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $this->getFilesystem()->dumpFile($filePath, $fileContent);
@@ -34,7 +34,7 @@ class FlysystemConnectionAdapterTest extends TestCase
 
     public function testWrite()
     {
-        /** @var FlysystemConnectionAdapter $adapter */
+        /** @var FlysystemStorageDriver $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $adapter->write($fileName, $fileContent);
@@ -44,7 +44,7 @@ class FlysystemConnectionAdapterTest extends TestCase
 
     public function testWriteStream()
     {
-        /** @var FlysystemConnectionAdapter $adapter */
+        /** @var FlysystemStorageDriver $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $stream = fopen('php://memory', 'r+b');
@@ -58,7 +58,7 @@ class FlysystemConnectionAdapterTest extends TestCase
 
     public function testExists()
     {
-        /** @var FlysystemConnectionAdapter $adapter */
+        /** @var FlysystemStorageDriver $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $this->getFilesystem()->dumpFile($filePath, $fileContent);
@@ -69,7 +69,7 @@ class FlysystemConnectionAdapterTest extends TestCase
 
     public function testUnlink()
     {
-        /** @var FlysystemConnectionAdapter $adapter */
+        /** @var FlysystemStorageDriver $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $this->getFilesystem()->dumpFile($filePath, $fileContent);
@@ -87,7 +87,7 @@ class FlysystemConnectionAdapterTest extends TestCase
 
     public function testGetReadStream()
     {
-        /** @var FlysystemConnectionAdapter $adapter */
+        /** @var FlysystemStorageDriver $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $this->getFilesystem()->dumpFile($filePath, $fileContent);
@@ -111,7 +111,7 @@ class FlysystemConnectionAdapterTest extends TestCase
             $fileName,
             $basePath . $fileName,
             $fileContent,
-            new FlysystemConnectionAdapter(new \League\Flysystem\Filesystem(new Local($basePath)))
+            new FlysystemStorageDriver(new \League\Flysystem\Filesystem(new Local($basePath)))
         ];
     }
 

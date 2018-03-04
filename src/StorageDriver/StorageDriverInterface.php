@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr\ConnectionAdapter;
+namespace Archivr\StorageDriver;
 
-interface ConnectionAdapterInterface
+interface StorageDriverInterface
 {
     /**
      * Reads and returns the content of a remote stored object.

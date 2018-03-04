@@ -37,7 +37,7 @@ class ArchivRTest extends TestCase
 
         $archivr = new ArchivR(new Configuration());
 
-        $this->assertNull($archivr->getConnection('x'));
+        $this->assertNull($archivr->getStorageDriver('x'));
     }
 
     public function testInvalidLockAdapterRetrieval()

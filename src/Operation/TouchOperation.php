@@ -2,7 +2,7 @@
 
 namespace Archivr\Operation;
 
-use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
+use Archivr\StorageDriver\StorageDriverInterface;
 
 class TouchOperation implements OperationInterface
 {
@@ -32,7 +32,7 @@ class TouchOperation implements OperationInterface
         return $this->mtime;
     }
 
-    public function execute(string $localBasePath, ConnectionAdapterInterface $connection): bool
+    public function execute(string $localBasePath, StorageDriverInterface $storageDriver): bool
     {
         $absolutePath = $localBasePath . $this->relativePath;
 

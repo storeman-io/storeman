@@ -2,9 +2,9 @@
 
 namespace Archivr;
 
-use Archivr\ConnectionAdapter\ConnectionAdapterFactoryContainer;
-use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
-use Archivr\ConnectionAdapter\FlysystemConnectionAdapter;
+use Archivr\StorageDriver\StorageDriverFactoryContainer;
+use Archivr\StorageDriver\StorageDriverInterface;
+use Archivr\StorageDriver\FlysystemStorageDriver;
 use Archivr\Exception\ConfigurationException;
 use Archivr\Exception\Exception;
 use Archivr\LockAdapter\ConnectionBasedLockAdapter;
@@ -24,9 +24,9 @@ class ArchivR
     protected $configuration;
 
     /**
-     * @var ConnectionAdapterFactoryContainer
+     * @var StorageDriverFactoryContainer
      */
-    protected $connectionAdapterFactoryContainer;
+    protected $storageDriverFactoryContainer;
 
     /**
      * @var LockAdapterFactoryContainer
@@ -41,7 +41,7 @@ class ArchivR
     public function __construct(Configuration $configuration)
     {
         $this->configuration = $configuration;
-        $this->connectionAdapterFactoryContainer = new ConnectionAdapterFactoryContainer([
+        $this->storageDriverFactoryContainer = new StorageDriverFactoryContainer([
 
             'path' => function(VaultConfiguration $vaultConfiguration)
             {
@@ -56,14 +56,14 @@ class ArchivR
                 $adapter = new Local($path);
                 $filesystem = new Filesystem($adapter);
 
-                return new FlysystemConnectionAdapter($filesystem);
+                return new FlysystemStorageDriver($filesystem);
             },
         ]);
         $this->lockAdapterFactoryContainer = new LockAdapterFactoryContainer([
 
             'connection' => function(VaultConfiguration $vaultConfiguration)
             {
-                $connection = $this->getConnection($vaultConfiguration->getTitle());
+                $connection = $this->getStorageDriver($vaultConfiguration->getTitle());
 
                 return new ConnectionBasedLockAdapter($connection);
             }
@@ -75,9 +75,9 @@ class ArchivR
         return $this->configuration;
     }
 
-    public function getConnectionAdapterFactoryContainer(): AbstractServiceFactoryContainer
+    public function getStorageDriverFactoryContainer(): AbstractServiceFactoryContainer
     {
-        return $this->connectionAdapterFactoryContainer;
+        return $this->storageDriverFactoryContainer;
     }
 
     public function getLockAdapterFactoryContainer(): AbstractServiceFactoryContainer
@@ -85,7 +85,7 @@ class ArchivR
         return $this->lockAdapterFactoryContainer;
     }
 
-    public function getConnection(string $vaultTitle): ConnectionAdapterInterface
+    public function getStorageDriver(string $vaultTitle): StorageDriverInterface
     {
         $vaultConfiguration = $this->configuration->getVaultConfigurationByTitle($vaultTitle);
 
@@ -94,14 +94,14 @@ class ArchivR
             throw new Exception(sprintf('Unknown vault title: "%s".', $vaultTitle));
         }
 
-        $connection = $this->connectionAdapterFactoryContainer->get($vaultConfiguration->getVaultAdapter(), $vaultConfiguration);
+        $storageDriver = $this->storageDriverFactoryContainer->get($vaultConfiguration->getVaultAdapter(), $vaultConfiguration);
 
-        if ($connection === null)
+        if ($storageDriver === null)
         {
-            throw new ConfigurationException(sprintf('Unknown connection adapter: "%s".', $vaultConfiguration->getVaultAdapter()));
+            throw new ConfigurationException(sprintf('Unknown storage driver: "%s".', $vaultConfiguration->getVaultAdapter()));
         }
 
-        return $connection;
+        return $storageDriver;
     }
 
     public function getLockAdapter(string $vaultTitle): LockAdapterInterface
@@ -154,7 +154,7 @@ class ArchivR
             $vault = new Vault(
                 $vaultTitle,
                 $this->configuration->getLocalPath(),
-                $this->getConnection($vaultTitle)
+                $this->getStorageDriver($vaultTitle)
             );
             $vault->setLockAdapter($this->getLockAdapter($vaultTitle));
             $vault->setExclusions($this->configuration->getExclusions());

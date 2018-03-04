@@ -2,7 +2,7 @@
 
 namespace Archivr\Operation;
 
-use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
+use Archivr\StorageDriver\StorageDriverInterface;
 
 interface OperationInterface
 {
@@ -10,10 +10,10 @@ interface OperationInterface
      * Executes the operation and returns whether or not it has been successful.
      *
      * @param string $localBasePath
-     * @param ConnectionAdapterInterface $connection
+     * @param StorageDriverInterface $storageDriver
      * @return bool
      */
-    public function execute(string $localBasePath, ConnectionAdapterInterface $connection): bool;
+    public function execute(string $localBasePath, StorageDriverInterface $storageDriver): bool;
 
     /**
      * Returns a string representation of the operation that is suitable to be used e.g. within cli interfaces.

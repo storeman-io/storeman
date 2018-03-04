@@ -2,7 +2,7 @@
 
 namespace Archivr\Operation;
 
-use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
+use Archivr\StorageDriver\StorageDriverInterface;
 
 class DownloadOperation implements OperationInterface
 {
@@ -28,10 +28,10 @@ class DownloadOperation implements OperationInterface
         $this->streamFilterConfigMap = $streamFilterConfigMap;
     }
 
-    public function execute(string $localBasePath, ConnectionAdapterInterface $connection): bool
+    public function execute(string $localBasePath, StorageDriverInterface $storageDriver): bool
     {
         $localStream = fopen($localBasePath . $this->relativePath, 'wb');
-        $remoteStream = $connection->getReadStream($this->blobId);
+        $remoteStream = $storageDriver->getReadStream($this->blobId);
 
         foreach ($this->streamFilterConfigMap as $filterName => $filterParams)
         {

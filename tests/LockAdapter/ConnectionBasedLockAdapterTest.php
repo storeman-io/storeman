@@ -2,7 +2,7 @@
 
 namespace LockAdapter\Test\LockAdapter;
 
-use Archivr\ConnectionAdapter\FlysystemConnectionAdapter;
+use Archivr\StorageDriver\FlysystemStorageDriver;
 use Archivr\LockAdapter\ConnectionBasedLockAdapter;
 use Archivr\LockAdapter\LockAdapterInterface;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
@@ -16,7 +16,7 @@ class ConnectionBasedLockAdapterTest extends AbstractLockAdapterTest
 
     protected function getLockAdapter(): LockAdapterInterface
     {
-        $connection = new FlysystemConnectionAdapter(new Filesystem(new Local($this->getTemporaryPathGenerator()->getTemporaryDirectory())));
+        $connection = new FlysystemStorageDriver(new Filesystem(new Local($this->getTemporaryPathGenerator()->getTemporaryDirectory())));
 
         return new ConnectionBasedLockAdapter($connection);
     }
