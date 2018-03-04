@@ -6,7 +6,14 @@ use Archivr\Operation\OperationInterface;
 
 class OperationResult
 {
+    /**
+     * @var OperationInterface
+     */
     protected $operation;
+
+    /**
+     * @var bool
+     */
     protected $success;
 
     public function __construct(OperationInterface $operation, bool $success)

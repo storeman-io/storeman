@@ -24,18 +24,16 @@ class OperationResultCollection implements \Countable, \IteratorAggregate
     }
 
     /**
-     * @return OperationResult[]
+     * {@inheritdoc}
      */
-    public function getOperationResults(): array
-    {
-        return $this->operationResults;
-    }
-
     public function count()
     {
         return count($this->operationResults);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getIterator()
     {
         return new \ArrayIterator($this->operationResults);
