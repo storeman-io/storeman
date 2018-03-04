@@ -1,6 +1,6 @@
 <?php
 
-namespace Archivr\Test\ConnectionAdapter;
+namespace Archivr\Test\StorageDriver;
 
 use Archivr\StorageDriver\FlysystemStorageDriver;
 use Archivr\Exception\Exception;
@@ -9,7 +9,7 @@ use League\Flysystem\Adapter\Local;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
-class FlysystemConnectionAdapterTest extends TestCase
+class FlysystemStorageDriverTest extends TestCase
 {
     use TemporaryPathGeneratorProviderTrait;
 

@@ -116,12 +116,26 @@ class Configuration
 
     /**
      * @param string $title
+     * @return bool
+     */
+    public function hasVaultConfiguration(string $title): bool
+    {
+        return isset($this->vaultConfigurations[$title]);
+    }
+
+    /**
+     * @param string $title
      *
      * @return VaultConfiguration
      */
     public function getVaultConfigurationByTitle(string $title)
     {
-        return isset($this->vaultConfigurations[$title]) ? $this->vaultConfigurations[$title] : null;
+        if (!isset($this->vaultConfigurations[$title]))
+        {
+            throw new \InvalidArgumentException("Unknown vault configuration requested: {$title}");
+        }
+
+        return $this->vaultConfigurations[$title];
     }
 
     /**

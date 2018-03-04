@@ -1,12 +1,12 @@
 <?php
 
-namespace Archivr\Test\ConnectionAdapter;
+namespace Archivr\Test\StorageDriver;
 
 use Archivr\StorageDriver\DummyStorageDriver;
 use Archivr\Exception\Exception;
 use PHPUnit\Framework\TestCase;
 
-class DummyConnectionTest extends TestCase
+class DummyStorageDriverTest extends TestCase
 {
     public function testRead()
     {

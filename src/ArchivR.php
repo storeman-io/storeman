@@ -2,36 +2,27 @@
 
 namespace Archivr;
 
-use Archivr\StorageDriver\StorageDriverFactoryContainer;
-use Archivr\StorageDriver\StorageDriverInterface;
-use Archivr\StorageDriver\FlysystemStorageDriver;
+use Archivr\StorageDriver\StorageDriverFactory;
 use Archivr\Exception\ConfigurationException;
-use Archivr\Exception\Exception;
-use Archivr\LockAdapter\ConnectionBasedLockAdapter;
-use Archivr\LockAdapter\LockAdapterFactoryContainer;
-use Archivr\LockAdapter\LockAdapterInterface;
+use Archivr\LockAdapter\LockAdapterFactory;
 use Archivr\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
-use League\Flysystem\Adapter\Local;
-use League\Flysystem\Filesystem;
 
 class ArchivR
 {
-    use TildeExpansionTrait;
-
     /**
      * @var Configuration
      */
     protected $configuration;
 
     /**
-     * @var StorageDriverFactoryContainer
+     * @var StorageDriverFactory
      */
-    protected $storageDriverFactoryContainer;
+    protected $storageDriverFactory;
 
     /**
-     * @var LockAdapterFactoryContainer
+     * @var LockAdapterFactory
      */
-    protected $lockAdapterFactoryContainer;
+    protected $lockAdapterFactory;
 
     /**
      * @var Vault[]
@@ -41,33 +32,6 @@ class ArchivR
     public function __construct(Configuration $configuration)
     {
         $this->configuration = $configuration;
-        $this->storageDriverFactoryContainer = new StorageDriverFactoryContainer([
-
-            'path' => function(VaultConfiguration $vaultConfiguration)
-            {
-                $path = $vaultConfiguration->getSetting('path');
-                $path = $this->expandTildePath($path);
-
-                if (!is_dir($path) || !is_writable($path))
-                {
-                    throw new ConfigurationException(sprintf('Path "%s" does not exist or is not writable.', $path));
-                }
-
-                $adapter = new Local($path);
-                $filesystem = new Filesystem($adapter);
-
-                return new FlysystemStorageDriver($filesystem);
-            },
-        ]);
-        $this->lockAdapterFactoryContainer = new LockAdapterFactoryContainer([
-
-            'connection' => function(VaultConfiguration $vaultConfiguration)
-            {
-                $connection = $this->getStorageDriver($vaultConfiguration->getTitle());
-
-                return new ConnectionBasedLockAdapter($connection);
-            }
-        ]);
     }
 
     public function getConfiguration(): Configuration
@@ -75,52 +39,34 @@ class ArchivR
         return $this->configuration;
     }
 
-    public function getStorageDriverFactoryContainer(): AbstractServiceFactoryContainer
+    public function getStorageDriverFactory(): StorageDriverFactory
     {
-        return $this->storageDriverFactoryContainer;
+        if ($this->storageDriverFactory === null)
+        {
+            $this->setStorageDriverFactory(new StorageDriverFactory());
+        }
+
+        return $this->storageDriverFactory;
     }
 
-    public function getLockAdapterFactoryContainer(): AbstractServiceFactoryContainer
+    public function setStorageDriverFactory(StorageDriverFactory $storageDriverFactory)
     {
-        return $this->lockAdapterFactoryContainer;
+        $this->storageDriverFactory = $storageDriverFactory;
     }
 
-    public function getStorageDriver(string $vaultTitle): StorageDriverInterface
+    public function getLockAdapterFactory(): LockAdapterFactory
     {
-        $vaultConfiguration = $this->configuration->getVaultConfigurationByTitle($vaultTitle);
-
-        if ($vaultConfiguration === null)
+        if ($this->lockAdapterFactory === null)
         {
-            throw new Exception(sprintf('Unknown vault title: "%s".', $vaultTitle));
+            $this->setLockAdapterFactory(new LockAdapterFactory());
         }
 
-        $storageDriver = $this->storageDriverFactoryContainer->get($vaultConfiguration->getVaultAdapter(), $vaultConfiguration);
-
-        if ($storageDriver === null)
-        {
-            throw new ConfigurationException(sprintf('Unknown storage driver: "%s".', $vaultConfiguration->getVaultAdapter()));
-        }
-
-        return $storageDriver;
+        return $this->lockAdapterFactory;
     }
 
-    public function getLockAdapter(string $vaultTitle): LockAdapterInterface
+    public function setLockAdapterFactory(LockAdapterFactory $lockAdapterFactory)
     {
-        $vaultConfiguration = $this->configuration->getVaultConfigurationByTitle($vaultTitle);
-
-        if ($vaultConfiguration === null)
-        {
-            throw new Exception(sprintf('Unknown vault title: "%s".', $vaultTitle));
-        }
-
-        $lockAdapter = $this->lockAdapterFactoryContainer->get($vaultConfiguration->getLockAdapter(), $vaultConfiguration);
-
-        if ($lockAdapter === null)
-        {
-            throw new ConfigurationException(sprintf('Unknown lock adapter: "%s".', $vaultConfiguration->getLockAdapter()));
-        }
-
-        return $lockAdapter;
+        $this->lockAdapterFactory = $lockAdapterFactory;
     }
 
     public function buildOperationList(): OperationList
@@ -151,12 +97,13 @@ class ArchivR
     {
         if (!isset($this->vaults[$vaultTitle]))
         {
-            $vault = new Vault(
-                $vaultTitle,
-                $this->configuration->getLocalPath(),
-                $this->getStorageDriver($vaultTitle)
-            );
-            $vault->setLockAdapter($this->getLockAdapter($vaultTitle));
+            $vaultConfiguration = $this->getConfiguration()->getVaultConfigurationByTitle($vaultTitle);
+
+            $storageDriver = $this->getStorageDriverFactory()->create($vaultConfiguration->getVaultAdapter(), $vaultConfiguration);
+            $lockAdapter = $this->getLockAdapterFactory()->create($vaultConfiguration->getLockAdapter(), $vaultConfiguration, $storageDriver);
+
+            $vault = new Vault($vaultTitle, $this->configuration->getLocalPath(), $storageDriver);
+            $vault->setLockAdapter($lockAdapter);
             $vault->setExclusions($this->configuration->getExclusions());
             $vault->setIdentity($this->configuration->getIdentity());
 

@@ -5,7 +5,6 @@ namespace Archivr\Test;
 use Archivr\ArchivR;
 use Archivr\Configuration;
 use Archivr\VaultConfiguration;
-use Archivr\Exception\Exception;
 use PHPUnit\Framework\TestCase;
 
 class ArchivRTest extends TestCase
@@ -29,24 +28,6 @@ class ArchivRTest extends TestCase
         $operationResultList = $archivr->synchronize();
 
         $this->assertCount(2, $operationResultList);
-    }
-
-    public function testInvalidConnectionRetrieval()
-    {
-        $this->expectException(Exception::class);
-
-        $archivr = new ArchivR(new Configuration());
-
-        $this->assertNull($archivr->getStorageDriver('x'));
-    }
-
-    public function testInvalidLockAdapterRetrieval()
-    {
-        $this->expectException(Exception::class);
-
-        $archivr = new ArchivR(new Configuration());
-
-        $this->assertNull($archivr->getLockAdapter('x'));
     }
 
     protected function getTestVaultConfig(): VaultConfiguration
