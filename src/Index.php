@@ -119,14 +119,8 @@ class Index implements \Countable, \IteratorAggregate
         {
             /** @var IndexObject $indexObject */
 
-            $otherIndexObject = $other->getObjectByPath($indexObject->getRelativePath());
-
-            if ($otherIndexObject === null)
-            {
-                return false;
-            }
-
-            if (!$otherIndexObject->equals($indexObject))
+            // we explicitly want to use equality instead of identity
+            if ($other->getObjectByPath($indexObject->getRelativePath()) != $indexObject)
             {
                 return false;
             }

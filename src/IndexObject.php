@@ -125,32 +125,6 @@ class IndexObject
         return [$this->relativePath, $this->type, $this->mtime, $this->ctime, $this->mode, $this->size, $this->blobId, $this->linkTarget];
     }
 
-    /**
-     * todo: is the same as $this == $other
-     *
-     * @param IndexObject|null $other
-     * @return bool
-     */
-    public function equals(IndexObject $other = null): bool
-    {
-        if ($other === null)
-        {
-            return false;
-        }
-
-        $equals = true;
-        $equals = $equals && ($this->getRelativePath() === $other->getRelativePath());
-        $equals = $equals && ($this->getType() === $other->getType());
-        $equals = $equals && ($this->getMtime() === $other->getMtime());
-        $equals = $equals && ($this->getCtime() === $other->getCtime());
-        $equals = $equals && ($this->getMode() === $other->getMode());
-        $equals = $equals && ($this->getSize() === $other->getSize());
-        $equals = $equals && ($this->getLinkTarget() === $other->getLinkTarget());
-        $equals = $equals && ($this->getBlobId() === $other->getBlobId());
-
-        return $equals;
-    }
-
     public static function fromIndexRecord(array $row): IndexObject
     {
         $object = new static;

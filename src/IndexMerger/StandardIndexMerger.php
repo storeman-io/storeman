@@ -38,7 +38,8 @@ class StandardIndexMerger extends AbstractIndexMerger
                 $localObjectModified = $localObjectModified || ($localObject->getLinkTarget() !== $lastLocalObject->getLinkTarget());
 
                 // remote object has been modified if it does not equal the object on its last synchronization
-                $remoteObjectModified = !$lastLocalObject->equals($remoteObject);
+                // we explicitly want to use equality instead of identity
+                $remoteObjectModified = !($lastLocalObject == $remoteObject);
             }
 
             // object has been created
@@ -86,7 +87,8 @@ class StandardIndexMerger extends AbstractIndexMerger
                     $localObjectModified = true;
 
                     // compare remote object to object state at last sync
-                    $remoteObjectModified = !$remoteObject->equals($lastLocalObject);
+                    // we explicitly want to use equality instead of identity
+                    $remoteObjectModified = !($remoteObject == $lastLocalObject);
                 }
 
                 else

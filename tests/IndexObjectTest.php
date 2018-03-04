@@ -61,7 +61,7 @@ class IndexObjectTest extends TestCase
         $indexObjectA = IndexObject::fromPath($testVaultA->getBasePath(), 'test.ext');
         $indexObjectB = IndexObject::fromPath($testVaultA->getBasePath(), 'another.ext');
 
-        $this->assertTrue($indexObjectA->equals($indexObjectA));
-        $this->assertFalse($indexObjectA->equals($indexObjectB));
+        $this->assertTrue($indexObjectA == $indexObjectA);
+        $this->assertFalse($indexObjectA == $indexObjectB);
     }
 }

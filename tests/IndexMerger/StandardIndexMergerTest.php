@@ -43,7 +43,7 @@ class StandardIndexMergerTest extends TestCase
         $mergedIndex = $merger->merge(new Index(), $testVault1->getIndex());
 
         $this->assertEquals(1, $mergedIndex->count());
-        $this->assertTrue($testVault1->getIndex()->getObjectByPath('file')->equals($mergedIndex->getObjectByPath('file')));
+        $this->assertTrue($testVault1->getIndex()->getObjectByPath('file') == $mergedIndex->getObjectByPath('file'));
     }
 
     public function testTrivialMerge()
@@ -57,8 +57,8 @@ class StandardIndexMergerTest extends TestCase
         $mergedIndex = $merger->merge($testVaultSet->getIndex(0), $testVaultSet->getIndex(1));
 
         $this->assertEquals(2, $mergedIndex->count());
-        $this->assertTrue($mergedIndex->getObjectByPath('fileA')->equals($testVaultSet->getIndex(0)->getObjectByPath('fileA')));
-        $this->assertTrue($mergedIndex->getObjectByPath('fileB')->equals($testVaultSet->getIndex(1)->getObjectByPath('fileB')));
+        $this->assertTrue($mergedIndex->getObjectByPath('fileA') == $testVaultSet->getIndex(0)->getObjectByPath('fileA'));
+        $this->assertTrue($mergedIndex->getObjectByPath('fileB') == $testVaultSet->getIndex(1)->getObjectByPath('fileB'));
     }
 
     public function testLocalChangeMerging()
@@ -74,7 +74,7 @@ class StandardIndexMergerTest extends TestCase
 
         $mergedIndex = $merger->merge($remoteIndex, $localIndex, $remoteIndex);
 
-        $this->assertTrue($mergedIndex->getObjectByPath('file')->equals($localIndex->getObjectByPath('file')));
+        $this->assertTrue($mergedIndex->getObjectByPath('file') == $localIndex->getObjectByPath('file'));
     }
 
     public function testRemoteChangeMerging()
@@ -90,6 +90,6 @@ class StandardIndexMergerTest extends TestCase
 
         $mergedIndex = $merger->merge($remoteIndex, $localIndex, $localIndex);
 
-        $this->assertTrue($mergedIndex->getObjectByPath('file')->equals($remoteIndex->getObjectByPath('file')));
+        $this->assertTrue($mergedIndex->getObjectByPath('file') == $remoteIndex->getObjectByPath('file'));
     }
 }
