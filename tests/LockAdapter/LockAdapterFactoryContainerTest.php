@@ -2,7 +2,7 @@
 
 namespace LockAdapter\Test\LockAdapter;
 
-use Archivr\ConnectionConfiguration;
+use Archivr\VaultConfiguration;
 use Archivr\Exception\Exception;
 use Archivr\LockAdapter\LockAdapterFactoryContainer;
 use Archivr\LockAdapter\LockAdapterInterface;
@@ -12,8 +12,8 @@ class LockAdapterFactoryContainerTest extends TestCase
 {
     public function testAdditionAndRetrieval()
     {
-        /** @var ConnectionConfiguration $config */
-        $config = $this->createMock(ConnectionConfiguration::class);
+        /** @var VaultConfiguration $config */
+        $config = $this->createMock(VaultConfiguration::class);
         $firstAdapter = $this->createMock(LockAdapterInterface::class);
 
         $container = new LockAdapterFactoryContainer([
@@ -40,8 +40,8 @@ class LockAdapterFactoryContainerTest extends TestCase
 
     public function testInvalidFactory()
     {
-        /** @var ConnectionConfiguration $config */
-        $config = $this->createMock(ConnectionConfiguration::class);
+        /** @var VaultConfiguration $config */
+        $config = $this->createMock(VaultConfiguration::class);
 
         $container = new LockAdapterFactoryContainer([
             'test' => function() {

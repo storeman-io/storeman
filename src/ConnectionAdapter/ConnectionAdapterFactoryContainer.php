@@ -3,19 +3,19 @@
 namespace Archivr\ConnectionAdapter;
 
 use Archivr\AbstractServiceFactoryContainer;
-use Archivr\ConnectionConfiguration;
+use Archivr\VaultConfiguration;
 use Archivr\Exception\Exception;
 
 class ConnectionAdapterFactoryContainer extends AbstractServiceFactoryContainer
 {
-    public function get(string $name, ConnectionConfiguration $connectionConfiguration)
+    public function get(string $name, VaultConfiguration $vaultConfiguration)
     {
         if (!isset($this->map[$name]))
         {
             return null;
         }
 
-        $connection = ($this->map[$name])($connectionConfiguration);
+        $connection = ($this->map[$name])($vaultConfiguration);
 
         if (!($connection instanceof ConnectionAdapterInterface))
         {

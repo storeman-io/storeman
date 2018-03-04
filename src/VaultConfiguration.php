@@ -2,7 +2,7 @@
 
 namespace Archivr;
 
-class ConnectionConfiguration
+class VaultConfiguration
 {
     /**
      * @var string
@@ -36,7 +36,7 @@ class ConnectionConfiguration
         return $this->title;
     }
 
-    public function setTitle(string $title): ConnectionConfiguration
+    public function setTitle(string $title): VaultConfiguration
     {
         $this->title = $title;
 
@@ -48,7 +48,7 @@ class ConnectionConfiguration
         return $this->vaultAdapter;
     }
 
-    public function setVaultAdapter(string $vaultAdapter): ConnectionConfiguration
+    public function setVaultAdapter(string $vaultAdapter): VaultConfiguration
     {
         $this->vaultAdapter = $vaultAdapter;
 
@@ -60,7 +60,7 @@ class ConnectionConfiguration
         return $this->lockAdapter;
     }
 
-    public function setLockAdapter(string $lockAdapter): ConnectionConfiguration
+    public function setLockAdapter(string $lockAdapter): VaultConfiguration
     {
         $this->lockAdapter = $lockAdapter;
 
@@ -77,14 +77,14 @@ class ConnectionConfiguration
         return isset($this->settings[$name]) ? $this->settings[$name] : null;
     }
 
-    public function setSettings(array $settings): ConnectionConfiguration
+    public function setSettings(array $settings): VaultConfiguration
     {
         $this->settings = $settings;
 
         return $this;
     }
 
-    public function setSetting(string $name, $value): ConnectionConfiguration
+    public function setSetting(string $name, $value): VaultConfiguration
     {
         $this->settings[$name] = $value;
 

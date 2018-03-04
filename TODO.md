@@ -7,6 +7,7 @@
         - Same lockAdapter across multiple vaults?
 - Features
     - Use full available mtime/ctime resolution
+        - Keep comparison across systems with different resolutions in mind
     - Add "force-local" parameter to synchronization to be able to "keep" restored state
         - Automatically call after restore (can optionally be prevented)
     - More logging verbosity
@@ -37,5 +38,4 @@
     - Selective compression
         - Most media files are already compressed
 - Code quality
-    - Renamed ConnectionConfiguration to VaultConnection
     - Versionable (across archivr versions) Local/Remote index format

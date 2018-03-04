@@ -22,9 +22,9 @@ class Configuration
     protected $identity;
 
     /**
-     * @var ConnectionConfiguration[]
+     * @var VaultConfiguration[]
      */
-    protected $connectionConfigurations = [];
+    protected $vaultConfigurations = [];
 
     /**
      * @return string
@@ -99,54 +99,37 @@ class Configuration
     }
 
     /**
-     * @return ConnectionConfiguration[]
+     * @return VaultConfiguration[]
      */
-    public function getConnectionConfigurations(): array
+    public function getVaultConfigurations(): array
     {
-        return $this->connectionConfigurations;
+        return $this->vaultConfigurations;
     }
 
     /**
      * @param string $title
      *
-     * @return ConnectionConfiguration
+     * @return VaultConfiguration
      */
-    public function getConnectionConfigurationByTitle(string $title)
+    public function getVaultConfigurationByTitle(string $title)
     {
-        return isset($this->connectionConfigurations[$title]) ? $this->connectionConfigurations[$title] : null;
+        return isset($this->vaultConfigurations[$title]) ? $this->vaultConfigurations[$title] : null;
     }
 
     /**
-     * @param ConnectionConfiguration[] $connectionConfigurations
-     *
-     * @return Configuration
-     */
-    public function setConnectionConfigurations(array $connectionConfigurations): Configuration
-    {
-        $this->connectionConfigurations = [];
-
-        foreach ($connectionConfigurations as $connectionConfiguration)
-        {
-            $this->addConnectionConfiguration($connectionConfiguration);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param ConnectionConfiguration $configuration
+     * @param VaultConfiguration $configuration
      *
      * @return Configuration
      * @throws Exception
      */
-    public function addConnectionConfiguration(ConnectionConfiguration $configuration): Configuration
+    public function addVaultConfiguration(VaultConfiguration $configuration): Configuration
     {
-        if (isset($this->connectionConfigurations[$configuration->getTitle()]))
+        if (isset($this->vaultConfigurations[$configuration->getTitle()]))
         {
-            throw new Exception(sprintf('Trying to add connection configration with duplicate title %s.', $configuration->getTitle()));
+            throw new Exception(sprintf('Trying to add vault configration with duplicate title %s.', $configuration->getTitle()));
         }
 
-        $this->connectionConfigurations[$configuration->getTitle()] = $configuration;
+        $this->vaultConfigurations[$configuration->getTitle()] = $configuration;
 
         return $this;
     }

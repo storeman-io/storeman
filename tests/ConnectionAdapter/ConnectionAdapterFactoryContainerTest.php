@@ -4,7 +4,7 @@ namespace Archivr\Test\ConnectionAdapter;
 
 use Archivr\ConnectionAdapter\ConnectionAdapterFactoryContainer;
 use Archivr\ConnectionAdapter\ConnectionAdapterInterface;
-use Archivr\ConnectionConfiguration;
+use Archivr\VaultConfiguration;
 use Archivr\Exception\Exception;
 use PHPUnit\Framework\TestCase;
 
@@ -12,8 +12,8 @@ class ConnectionAdapterFactoryContainerTest extends TestCase
 {
     public function testAdditionAndRetrieval()
     {
-        /** @var ConnectionConfiguration $config */
-        $config = $this->createMock(ConnectionConfiguration::class);
+        /** @var VaultConfiguration $config */
+        $config = $this->createMock(VaultConfiguration::class);
         $firstAdapter = $this->createMock(ConnectionAdapterInterface::class);
 
         $container = new ConnectionAdapterFactoryContainer([
@@ -40,8 +40,8 @@ class ConnectionAdapterFactoryContainerTest extends TestCase
 
     public function testInvalidFactory()
     {
-        /** @var ConnectionConfiguration $config */
-        $config = $this->createMock(ConnectionConfiguration::class);
+        /** @var VaultConfiguration $config */
+        $config = $this->createMock(VaultConfiguration::class);
 
         $container = new ConnectionAdapterFactoryContainer([
             'test' => function() {

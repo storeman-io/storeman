@@ -4,7 +4,7 @@ namespace Archivr\Test;
 
 use Archivr\Configuration;
 use Archivr\ConfigurationFileReader;
-use Archivr\ConnectionConfiguration;
+use Archivr\VaultConfiguration;
 use Archivr\Exception\Exception;
 use PHPUnit\Framework\TestCase;
 
@@ -43,13 +43,13 @@ JSON
         $this->assertEquals(['to/be/excluded'], $config->getExclusions());
         $this->assertEquals('some identity', $config->getIdentity());
 
-        $connectionConfig = $config->getConnectionConfigurationByTitle('Test');
+        $vaultConfig = $config->getVaultConfigurationByTitle('Test');
 
-        $this->assertInstanceOf(ConnectionConfiguration::class, $connectionConfig);
-        $this->assertEquals('path', $connectionConfig->getVaultAdapter());
-        $this->assertEquals('connection', $connectionConfig->getLockAdapter());
-        $this->assertEquals('/another/path', $connectionConfig->getSetting('path'));
-        $this->assertEquals(['path' => '/another/path'], $connectionConfig->getSettings());
+        $this->assertInstanceOf(VaultConfiguration::class, $vaultConfig);
+        $this->assertEquals('path', $vaultConfig->getVaultAdapter());
+        $this->assertEquals('connection', $vaultConfig->getLockAdapter());
+        $this->assertEquals('/another/path', $vaultConfig->getSetting('path'));
+        $this->assertEquals(['path' => '/another/path'], $vaultConfig->getSettings());
     }
 
     public function testInvalidFile()

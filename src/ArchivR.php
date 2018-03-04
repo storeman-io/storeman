@@ -43,9 +43,9 @@ class ArchivR
         $this->configuration = $configuration;
         $this->connectionAdapterFactoryContainer = new ConnectionAdapterFactoryContainer([
 
-            'path' => function(ConnectionConfiguration $connectionConfiguration)
+            'path' => function(VaultConfiguration $vaultConfiguration)
             {
-                $path = $connectionConfiguration->getSetting('path');
+                $path = $vaultConfiguration->getSetting('path');
                 $path = $this->expandTildePath($path);
 
                 if (!is_dir($path) || !is_writable($path))
@@ -61,9 +61,9 @@ class ArchivR
         ]);
         $this->lockAdapterFactoryContainer = new LockAdapterFactoryContainer([
 
-            'connection' => function(ConnectionConfiguration $connectionConfiguration)
+            'connection' => function(VaultConfiguration $vaultConfiguration)
             {
-                $connection = $this->getConnection($connectionConfiguration->getTitle());
+                $connection = $this->getConnection($vaultConfiguration->getTitle());
 
                 return new ConnectionBasedLockAdapter($connection);
             }
@@ -87,18 +87,18 @@ class ArchivR
 
     public function getConnection(string $vaultTitle): ConnectionAdapterInterface
     {
-        $connectionConfiguration = $this->configuration->getConnectionConfigurationByTitle($vaultTitle);
+        $vaultConfiguration = $this->configuration->getVaultConfigurationByTitle($vaultTitle);
 
-        if ($connectionConfiguration === null)
+        if ($vaultConfiguration === null)
         {
-            throw new Exception(sprintf('Unknown connection title: "%s".', $vaultTitle));
+            throw new Exception(sprintf('Unknown vault title: "%s".', $vaultTitle));
         }
 
-        $connection = $this->connectionAdapterFactoryContainer->get($connectionConfiguration->getVaultAdapter(), $connectionConfiguration);
+        $connection = $this->connectionAdapterFactoryContainer->get($vaultConfiguration->getVaultAdapter(), $vaultConfiguration);
 
         if ($connection === null)
         {
-            throw new ConfigurationException(sprintf('Unknown connection adapter: "%s".', $connectionConfiguration->getVaultAdapter()));
+            throw new ConfigurationException(sprintf('Unknown connection adapter: "%s".', $vaultConfiguration->getVaultAdapter()));
         }
 
         return $connection;
@@ -106,18 +106,18 @@ class ArchivR
 
     public function getLockAdapter(string $vaultTitle): LockAdapterInterface
     {
-        $connectionConfiguration = $this->configuration->getConnectionConfigurationByTitle($vaultTitle);
+        $vaultConfiguration = $this->configuration->getVaultConfigurationByTitle($vaultTitle);
 
-        if ($connectionConfiguration === null)
+        if ($vaultConfiguration === null)
         {
-            throw new Exception(sprintf('Unknown connection title: "%s".', $vaultTitle));
+            throw new Exception(sprintf('Unknown vault title: "%s".', $vaultTitle));
         }
 
-        $lockAdapter = $this->lockAdapterFactoryContainer->get($connectionConfiguration->getLockAdapter(), $connectionConfiguration);
+        $lockAdapter = $this->lockAdapterFactoryContainer->get($vaultConfiguration->getLockAdapter(), $vaultConfiguration);
 
         if ($lockAdapter === null)
         {
-            throw new ConfigurationException(sprintf('Unknown lock adapter: "%s".', $connectionConfiguration->getLockAdapter()));
+            throw new ConfigurationException(sprintf('Unknown lock adapter: "%s".', $vaultConfiguration->getLockAdapter()));
         }
 
         return $lockAdapter;
@@ -140,11 +140,11 @@ class ArchivR
      */
     public function getVaults(): array
     {
-        return array_map(function(ConnectionConfiguration $connectionConfiguration) {
+        return array_map(function(VaultConfiguration $vaultConfiguration) {
 
-            return $this->getVault($connectionConfiguration->getTitle());
+            return $this->getVault($vaultConfiguration->getTitle());
 
-        }, $this->configuration->getConnectionConfigurations());
+        }, $this->configuration->getVaultConfigurations());
     }
 
     public function getVault(string $vaultTitle): Vault

@@ -4,7 +4,7 @@ namespace Archivr\Test;
 
 use Archivr\ArchivR;
 use Archivr\Configuration;
-use Archivr\ConnectionConfiguration;
+use Archivr\VaultConfiguration;
 use Archivr\Exception\Exception;
 use PHPUnit\Framework\TestCase;
 
@@ -19,8 +19,8 @@ class ArchivRTest extends TestCase
 
         $config = new Configuration();
         $config->setLocalPath($testVault->getBasePath());
-        $config->addConnectionConfiguration($this->getTestVaultConfig()->setTitle('First'));
-        $config->addConnectionConfiguration($this->getTestVaultConfig()->setTitle('Second'));
+        $config->addVaultConfiguration($this->getTestVaultConfig()->setTitle('First'));
+        $config->addVaultConfiguration($this->getTestVaultConfig()->setTitle('Second'));
 
         $archivr = new ArchivR($config);
 
@@ -49,9 +49,9 @@ class ArchivRTest extends TestCase
         $this->assertNull($archivr->getLockAdapter('x'));
     }
 
-    protected function getTestVaultConfig(): ConnectionConfiguration
+    protected function getTestVaultConfig(): VaultConfiguration
     {
-        $config = new ConnectionConfiguration('path', 'connection');
+        $config = new VaultConfiguration('path', 'connection');
         $config->setSetting('path', $this->getTemporaryPathGenerator()->getTemporaryDirectory());
 
         return $config;

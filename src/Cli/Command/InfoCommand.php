@@ -44,9 +44,9 @@ class InfoCommand extends AbstractCommand
         $table->addRow(['Excluded:', implode(',', $config->getExclusions()) ?: '-']);
         $table->addRow(['Identity:', sprintf('<bold>%s</bold>', $config->getIdentity())]);
 
-        foreach ($config->getConnectionConfigurations() as $index => $connectionConfiguration)
+        foreach ($config->getVaultConfigurations() as $index => $vaultConfiguration)
         {
-            $vault = $archivR->getVault($connectionConfiguration->getTitle());
+            $vault = $archivR->getVault($vaultConfiguration->getTitle());
             $currentLock = $vault->getLockAdapter()->getLock(Vault::LOCK_SYNC);
 
             $table->addRow([
@@ -54,14 +54,14 @@ class InfoCommand extends AbstractCommand
                 "Title:\nAdapter:\nLock Adapter:\nSettings:\nCurrent lock:",
                 implode("\n", [
                     "<info>{$vault->getTitle()}</info>",
-                    $connectionConfiguration->getVaultAdapter(),
-                    $connectionConfiguration->getLockAdapter(),
+                    $vaultConfiguration->getVaultAdapter(),
+                    $vaultConfiguration->getLockAdapter(),
                     implode(
                         ',',
                         array_map(
                             function($key, $value) { return "{$key}: {$value}"; },
-                            array_keys($connectionConfiguration->getSettings()),
-                            array_values($connectionConfiguration->getSettings())
+                            array_keys($vaultConfiguration->getSettings()),
+                            array_values($vaultConfiguration->getSettings())
                         )
                     ) ?: '-',
                     $currentLock ? "Locked {$currentLock->getAcquired()->format('c')} by {$currentLock->getIdentity()}" : '-'

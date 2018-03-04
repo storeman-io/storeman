@@ -76,15 +76,15 @@ class ConfigurationFileReader
 
             $lockAdapter = empty($vaultConfig['lockAdapter']) ? 'connection' : $vaultConfig['lockAdapter'];
 
-            $connectionConfig = new ConnectionConfiguration($vaultConfig['adapter'], $lockAdapter);
-            $connectionConfig->setSettings($vaultConfig['settings'] ?: []);
+            $vaultConfiguration = new VaultConfiguration($vaultConfig['adapter'], $lockAdapter);
+            $vaultConfiguration->setSettings($vaultConfig['settings'] ?: []);
 
             if (!empty($vaultConfig['title']))
             {
-                $connectionConfig->setTitle($vaultConfig['title']);
+                $vaultConfiguration->setTitle($vaultConfig['title']);
             }
 
-            $configuration->addConnectionConfiguration($connectionConfig);
+            $configuration->addVaultConfiguration($vaultConfiguration);
         }
 
         return $configuration;
