@@ -10,5 +10,5 @@ if (ini_get('phar.readonly') == 1)
     exit(1);
 }
 
-$compiler = new \Archivr\Compiler();
+$compiler = new \Archivr\PharCompiler();
 $compiler->compile(__DIR__ . '/../build/archivr.phar');

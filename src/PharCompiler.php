@@ -9,7 +9,7 @@ use Symfony\Component\Finder\Finder;
  * Compiles the application into a standalone phar which is suitable for distribution.
  * Based on the composer counterpart: https://github.com/composer/composer/blob/master/src/Composer/Compiler.php
  */
-class Compiler
+class PharCompiler
 {
     /**
      * @var Filesystem
