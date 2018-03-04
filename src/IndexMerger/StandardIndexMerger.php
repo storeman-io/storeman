@@ -3,34 +3,11 @@
 namespace Archivr\IndexMerger;
 
 use Archivr\ConflictHandler\ConflictHandlerInterface;
-use Archivr\ConflictHandler\PanickingConflictHandler;
 use Archivr\Index;
 use Archivr\IndexObject;
 
-class StandardIndexMerger implements IndexMergerInterface
+class StandardIndexMerger extends AbstractIndexMerger
 {
-    /**
-     * @var ConflictHandlerInterface
-     */
-    protected $conflictHandler;
-
-    public function setConflictHandler(ConflictHandlerInterface $conflictHandler = null): IndexMergerInterface
-    {
-        $this->conflictHandler = $conflictHandler;
-
-        return $this;
-    }
-
-    public function getConflictHandler(): ConflictHandlerInterface
-    {
-        if ($this->conflictHandler === null)
-        {
-            $this->setConflictHandler(new PanickingConflictHandler());
-        }
-
-        return $this->conflictHandler;
-    }
-
     public function merge(Index $remoteIndex, Index $localIndex, Index $lastLocalIndex = null): Index
     {
         $mergedIndex = new Index();
