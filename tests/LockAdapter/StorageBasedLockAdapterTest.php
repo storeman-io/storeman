@@ -3,14 +3,14 @@
 namespace LockAdapter\Test\LockAdapter;
 
 use Archivr\StorageDriver\FlysystemStorageDriver;
-use Archivr\LockAdapter\ConnectionBasedLockAdapter;
+use Archivr\LockAdapter\StorageBasedLockAdapter;
 use Archivr\LockAdapter\LockAdapterInterface;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 use LockAdapter\AbstractLockAdapterTest;
 
-class ConnectionBasedLockAdapterTest extends AbstractLockAdapterTest
+class StorageBasedLockAdapterTest extends AbstractLockAdapterTest
 {
     use TemporaryPathGeneratorProviderTrait;
 
@@ -18,6 +18,6 @@ class ConnectionBasedLockAdapterTest extends AbstractLockAdapterTest
     {
         $connection = new FlysystemStorageDriver(new Filesystem(new Local($this->getTemporaryPathGenerator()->getTemporaryDirectory())));
 
-        return new ConnectionBasedLockAdapter($connection);
+        return new StorageBasedLockAdapter($connection);
     }
 }

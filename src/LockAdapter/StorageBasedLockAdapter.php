@@ -4,7 +4,7 @@ namespace Archivr\LockAdapter;
 
 use Archivr\StorageDriver\StorageDriverInterface;
 
-class ConnectionBasedLockAdapter extends AbstractLockAdapter
+class StorageBasedLockAdapter extends AbstractLockAdapter
 {
     /**
      * @var StorageDriverInterface

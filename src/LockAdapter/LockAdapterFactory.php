@@ -11,9 +11,9 @@ class LockAdapterFactory extends AbstractFactory
 {
     public function __construct()
     {
-        $this->factoryMap['connection'] = function(VaultConfiguration $vaultConfiguration, StorageDriverInterface $storageDriver)
+        $this->factoryMap['storage'] = function(VaultConfiguration $vaultConfiguration, StorageDriverInterface $storageDriver)
         {
-            return new ConnectionBasedLockAdapter($storageDriver);
+            return new StorageBasedLockAdapter($storageDriver);
         };
     }
 

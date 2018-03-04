@@ -74,7 +74,7 @@ class ConfigurationFileReader
                 throw new ConfigurationException(sprintf('Vault configuration #%d is missing the obligatory \'adapter\' key.', $index));
             }
 
-            $lockAdapter = empty($vaultConfig['lockAdapter']) ? 'connection' : $vaultConfig['lockAdapter'];
+            $lockAdapter = empty($vaultConfig['lockAdapter']) ? 'storage' : $vaultConfig['lockAdapter'];
 
             $vaultConfiguration = new VaultConfiguration($vaultConfig['adapter'], $lockAdapter);
             $vaultConfiguration->setSettings($vaultConfig['settings'] ?: []);

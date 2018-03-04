@@ -8,7 +8,7 @@ use Archivr\Index;
 use Archivr\IndexMerger\IndexMergerInterface;
 use Archivr\IndexMerger\StandardIndexMerger;
 use Archivr\IndexObject;
-use Archivr\LockAdapter\ConnectionBasedLockAdapter;
+use Archivr\LockAdapter\StorageBasedLockAdapter;
 use Archivr\LockAdapter\LockAdapterInterface;
 use Archivr\OperationResultList;
 use Archivr\Vault;
@@ -38,7 +38,7 @@ class VaultTest extends TestCase
     {
         $vault = new Vault('test', $this->getTemporaryPathGenerator()->getTemporaryDirectory(), new DummyStorageDriver());
 
-        $this->assertEquals(ConnectionBasedLockAdapter::class, get_class($vault->getLockAdapter()));
+        $this->assertEquals(StorageBasedLockAdapter::class, get_class($vault->getLockAdapter()));
 
         $newLockAdapter = $this->createMock(LockAdapterInterface::class);
         $vault->setLockAdapter($newLockAdapter);

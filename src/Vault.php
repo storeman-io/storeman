@@ -6,7 +6,7 @@ use Archivr\StorageDriver\StorageDriverInterface;
 use Archivr\Exception\Exception;
 use Archivr\IndexMerger\IndexMergerInterface;
 use Archivr\IndexMerger\StandardIndexMerger;
-use Archivr\LockAdapter\ConnectionBasedLockAdapter;
+use Archivr\LockAdapter\StorageBasedLockAdapter;
 use Archivr\LockAdapter\LockAdapterInterface;
 use Archivr\OperationListBuilder\OperationListBuilderInterface;
 use Archivr\OperationListBuilder\StandardOperationListBuilder;
@@ -128,7 +128,7 @@ class Vault
     {
         if ($this->lockAdapter === null)
         {
-            $this->lockAdapter = new ConnectionBasedLockAdapter($this->storageDriver);
+            $this->lockAdapter = new StorageBasedLockAdapter($this->storageDriver);
         }
 
         return $this->lockAdapter;
