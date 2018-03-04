@@ -29,11 +29,11 @@ abstract class AbstractLockAdapter implements LockAdapterInterface
         return $this->doGetLock($name);
     }
 
-    public function acquireLock(string $name): bool
+    public function acquireLock(string $name, int $timeout = null): bool
     {
         if (!isset($this->lockDepthMap[$name]))
         {
-            $success = $this->doAcquireLock($name);
+            $success = $this->doAcquireLock($name, $timeout);
 
             if (!$success)
             {
@@ -96,6 +96,6 @@ abstract class AbstractLockAdapter implements LockAdapterInterface
     }
 
     abstract protected function doGetLock(string $name);
-    abstract protected function doAcquireLock(string $name): bool;
+    abstract protected function doAcquireLock(string $name, int $timeout = null): bool;
     abstract protected function doReleaseLock(string $name);
 }

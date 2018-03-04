@@ -40,10 +40,11 @@ interface LockAdapterInterface
      * Returns true on success and false on failure.
      *
      * @param string $name
+     * @param int $timeout Timeout in seconds. Accepts null for indefinite waiting.
      *
      * @return bool
      */
-    public function acquireLock(string $name): bool;
+    public function acquireLock(string $name, int $timeout = null): bool;
 
     /**
      * Releases an acquired lock.

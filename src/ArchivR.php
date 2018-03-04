@@ -126,7 +126,7 @@ class ArchivR
             // lock is only required for vaults that we want to synchronize with
             if (in_array($vault->getTitle(), $vaultTitles))
             {
-                $this->waitForLock($vault, Vault::LOCK_SYNC);
+                $vault->getLockAdapter()->acquireLock(Vault::LOCK_SYNC);
             }
 
             // highest revision should be build across all vaults
@@ -183,12 +183,13 @@ class ArchivR
     public function restore(int $toRevision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
         $vault = $fromVault ? $this->getVault($fromVault) : $this->getAnyVault();
+        $lockAdapter = $vault->getLockAdapter();
 
-        $this->waitForLock($vault, Vault::LOCK_SYNC);
+        $lockAdapter->acquireLock(Vault::LOCK_SYNC);
 
         $operationResultList = $vault->restore($toRevision, $progressListener);
 
-        $vault->getLockAdapter()->releaseLock(Vault::LOCK_SYNC);
+        $lockAdapter->releaseLock(Vault::LOCK_SYNC);
 
         return $operationResultList;
     }
@@ -196,12 +197,13 @@ class ArchivR
     public function dump(string $targetPath, int $revision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
         $vault = $fromVault ? $this->getVault($fromVault) : $this->getAnyVault();
+        $lockAdapter = $vault->getLockAdapter();
 
-        $this->waitForLock($vault, Vault::LOCK_SYNC);
+        $lockAdapter->acquireLock(Vault::LOCK_SYNC);
 
         $operationResultList = $vault->dump($targetPath, $revision, $progressListener);
 
-        $vault->getLockAdapter()->releaseLock(Vault::LOCK_SYNC);
+        $lockAdapter->releaseLock(Vault::LOCK_SYNC);
 
         return $operationResultList;
     }
@@ -216,13 +218,5 @@ class ArchivR
         }
 
         return $vaults[0];
-    }
-
-    protected function waitForLock(Vault $vault, string $name)
-    {
-        while (!$vault->getLockAdapter()->acquireLock($name))
-        {
-            sleep(5);
-        }
     }
 }

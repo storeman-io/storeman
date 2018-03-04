@@ -26,19 +26,36 @@ class StorageBasedLockAdapter extends AbstractLockAdapter
         return Lock::fromPayload($this->storageDriver->read($this->getLockFileName($name)));
     }
 
-    protected function doAcquireLock(string $name): bool
+    protected function doAcquireLock(string $name, int $timeout = null): bool
     {
         $lockFileName = $this->getLockFileName($name);
         $payload = $this->getNewLockPayload($name);
 
-        if ($this->storageDriver->exists($lockFileName))
+        $started = time();
+
+        while(true)
         {
-            return false;
+            if (!$this->storageDriver->exists($lockFileName))
+            {
+                $this->storageDriver->write($lockFileName, $payload);
+
+                return true;
+            }
+
+            // timeout not reached: sleep another round and try againg
+            if ($timeout === null || ($started + $timeout) < time())
+            {
+                sleep(3);
+            }
+
+            // timeout reached: return false
+            else
+            {
+                return false;
+            }
         }
 
-        $this->storageDriver->write($lockFileName, $payload);
-
-        return true;
+        return false;
     }
 
     protected function doReleaseLock(string $name)
