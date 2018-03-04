@@ -84,11 +84,45 @@ class SynchronizationList implements \Countable, \IteratorAggregate
         return $current;
     }
 
+    /**
+     * Returns new synchronization list containing only those synchronizations that were performed by the given identity.
+     *
+     * @param string $identity
+     * @return SynchronizationList
+     */
+    public function getSynchronizationsByIdentity(string $identity): SynchronizationList
+    {
+        return new static(array_filter(iterator_to_array($this->getIterator()), function(Synchronization $synchronization) use ($identity) {
+
+            return $synchronization->getIdentity() === $identity;
+        }));
+    }
+
+    /**
+     * Returns set of revisions contained in this list.
+     *
+     * @return int[]
+     */
+    public function getRevisions(): array
+    {
+        return array_values(array_map(function(Synchronization $synchronization) {
+
+            return $synchronization->getRevision();
+
+        }, iterator_to_array($this->getIterator())));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function count(): int
     {
         return count($this->synchronizations);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getIterator(): \Traversable
     {
         return new \ArrayIterator($this->synchronizations);
