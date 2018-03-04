@@ -28,6 +28,7 @@ class ConfigurationFileReaderTest extends TestCase
             "lockAdapter": "storage",
             "indexMerger": "standard",
             "conflictHandler": "preferLocal",
+            "operationListBuilder": "standard",
             "settings": {
                 "path": "/another/path"
             }
@@ -52,6 +53,7 @@ JSON
         $this->assertEquals('storage', $vaultConfig->getLockAdapter());
         $this->assertEquals('standard', $vaultConfig->getIndexMerger());
         $this->assertEquals('preferLocal', $vaultConfig->getConflictHandler());
+        $this->assertEquals('standard', $vaultConfig->getOperationListBuilder());
         $this->assertEquals('/another/path', $vaultConfig->getSetting('path'));
         $this->assertEquals(['path' => '/another/path'], $vaultConfig->getSettings());
     }

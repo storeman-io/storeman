@@ -6,13 +6,13 @@ use Archivr\ConflictHandler\ConflictHandlerFactory;
 use Archivr\ConflictHandler\ConflictHandlerInterface;
 use Archivr\IndexMerger\IndexMergerFactory;
 use Archivr\LockAdapter\LockAdapterFactory;
+use Archivr\OperationListBuilder\OperationListBuilderFactory;
 use Archivr\StorageDriver\StorageDriverFactory;
 use Archivr\StorageDriver\StorageDriverInterface;
 use Archivr\Exception\Exception;
 use Archivr\IndexMerger\IndexMergerInterface;
 use Archivr\LockAdapter\LockAdapterInterface;
 use Archivr\OperationListBuilder\OperationListBuilderInterface;
-use Archivr\OperationListBuilder\StandardOperationListBuilder;
 use Archivr\SynchronizationProgressListener\DummySynchronizationProgressListener;
 use Archivr\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 use Ramsey\Uuid\Uuid;
@@ -132,17 +132,12 @@ class Vault
     {
         if ($this->operationListBuilder === null)
         {
-            $this->operationListBuilder = new StandardOperationListBuilder();
+            $this->operationListBuilder = OperationListBuilderFactory::create(
+                $this->vaultConfiguration->getOperationListBuilder()
+            );
         }
 
         return $this->operationListBuilder;
-    }
-
-    public function setOperationListBuilder(OperationListBuilderInterface $operationListBuilder = null): Vault
-    {
-        $this->operationListBuilder = $operationListBuilder;
-
-        return $this;
     }
 
     /**

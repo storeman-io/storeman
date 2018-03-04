@@ -42,6 +42,14 @@ class VaultConfiguration
     protected $conflictHandler = 'panicking';
 
     /**
+     * Identifier for the operation list builder to use.
+     * Refers to identifiers known to the OperationListBuilderFactory.
+     *
+     * @var string
+     */
+    protected $operationListBuilder = 'standard';
+
+    /**
      * Map with additional storageDriver- or lockAdapter-specific settings.
      *
      * @var array
@@ -111,6 +119,18 @@ class VaultConfiguration
     public function setConflictHandler(string $conflictHandler): VaultConfiguration
     {
         $this->conflictHandler = $conflictHandler;
+
+        return $this;
+    }
+
+    public function getOperationListBuilder(): string
+    {
+        return $this->operationListBuilder;
+    }
+
+    public function setOperationListBuilder(string $operationListBuilder): VaultConfiguration
+    {
+        $this->operationListBuilder = $operationListBuilder;
 
         return $this;
     }
