@@ -27,30 +27,12 @@ class ArchivR
         return $this->configuration;
     }
 
-    public function buildOperationList(): OperationList
-    {
-        $return = new OperationList();
-
-        foreach ($this->getVaults() as $vault)
-        {
-            $return->append($vault->getOperationList());
-        }
-
-        return $return;
-    }
-
     /**
-     * @return Vault[]
+     * Returns a specific vault by title.
+     *
+     * @param string $vaultTitle
+     * @return Vault
      */
-    public function getVaults(): array
-    {
-        return array_map(function(VaultConfiguration $vaultConfiguration) {
-
-            return $this->getVault($vaultConfiguration->getTitle());
-
-        }, $this->configuration->getVaultConfigurations());
-    }
-
     public function getVault(string $vaultTitle): Vault
     {
         if (!isset($this->vaults[$vaultTitle]))
@@ -61,6 +43,37 @@ class ArchivR
         }
 
         return $this->vaults[$vaultTitle];
+    }
+
+    /**
+     * Returns all vaults within this archive.
+     *
+     * @return Vault[]
+     */
+    public function getVaults(): array
+    {
+        return array_values(array_map(function(VaultConfiguration $vaultConfiguration) {
+
+            return $this->getVault($vaultConfiguration->getTitle());
+
+        }, $this->configuration->getVaultConfigurations()));
+    }
+
+    /**
+     * Builds and returns an OperationList instance containing all operations required to a full synchronization.
+     *
+     * @return OperationList
+     */
+    public function buildOperationList(): OperationList
+    {
+        $return = new OperationList();
+
+        foreach ($this->getVaults() as $vault)
+        {
+            $return->append($vault->getOperationList());
+        }
+
+        return $return;
     }
 
     public function synchronize(array $vaultTitles = [], bool $preferLocal = false, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
@@ -106,31 +119,6 @@ class ArchivR
         return $return;
     }
 
-    /**
-     * @return Synchronization[][]
-     */
-    public function buildSynchronizationHistory(): array
-    {
-        $return = [];
-
-        foreach ($this->getVaults() as $vault)
-        {
-            $vaultConfig = $vault->getVaultConfiguration();
-            $list = $vault->loadSynchronizationList();
-
-            foreach ($list as $synchronization)
-            {
-                /** @var Synchronization $synchronization */
-
-                $return[$synchronization->getRevision()][$vaultConfig->getTitle()] = $synchronization;
-            }
-        }
-
-        ksort($return);
-
-        return $return;
-    }
-
     public function restore(int $toRevision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
         $vault = $fromVault ? $this->getVault($fromVault) : $this->getAnyVault();
@@ -157,6 +145,33 @@ class ArchivR
         $lockAdapter->releaseLock(Vault::LOCK_SYNC);
 
         return $operationResultList;
+    }
+
+    /**
+     * Builds and returns a history of all synchronizations on record for this archive.
+     *
+     * @return Synchronization[][]
+     */
+    public function buildSynchronizationHistory(): array
+    {
+        $return = [];
+
+        foreach ($this->getVaults() as $vault)
+        {
+            $vaultConfig = $vault->getVaultConfiguration();
+            $list = $vault->loadSynchronizationList();
+
+            foreach ($list as $synchronization)
+            {
+                /** @var Synchronization $synchronization */
+
+                $return[$synchronization->getRevision()][$vaultConfig->getTitle()] = $synchronization;
+            }
+        }
+
+        ksort($return);
+
+        return $return;
     }
 
     protected function getAnyVault(): Vault
