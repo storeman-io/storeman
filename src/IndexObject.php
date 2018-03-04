@@ -92,7 +92,7 @@ class IndexObject
         return $this->mode;
     }
 
-    public function getSize(): ?int
+    public function getSize()
     {
         return $this->size;
     }
