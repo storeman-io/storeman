@@ -16,8 +16,7 @@ class ArchivRTest extends TestCase
         $testVault = new TestVault();
         $testVault->fwrite('test.ext', 'Hello World!');
 
-        $config = new Configuration();
-        $config->setLocalPath($testVault->getBasePath());
+        $config = new Configuration($testVault->getBasePath());
         $config->addVaultConfiguration($this->getTestVaultConfig()->setTitle('First'));
         $config->addVaultConfiguration($this->getTestVaultConfig()->setTitle('Second'));
 

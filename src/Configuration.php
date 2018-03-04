@@ -34,6 +34,11 @@ class Configuration
      */
     protected $vaultConfigurations = [];
 
+    public function __construct(string $localPath)
+    {
+        $this->setLocalPath($localPath);
+    }
+
     /**
      * @return string
      */
