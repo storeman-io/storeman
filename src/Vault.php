@@ -19,8 +19,6 @@ use Archivr\Operation\OperationInterface;
 
 class Vault
 {
-    use TildeExpansionTrait;
-
     const METADATA_DIRECTORY_NAME = '.archivr';
     const SYNCHRONIZATION_LIST_FILE_NAME = 'index';
     const LOCK_SYNC = 'sync';
@@ -70,7 +68,7 @@ class Vault
     {
         $this->title = $title;
         $this->storageDriver = $storageDriver;
-        $this->localPath = rtrim($this->expandTildePath($localPath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $this->localPath = rtrim(TildeExpansion::expand($localPath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
     public function getTitle(): string
@@ -457,7 +455,7 @@ class Vault
     public function dump(string $targetPath, int $revision = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
         $originalLocalPath = $this->localPath;
-        $this->localPath =  rtrim($this->expandTildePath($targetPath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $this->localPath =  rtrim(TildeExpansion::expand($targetPath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 
         try
         {

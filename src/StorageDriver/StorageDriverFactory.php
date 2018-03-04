@@ -5,15 +5,13 @@ namespace Archivr\StorageDriver;
 use Archivr\AbstractFactory;
 use Archivr\Exception\ConfigurationException;
 use Archivr\Exception\Exception;
-use Archivr\TildeExpansionTrait;
+use Archivr\TildeExpansion;
 use Archivr\VaultConfiguration;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 
 class StorageDriverFactory extends AbstractFactory
 {
-    use TildeExpansionTrait;
-
     public function __construct()
     {
         $this->factoryMap['dummy'] = function ()
@@ -23,8 +21,7 @@ class StorageDriverFactory extends AbstractFactory
 
         $this->factoryMap['path'] = function(VaultConfiguration $vaultConfiguration)
         {
-            $path = $vaultConfiguration->getSetting('path');
-            $path = $this->expandTildePath($path);
+            $path = TildeExpansion::expand($vaultConfiguration->getSetting('path'));
 
             if (!is_dir($path) || !is_writable($path))
             {
