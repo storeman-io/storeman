@@ -5,21 +5,29 @@ namespace Archivr;
 class VaultConfiguration
 {
     /**
+     * An arbitrary user-defined title that helps to identity a vault by some user-specific information.
+     *
      * @var string
      */
     protected $title;
 
     /**
+     * Identifier for the vault adapter to use.
+     *
      * @var string
      */
     protected $vaultAdapter;
 
     /**
+     * Identifier for the lock adapter to use.
+     *
      * @var string
      */
     protected $lockAdapter;
 
     /**
+     * Map with additional vaultAdapter- or lockAdapter-specific settings.
+     *
      * @var array
      */
     protected $settings;

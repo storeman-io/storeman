@@ -9,6 +9,12 @@ class OperationResultList implements \Countable, \IteratorAggregate
      */
     protected $operationResults = [];
 
+    /**
+     * Adds an operation result to the end of the list.
+     *
+     * @param OperationResult $operationResult
+     * @return OperationResultList
+     */
     public function addOperationResult(OperationResult $operationResult): OperationResultList
     {
         $this->operationResults[] = $operationResult;
@@ -16,6 +22,12 @@ class OperationResultList implements \Countable, \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Appends another operation result list to the end of this list.
+     *
+     * @param OperationResultList $other
+     * @return OperationResultList
+     */
     public function append(OperationResultList $other): OperationResultList
     {
         $this->operationResults = array_merge($this->operationResults, $other->operationResults);

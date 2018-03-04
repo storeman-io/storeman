@@ -43,11 +43,18 @@ class SynchronizationList implements \Countable, \IteratorAggregate
     }
 
     /**
+     * Returns the synchronization with the highest revision.
+     *
      * @return Synchronization
      */
     public function getLastSynchronization()
     {
-        return empty($this->synchronizations) ? null : $this->synchronizations[count($this->synchronizations)];
+        if ($this->synchronizations)
+        {
+            return $this->synchronizations[max(array_keys($this->synchronizations))];
+        }
+
+        return null;
     }
 
     /**

@@ -7,21 +7,29 @@ use Archivr\Exception\Exception;
 class Configuration
 {
     /**
+     * The local base path of the archive.
+     *
      * @var string
      */
     protected $localPath;
 
     /**
+     * Set of excluded paths.
+     *
      * @var string[]
      */
     protected $exclusions = [];
 
     /**
+     * Identity to be visible in synchronization log.
+     *
      * @var string
      */
     protected $identity;
 
     /**
+     * Map of vault configurations by identifier.
+     *
      * @var VaultConfiguration[]
      */
     protected $vaultConfigurations = [];

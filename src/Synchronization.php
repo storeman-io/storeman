@@ -4,6 +4,9 @@ namespace Archivr;
 
 use Archivr\Exception\Exception;
 
+/**
+ * As the name suggests this class represents the synchronization for a specific revision.
+ */
 class Synchronization
 {
     /**

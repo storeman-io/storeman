@@ -6,6 +6,7 @@
         - Ensure same locking order of vaults
         - Same lockAdapter across multiple vaults?
 - Features
+    - Use merkle tree for integrity validation
     - Use full available mtime/ctime resolution
         - Keep comparison across systems with different resolutions in mind
     - Add "force-local" parameter to synchronization to be able to "keep" restored state
