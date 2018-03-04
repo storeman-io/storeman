@@ -104,6 +104,7 @@ class VaultTest extends TestCase
         $this->assertInstanceOf(Index::class, $firstVault->loadLastLocalIndex());
         $this->assertIndexEqualsTestVault($firstTestVault, $firstVault->loadRemoteIndex());
         $this->assertIndexEqualsTestVault($firstTestVault, $firstVault->loadLastLocalIndex());
+        $this->assertIndexContainsTestVault($firstTestVault, $secondVault->loadRemoteIndex());
 
         $secondSynchronizationResult = $secondVault->synchronize();
 
@@ -202,6 +203,16 @@ class VaultTest extends TestCase
         $this->assertEquals($testVaultObject->isLink(), $indexObject->isLink());
         $this->assertEquals($testVaultObject->getMTime(), $indexObject->getMtime());
         $this->assertEquals($testVaultObject->getPerms(), $indexObject->getMode());
+
+        if ($testVaultObject->isFile())
+        {
+            $this->assertEquals($testVaultObject->getSize(), $indexObject->getSize());
+        }
+
+        elseif ($testVaultObject->isLink())
+        {
+            $this->assertEquals($testVaultObject->getLinkTarget(), $indexObject->getLinkTarget());
+        }
     }
 
     private function getLocalVault(string $basePath, string $remotePath): Vault
