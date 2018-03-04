@@ -158,6 +158,8 @@ class IndexObject
     {
         $absolutePath = rtrim($basePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $relativePath;
 
+        clearstatcache(null, $absolutePath);
+
         if (!($stat = @lstat($absolutePath)))
         {
             throw new Exception();

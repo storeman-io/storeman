@@ -206,6 +206,8 @@ class Vault
         $index = null;
         $path = $this->getLastLocalIndexFilePath();
 
+        clearstatcache(null, $path);
+
         if (is_file($path))
         {
             $stream = fopen($path, 'rb');
