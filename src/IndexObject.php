@@ -4,6 +4,9 @@ namespace Archivr;
 
 use Archivr\Exception\Exception;
 
+/**
+ * An index object is the representation of one of this filesystem primitives contained in the index.
+ */
 class IndexObject
 {
     const TYPE_DIR = 1;
@@ -50,6 +53,9 @@ class IndexObject
      */
     protected $blobId;
 
+    /**
+     * Prevent construction not using static factory methods.
+     */
     protected function __construct() {}
 
     public function getRelativePath(): string
@@ -119,6 +125,12 @@ class IndexObject
         return [$this->relativePath, $this->type, $this->mtime, $this->ctime, $this->mode, $this->size, $this->blobId, $this->linkTarget];
     }
 
+    /**
+     * todo: is the same as $this == $other
+     *
+     * @param IndexObject|null $other
+     * @return bool
+     */
     public function equals(IndexObject $other = null): bool
     {
         if ($other === null)
@@ -154,6 +166,13 @@ class IndexObject
         return $object;
     }
 
+    /**
+     * Returns an instance representing the filesystem object that can be found under the given path.
+     *
+     * @param string $basePath
+     * @param string $relativePath
+     * @return IndexObject
+     */
     public static function fromPath(string $basePath, string $relativePath): IndexObject
     {
         $absolutePath = rtrim($basePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $relativePath;

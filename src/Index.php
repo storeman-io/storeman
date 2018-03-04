@@ -5,6 +5,10 @@ namespace Archivr;
 use Archivr\Exception\Exception;
 use Ramsey\Uuid\Uuid;
 
+/**
+ * As the name suggests an index is a representation of the vault at some point in time.
+ * It is implemented as a map from relative paths to object details.
+ */
 class Index implements \Countable, \IteratorAggregate
 {
     /**
@@ -12,6 +16,13 @@ class Index implements \Countable, \IteratorAggregate
      */
     protected $pathMap = [];
 
+    /**
+     * Adds the given object to the index.
+     *
+     * @param IndexObject $indexObject
+     * @return Index
+     * @throws Exception
+     */
     public function addObject(IndexObject $indexObject): Index
     {
         // ensure existence of containing directory
@@ -34,11 +45,23 @@ class Index implements \Countable, \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Returns an index object by a given relative path.
+     *
+     * @param string $path
+     * @return IndexObject|null
+     */
     public function getObjectByPath(string $path)
     {
         return isset($this->pathMap[$path]) ? $this->pathMap[$path] : null;
     }
 
+    /**
+     * Returns an index object by a given blob id.
+     *
+     * @param string $blobId
+     * @return IndexObject|null
+     */
     public function getObjectByBlobId(string $blobId)
     {
         foreach ($this->pathMap as $object)
@@ -52,16 +75,11 @@ class Index implements \Countable, \IteratorAggregate
         return null;
     }
 
-    public function count(): int
-    {
-        return count($this->pathMap);
-    }
-
-    public function getIterator(): \Traversable
-    {
-        return new \ArrayIterator($this->pathMap);
-    }
-
+    /**
+     * Returns a new blob id not already present in this index.
+     *
+     * @return string
+     */
     public function generateNewBlobId(): string
     {
         do
@@ -73,6 +91,12 @@ class Index implements \Countable, \IteratorAggregate
         return $blobId;
     }
 
+    /**
+     * Compares this index to the given index and returns the comparison result as boolean indicator.
+     *
+     * @param Index|null $other
+     * @return bool
+     */
     public function equals(Index $other = null): bool
     {
         if ($other === null)
@@ -83,6 +107,12 @@ class Index implements \Countable, \IteratorAggregate
         return $this->isSubsetOf($other) && $other->isSubsetOf($this);
     }
 
+    /**
+     * Returns true if this index is a subset of the given index.
+     *
+     * @param Index $other
+     * @return bool
+     */
     public function isSubsetOf(Index $other): bool
     {
         foreach ($this as $indexObject)
@@ -103,5 +133,21 @@ class Index implements \Countable, \IteratorAggregate
         }
 
         return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
+        return count($this->pathMap);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getIterator(): \Traversable
+    {
+        return new \ArrayIterator($this->pathMap);
     }
 }
