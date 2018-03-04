@@ -29,8 +29,8 @@ class TestVaultSet
         return $this->testVaults[$index];
     }
 
-    public function getIndex(int $index, \DateTime $created = null): Index
+    public function getIndex(int $index): Index
     {
-        return $this->getTestVault($index)->getIndex($created);
+        return $this->getTestVault($index)->getIndex();
     }
 }

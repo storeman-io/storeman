@@ -223,19 +223,11 @@ class Vault
         $index = null;
         $path = $this->getLastLocalIndexFilePath();
 
-        clearstatcache(null, $path);
-
         if (is_file($path))
         {
             $stream = fopen($path, 'rb');
-            $indexModificationDate = \DateTime::createFromFormat('U', filemtime($path));
 
-            if (!($indexModificationDate instanceof \DateTime))
-            {
-                throw new Exception();
-            }
-
-            $index = $this->readIndexFromStream($stream, $indexModificationDate);
+            $index = $this->readIndexFromStream($stream);
 
             fclose($stream);
         }
@@ -601,14 +593,14 @@ class Vault
         return $operationResultCollection;
     }
 
-    protected function readIndexFromStream($stream, \DateTime $created = null): Index
+    protected function readIndexFromStream($stream): Index
     {
         if (!is_resource($stream))
         {
             throw new Exception();
         }
 
-        $index = new Index($created);
+        $index = new Index();
 
         while (($row = fgetcsv($stream)) !== false)
         {

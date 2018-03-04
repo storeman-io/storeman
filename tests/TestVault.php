@@ -69,9 +69,9 @@ class TestVault implements \IteratorAggregate
         return $this;
     }
 
-    public function getIndex(\DateTime $created = null): Index
+    public function getIndex(): Index
     {
-        $index = new Index($created);
+        $index = new Index();
 
         foreach ($this->getIterator() as $fileInfo)
         {

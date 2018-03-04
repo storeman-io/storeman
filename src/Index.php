@@ -8,25 +8,9 @@ use Ramsey\Uuid\Uuid;
 class Index implements \Countable, \IteratorAggregate
 {
     /**
-     * @var \DateTime
-     */
-    protected $created;
-
-    /**
      * @var IndexObject[]
      */
     protected $pathMap = [];
-
-
-    public function __construct(\DateTime $created = null)
-    {
-        $this->created = $created ?: new \DateTime();
-    }
-
-    public function getCreated(): \DateTime
-    {
-        return $this->created;
-    }
 
     public function addObject(IndexObject $indexObject): Index
     {

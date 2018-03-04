@@ -38,7 +38,7 @@ class StandardIndexMerger implements IndexMergerInterface
         if ($lastLocalIndex === null)
         {
             // lets make our life easier
-            $lastLocalIndex = new Index(new \DateTime('@0'));
+            $lastLocalIndex = new Index();
         }
 
         foreach ($localIndex as $localObject)
