@@ -6,6 +6,9 @@ use Archivr\SynchronizationProgressListener\SynchronizationProgressListenerInter
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Adapter for the Symfony ProgressBar console helper implementing the synchronization progress listener interface.
+ */
 class SynchronizationProgressListener implements SynchronizationProgressListenerInterface
 {
     /**
