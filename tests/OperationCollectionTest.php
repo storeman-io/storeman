@@ -13,7 +13,6 @@ class OperationCollectionTest extends TestCase
         $operationCollection = new OperationCollection();
 
         $this->assertEquals(0, $operationCollection->count());
-        $this->assertEmpty($operationCollection->getOperations());
         $this->assertEmpty(iterator_to_array($operationCollection->getIterator()));
 
         /** @var OperationInterface $operation */
@@ -22,7 +21,6 @@ class OperationCollectionTest extends TestCase
         $operationCollection->addOperation($operation);
 
         $this->assertEquals(1, $operationCollection->count());
-        $this->assertEquals([$operation], $operationCollection->getOperations());
         $this->assertEquals([$operation], iterator_to_array($operationCollection->getIterator()));
     }
 
@@ -42,9 +40,7 @@ class OperationCollectionTest extends TestCase
 
         $firstOperationCollection->append($secondOperationCollection);
 
-        $this->assertEquals([$firstOperation, $secondOperation], $firstOperationCollection->getOperations());
         $this->assertEquals([$firstOperation, $secondOperation], iterator_to_array($firstOperationCollection->getIterator()));
-        $this->assertEquals([$secondOperation], $secondOperationCollection->getOperations());
         $this->assertEquals([$secondOperation], iterator_to_array($secondOperationCollection->getIterator()));
     }
 }
