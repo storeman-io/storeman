@@ -4,7 +4,6 @@ namespace Archivr\StorageDriver;
 
 use Archivr\AbstractFactory;
 use Archivr\Exception\ConfigurationException;
-use Archivr\Exception\Exception;
 use Archivr\TildeExpansion;
 use Archivr\VaultConfiguration;
 use League\Flysystem\Adapter\Local;
@@ -12,6 +11,8 @@ use League\Flysystem\Filesystem;
 
 class StorageDriverFactory extends AbstractFactory
 {
+    protected static $requiresInstanceOf = StorageDriverInterface::class;
+
     public function __construct()
     {
         $this->factoryMap['dummy'] = function ()
@@ -33,17 +34,5 @@ class StorageDriverFactory extends AbstractFactory
 
             return new FlysystemStorageDriver($filesystem);
         };
-    }
-
-    public function create(string $name, ...$params)
-    {
-        $driver = parent::create($name, ...$params);
-
-        if (!($driver instanceof StorageDriverInterface))
-        {
-            throw new Exception(sprintf('Factory closure for driver "%s" does not return an instance of "%s"!', $name, StorageDriverInterface::class));
-        }
-
-        return $driver;
     }
 }
