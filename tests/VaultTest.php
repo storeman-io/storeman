@@ -10,7 +10,7 @@ use Archivr\IndexMerger\StandardIndexMerger;
 use Archivr\IndexObject;
 use Archivr\LockAdapter\ConnectionBasedLockAdapter;
 use Archivr\LockAdapter\LockAdapterInterface;
-use Archivr\OperationResultCollection;
+use Archivr\OperationResultList;
 use Archivr\Vault;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
@@ -99,7 +99,7 @@ class VaultTest extends TestCase
 
         $firstSynchronizationResult = $firstVault->synchronize();
 
-        $this->assertInstanceOf(OperationResultCollection::class, $firstSynchronizationResult);
+        $this->assertInstanceOf(OperationResultList::class, $firstSynchronizationResult);
         $this->assertInstanceOf(Index::class, $firstVault->loadRemoteIndex());
         $this->assertInstanceOf(Index::class, $firstVault->loadLastLocalIndex());
         $this->assertIndexEqualsTestVault($firstTestVault, $firstVault->loadRemoteIndex());
@@ -108,7 +108,7 @@ class VaultTest extends TestCase
 
         $secondSynchronizationResult = $secondVault->synchronize();
 
-        $this->assertInstanceOf(OperationResultCollection::class, $secondSynchronizationResult);
+        $this->assertInstanceOf(OperationResultList::class, $secondSynchronizationResult);
         $this->assertInstanceOf(Index::class, $secondVault->loadRemoteIndex());
         $this->assertInstanceOf(Index::class, $secondVault->loadLastLocalIndex());
         $this->assertTrue($firstVault->loadRemoteIndex()->equals($secondVault->loadRemoteIndex()));
@@ -118,7 +118,7 @@ class VaultTest extends TestCase
 
         $thirdSynchronizationResult = $firstVault->synchronize();
 
-        $this->assertInstanceOf(OperationResultCollection::class, $thirdSynchronizationResult);
+        $this->assertInstanceOf(OperationResultList::class, $thirdSynchronizationResult);
 
     }
 

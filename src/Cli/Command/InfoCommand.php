@@ -119,11 +119,11 @@ class InfoCommand extends AbstractCommand
         $output->writeln('');
         $output->write('Current state: ');
 
-        $operationCollection = $archivR->buildOperationCollection();
+        $operationList = $archivR->buildOperationList();
 
-        if (count($operationCollection))
+        if ($count = count($operationList))
         {
-            $output->writeln(sprintf('<bold>There are %d outstanding operations.</bold>', count($operationCollection)));
+            $output->writeln(sprintf('<bold>There are %d outstanding operations.</bold>', $count));
         }
         else
         {

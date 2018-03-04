@@ -8,8 +8,8 @@ use Archivr\IndexMerger\IndexMergerInterface;
 use Archivr\IndexMerger\StandardIndexMerger;
 use Archivr\LockAdapter\ConnectionBasedLockAdapter;
 use Archivr\LockAdapter\LockAdapterInterface;
-use Archivr\OperationCollectionBuilder\OperationCollectionBuilderInterface;
-use Archivr\OperationCollectionBuilder\StandardOperationCollectionBuilder;
+use Archivr\OperationListBuilder\OperationListBuilderInterface;
+use Archivr\OperationListBuilder\StandardOperationListBuilder;
 use Archivr\SynchronizationProgressListener\DummySynchronizationProgressListener;
 use Archivr\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 use Ramsey\Uuid\Uuid;
@@ -25,7 +25,7 @@ class Vault
     const SYNCHRONIZATION_LIST_FILE_NAME = 'index';
     const LOCK_SYNC = 'sync';
 
-    // Operations modes for building operation collection
+    // Operations modes for building operation list
     const MODE_PREFER_LOCAL = 'local';
     const MODE_PREFER_REMOTE = 'remote';
 
@@ -55,9 +55,9 @@ class Vault
     protected $indexMerger;
 
     /**
-     * @var OperationCollectionBuilderInterface
+     * @var OperationListBuilderInterface
      */
-    protected $operationCollectionBuilder;
+    protected $operationListBuilder;
 
     /**
      * @var string[]
@@ -104,19 +104,19 @@ class Vault
         return $this->indexMerger;
     }
 
-    public function getOperationCollectionBuilder(): OperationCollectionBuilderInterface
+    public function getOperationListBuilder(): OperationListBuilderInterface
     {
-        if ($this->operationCollectionBuilder === null)
+        if ($this->operationListBuilder === null)
         {
-            $this->operationCollectionBuilder = new StandardOperationCollectionBuilder();
+            $this->operationListBuilder = new StandardOperationListBuilder();
         }
 
-        return $this->operationCollectionBuilder;
+        return $this->operationListBuilder;
     }
 
-    public function setOperationCollectionBuilder(OperationCollectionBuilderInterface $operationCollectionBuilder = null): Vault
+    public function setOperationListBuilder(OperationListBuilderInterface $operationListBuilder = null): Vault
     {
-        $this->operationCollectionBuilder = $operationCollectionBuilder;
+        $this->operationListBuilder = $operationListBuilder;
 
         return $this;
     }
@@ -272,13 +272,13 @@ class Vault
     }
 
     /**
-     * Returns ordered collection of operations required to synchronize the vault with the local path.
-     * In addition to the object specific operations contained in the returned OperationCollection additional operations
+     * Returns ordered list of operations required to synchronize the vault with the local path.
+     * In addition to the object specific operations contained in the returned OperationList additional operations
      * might be necessary like index updates that do not belong to specific index objects.
      *
-     * @return OperationCollection
+     * @return OperationList
      */
-    public function getOperationCollection(): OperationCollection
+    public function getOperationList(): OperationList
     {
         $localIndex = $this->buildLocalIndex();
         $lastLocalIndex = $this->loadLastLocalIndex();
@@ -286,20 +286,20 @@ class Vault
 
         $mergedIndex = $this->doBuildMergedIndex($localIndex, $lastLocalIndex, $remoteIndex);
 
-        return $this->getOperationCollectionBuilder()->buildOperationCollection($mergedIndex, $localIndex, $remoteIndex);
+        return $this->getOperationListBuilder()->buildOperationList($mergedIndex, $localIndex, $remoteIndex);
     }
 
     /**
-     * Synchronizes the local with the remote state by executing all operations returned by getOperationCollection() (broadly speaking).
+     * Synchronizes the local with the remote state by executing all operations returned by getOperationList()
      *
      * @param int $newRevision
      * @param bool $preferLocal
      * @param SynchronizationProgressListenerInterface $progressionListener
      *
-     * @return OperationResultCollection
+     * @return OperationResultList
      * @throws Exception
      */
-    public function synchronize(int $newRevision = null, bool $preferLocal = false, SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
+    public function synchronize(int $newRevision = null, bool $preferLocal = false, SynchronizationProgressListenerInterface $progressionListener = null): OperationResultList
     {
         if ($progressionListener === null)
         {
@@ -345,9 +345,9 @@ class Vault
             $mergedIndex = $this->doBuildMergedIndex($localIndex, $lastLocalIndex, $remoteIndex);
         }
 
-        $operationCollection = $this->getOperationCollectionBuilder()->buildOperationCollection($mergedIndex, $localIndex, $remoteIndex);
+        $operationList = $this->getOperationListBuilder()->buildOperationList($mergedIndex, $localIndex, $remoteIndex);
 
-        $operationResultCollection = new OperationResultCollection();
+        $operationResultList = new OperationResultList();
 
         // operation count +
         // merged index write +
@@ -355,16 +355,16 @@ class Vault
         // save merged index as last local index +
         // upload synchronization list +
         // release lock
-        $progressionListener->start(count($operationCollection) + 5);
+        $progressionListener->start(count($operationList) + 5);
 
-        foreach ($operationCollection as $operation)
+        foreach ($operationList as $operation)
         {
             /** @var OperationInterface $operation */
 
             $success = $operation->execute($this->getLocalPath(), $this->getVaultConnection());
 
             $operationResult = new OperationResult($operation, $success);
-            $operationResultCollection->addOperationResult($operationResult);
+            $operationResultList->addOperationResult($operationResult);
 
             $progressionListener->advance();
         }
@@ -408,7 +408,7 @@ class Vault
         $progressionListener->advance();
         $progressionListener->finish();
 
-        return $operationResultCollection;
+        return $operationResultList;
     }
 
     /**
@@ -442,10 +442,10 @@ class Vault
      * @param int $revision
      * @param SynchronizationProgressListenerInterface $progressionListener
      *
-     * @return OperationResultCollection
+     * @return OperationResultList
      * @throws Exception
      */
-    public function restore(int $revision = null, SynchronizationProgressListenerInterface $progressionListener = null): OperationResultCollection
+    public function restore(int $revision = null, SynchronizationProgressListenerInterface $progressionListener = null): OperationResultList
     {
         return $this->doRestore($revision, $progressionListener);
     }
@@ -455,10 +455,10 @@ class Vault
      * @param int $revision
      * @param SynchronizationProgressListenerInterface|null $progressListener
      *
-     * @return OperationResultCollection
+     * @return OperationResultList
      * @throws \Exception
      */
-    public function dump(string $targetPath, int $revision = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultCollection
+    public function dump(string $targetPath, int $revision = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
         $originalLocalPath = $this->localPath;
         $this->localPath =  rtrim($this->expandTildePath($targetPath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
@@ -521,7 +521,7 @@ class Vault
         return $this->getIndexMerger()->merge($remoteIndex, $localIndex, $lastLocalIndex);
     }
 
-    protected function doRestore(int $revision = null, SynchronizationProgressListenerInterface $progressionListener = null, bool $skipLastLocalIndexUpdate = false): OperationResultCollection
+    protected function doRestore(int $revision = null, SynchronizationProgressListenerInterface $progressionListener = null, bool $skipLastLocalIndexUpdate = false): OperationResultList
     {
         if ($progressionListener === null)
         {
@@ -554,23 +554,23 @@ class Vault
 
         $localIndex = $this->buildLocalIndex();
 
-        $operationCollection = $this->getOperationCollectionBuilder()->buildOperationCollection($remoteIndex, $localIndex, $remoteIndex);
+        $operationList = $this->getOperationListBuilder()->buildOperationList($remoteIndex, $localIndex, $remoteIndex);
 
-        $operationResultCollection = new OperationResultCollection();
+        $operationResultList = new OperationResultList();
 
         // operation count +
         // save merged index as last local index +
         // release lock
-        $progressionListener->start(count($operationCollection) + 2);
+        $progressionListener->start(count($operationList) + 2);
 
-        foreach ($operationCollection as $operation)
+        foreach ($operationList as $operation)
         {
             /** @var OperationInterface $operation */
 
             $success = $operation->execute($this->getLocalPath(), $this->getVaultConnection());
 
             $operationResult = new OperationResult($operation, $success);
-            $operationResultCollection->addOperationResult($operationResult);
+            $operationResultList->addOperationResult($operationResult);
 
             $progressionListener->advance();
         }
@@ -590,7 +590,7 @@ class Vault
         $progressionListener->advance();
         $progressionListener->finish();
 
-        return $operationResultCollection;
+        return $operationResultList;
     }
 
     protected function readIndexFromStream($stream): Index

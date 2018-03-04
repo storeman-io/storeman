@@ -1,11 +1,11 @@
 <?php
 
-namespace Archivr\OperationCollectionBuilder;
+namespace Archivr\OperationListBuilder;
 
 use Archivr\Index;
-use Archivr\OperationCollection;
+use Archivr\OperationList;
 
-interface OperationCollectionBuilderInterface
+interface OperationListBuilderInterface
 {
     /**
      * This method is called after the index merger has mergerd the local, lastLocal and remote indices into a "merged"
@@ -18,7 +18,7 @@ interface OperationCollectionBuilderInterface
      * @param Index $mergedIndex
      * @param Index $localIndex
      * @param Index|null $remoteIndex
-     * @return OperationCollection
+     * @return OperationList
      */
-    public function buildOperationCollection(Index $mergedIndex, Index $localIndex, Index $remoteIndex = null): OperationCollection;
+    public function buildOperationList(Index $mergedIndex, Index $localIndex, Index $remoteIndex = null): OperationList;
 }

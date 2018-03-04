@@ -4,7 +4,7 @@ namespace Archivr;
 
 use Archivr\Operation\OperationInterface;
 
-class OperationCollection implements \Countable, \IteratorAggregate
+class OperationList implements \Countable, \IteratorAggregate
 {
     /**
      * @var OperationInterface[]
@@ -15,9 +15,9 @@ class OperationCollection implements \Countable, \IteratorAggregate
      * Adds an operation to the end of the list.
      *
      * @param OperationInterface $operation
-     * @return OperationCollection
+     * @return OperationList
      */
-    public function addOperation(OperationInterface $operation): OperationCollection
+    public function addOperation(OperationInterface $operation): OperationList
     {
         $this->operations[] = $operation;
 
@@ -27,10 +27,10 @@ class OperationCollection implements \Countable, \IteratorAggregate
     /**
      * Appends another operation list to the end of this list.
      *
-     * @param OperationCollection $other
-     * @return OperationCollection
+     * @param OperationList $other
+     * @return OperationList
      */
-    public function append(OperationCollection $other): OperationCollection
+    public function append(OperationList $other): OperationList
     {
         $this->operations = array_merge($this->operations, $other->operations);
 

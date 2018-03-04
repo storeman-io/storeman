@@ -24,11 +24,11 @@ class ArchivRTest extends TestCase
 
         $archivr = new ArchivR($config);
 
-        $this->assertCount(2, $archivr->buildOperationCollection());
+        $this->assertCount(2, $archivr->buildOperationList());
 
-        $operationResultCollection = $archivr->synchronize();
+        $operationResultList = $archivr->synchronize();
 
-        $this->assertCount(2, $operationResultCollection);
+        $this->assertCount(2, $operationResultList);
     }
 
     public function testInvalidConnectionRetrieval()

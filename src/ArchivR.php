@@ -123,13 +123,13 @@ class ArchivR
         return $lockAdapter;
     }
 
-    public function buildOperationCollection(): OperationCollection
+    public function buildOperationList(): OperationList
     {
-        $return = new OperationCollection();
+        $return = new OperationList();
 
         foreach ($this->getVaults() as $vault)
         {
-            $return->append($vault->getOperationCollection());
+            $return->append($vault->getOperationList());
         }
 
         return $return;
@@ -166,7 +166,7 @@ class ArchivR
         return $this->vaults[$vaultTitle];
     }
 
-    public function synchronize(array $vaultTitles = [], bool $preferLocal = false, SynchronizationProgressListenerInterface $progressListener = null): OperationResultCollection
+    public function synchronize(array $vaultTitles = [], bool $preferLocal = false, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
         $lastRevision = 0;
 
@@ -194,7 +194,7 @@ class ArchivR
         $newRevision = $lastRevision + 1;
 
         // actual synchronization
-        $return = new OperationResultCollection();
+        $return = new OperationResultList();
         foreach ($vaultTitles as $vaultTitle)
         {
             $return->append($this->getVault($vaultTitle)->synchronize($newRevision, $preferLocal, $progressListener));
@@ -233,30 +233,30 @@ class ArchivR
         return $return;
     }
 
-    public function restore(int $toRevision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultCollection
+    public function restore(int $toRevision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
         $vault = $fromVault ? $this->getVault($fromVault) : $this->getAnyVault();
 
         $this->waitForLock($vault, Vault::LOCK_SYNC);
 
-        $resultCollection = $vault->restore($toRevision, $progressListener);
+        $operationResultList = $vault->restore($toRevision, $progressListener);
 
         $vault->getLockAdapter()->releaseLock(Vault::LOCK_SYNC);
 
-        return $resultCollection;
+        return $operationResultList;
     }
 
-    public function dump(string $targetPath, int $revision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultCollection
+    public function dump(string $targetPath, int $revision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
         $vault = $fromVault ? $this->getVault($fromVault) : $this->getAnyVault();
 
         $this->waitForLock($vault, Vault::LOCK_SYNC);
 
-        $resultCollection = $vault->dump($targetPath, $revision, $progressListener);
+        $operationResultList = $vault->dump($targetPath, $revision, $progressListener);
 
         $vault->getLockAdapter()->releaseLock(Vault::LOCK_SYNC);
 
-        return $resultCollection;
+        return $operationResultList;
     }
 
     protected function getAnyVault(): Vault

@@ -2,21 +2,21 @@
 
 namespace Archivr;
 
-class OperationResultCollection implements \Countable, \IteratorAggregate
+class OperationResultList implements \Countable, \IteratorAggregate
 {
     /**
      * @var OperationResult[]
      */
     protected $operationResults = [];
 
-    public function addOperationResult(OperationResult $operationResult): OperationResultCollection
+    public function addOperationResult(OperationResult $operationResult): OperationResultList
     {
         $this->operationResults[] = $operationResult;
 
         return $this;
     }
 
-    public function append(OperationResultCollection $other): OperationResultCollection
+    public function append(OperationResultList $other): OperationResultList
     {
         $this->operationResults = array_merge($this->operationResults, $other->operationResults);
 

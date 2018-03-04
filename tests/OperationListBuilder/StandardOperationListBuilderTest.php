@@ -1,17 +1,17 @@
 <?php
 
-namespace Archivr\Test\OperationCollectionBuilder;
+namespace Archivr\Test\OperationListBuilder;
 
 use Archivr\Index;
 use Archivr\IndexObject;
 use Archivr\Operation\OperationInterface;
 use Archivr\Operation\TouchOperation;
-use Archivr\OperationCollectionBuilder\StandardOperationCollectionBuilder;
+use Archivr\OperationListBuilder\StandardOperationListBuilder;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use Archivr\Test\TestVault;
 use PHPUnit\Framework\TestCase;
 
-class StandardOperationCollectionBuilderTest extends TestCase
+class StandardOperationListBuilderTest extends TestCase
 {
     use TemporaryPathGeneratorProviderTrait;
 
@@ -25,7 +25,7 @@ class StandardOperationCollectionBuilderTest extends TestCase
         $testVault->touch('a/b', random_int(0, time()));
         $testVault->touch('a', random_int(0, time()));
 
-        $builder = new StandardOperationCollectionBuilder();
+        $builder = new StandardOperationListBuilder();
 
         $localIndex = new Index();
         $mergedIndex = new Index();
@@ -33,10 +33,10 @@ class StandardOperationCollectionBuilderTest extends TestCase
         $mergedIndex->addObject(IndexObject::fromPath($testVault->getBasePath(), 'a/b'));
         $mergedIndex->addObject(IndexObject::fromPath($testVault->getBasePath(), 'a/b/c'));
 
-        $operationCollection = $builder->buildOperationCollection($mergedIndex, $localIndex, $mergedIndex);
+        $operationList = $builder->buildOperationList($mergedIndex, $localIndex, $mergedIndex);
 
         /** @var TouchOperation[] $touchOperations */
-        $touchOperations = array_values(array_filter(iterator_to_array($operationCollection), function(OperationInterface $operation) {
+        $touchOperations = array_values(array_filter(iterator_to_array($operationList), function(OperationInterface $operation) {
 
             return $operation instanceof TouchOperation;
         }));

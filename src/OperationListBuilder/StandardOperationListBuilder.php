@@ -1,6 +1,6 @@
 <?php
 
-namespace Archivr\OperationCollectionBuilder;
+namespace Archivr\OperationListBuilder;
 
 use Archivr\Exception\Exception;
 use Archivr\Index;
@@ -12,11 +12,11 @@ use Archivr\Operation\SymlinkOperation;
 use Archivr\Operation\TouchOperation;
 use Archivr\Operation\UnlinkOperation;
 use Archivr\Operation\UploadOperation;
-use Archivr\OperationCollection;
+use Archivr\OperationList;
 
-class StandardOperationCollectionBuilder implements OperationCollectionBuilderInterface
+class StandardOperationListBuilder implements OperationListBuilderInterface
 {
-    public function buildOperationCollection(Index $mergedIndex, Index $localIndex, Index $remoteIndex = null): OperationCollection
+    public function buildOperationList(Index $mergedIndex, Index $localIndex, Index $remoteIndex = null): OperationList
     {
         $uploadStreamFilters = [
             'zlib.deflate' => []
@@ -26,7 +26,7 @@ class StandardOperationCollectionBuilder implements OperationCollectionBuilderIn
         ];
 
 
-        $operationCollection = new OperationCollection();
+        $operationList = new OperationList();
 
         // mtimes to be set for directories are collected and applied afterwards as they get modified by synchronization operations as well
         $directoryMtimes = [];
@@ -45,7 +45,7 @@ class StandardOperationCollectionBuilder implements OperationCollectionBuilderIn
             // unlink to-be-overridden local path with different type
             if ($localObject !== null && $localObject->getType() !== $mergedIndexObject->getType())
             {
-                $operationCollection->addOperation(new UnlinkOperation($mergedIndexObject->getRelativePath()));
+                $operationList->addOperation(new UnlinkOperation($mergedIndexObject->getRelativePath()));
 
                 $modifiedPaths[] = $mergedIndexObject->getRelativePath();
             }
@@ -55,7 +55,7 @@ class StandardOperationCollectionBuilder implements OperationCollectionBuilderIn
             {
                 if ($localObject === null || !$localObject->isDirectory())
                 {
-                    $operationCollection->addOperation(new MkdirOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getMode()));
+                    $operationList->addOperation(new MkdirOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getMode()));
 
                     $directoryMtimes[$mergedIndexObject->getRelativePath()] = $mergedIndexObject->getMtime();
                 }
@@ -80,9 +80,9 @@ class StandardOperationCollectionBuilder implements OperationCollectionBuilderIn
 
                 if ($doDownloadFile)
                 {
-                    $operationCollection->addOperation(new DownloadOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getBlobId(), $downloadStreamFilters));
-                    $operationCollection->addOperation(new TouchOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getMtime()));
-                    $operationCollection->addOperation(new ChmodOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getMode()));
+                    $operationList->addOperation(new DownloadOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getBlobId(), $downloadStreamFilters));
+                    $operationList->addOperation(new TouchOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getMtime()));
+                    $operationList->addOperation(new ChmodOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getMode()));
 
                     $modifiedPaths[] = $mergedIndexObject->getRelativePath();
                 }
@@ -96,7 +96,7 @@ class StandardOperationCollectionBuilder implements OperationCollectionBuilderIn
 
                     $mergedIndexObject->setBlobId($newBlobId);
 
-                    $operationCollection->addOperation(new UploadOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getBlobId(), $uploadStreamFilters));
+                    $operationList->addOperation(new UploadOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getBlobId(), $uploadStreamFilters));
                 }
             }
 
@@ -104,8 +104,8 @@ class StandardOperationCollectionBuilder implements OperationCollectionBuilderIn
             {
                 if ($localObject !== null && $localObject->getLinkTarget() !== $mergedIndexObject->getLinkTarget())
                 {
-                    $operationCollection->addOperation(new UnlinkOperation($mergedIndexObject->getRelativePath()));
-                    $operationCollection->addOperation(new SymlinkOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getLinkTarget(), $mergedIndexObject->getMode()));
+                    $operationList->addOperation(new UnlinkOperation($mergedIndexObject->getRelativePath()));
+                    $operationList->addOperation(new SymlinkOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getLinkTarget(), $mergedIndexObject->getMode()));
 
                     $modifiedPaths[] = $mergedIndexObject->getRelativePath();
                 }
@@ -120,7 +120,7 @@ class StandardOperationCollectionBuilder implements OperationCollectionBuilderIn
 
             if ($localObject !== null && $localObject->getMode() !== $mergedIndexObject->getMode())
             {
-                $operationCollection->addOperation(new ChmodOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getMode()));
+                $operationList->addOperation(new ChmodOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getMode()));
             }
         }
 
@@ -131,7 +131,7 @@ class StandardOperationCollectionBuilder implements OperationCollectionBuilderIn
 
             if ($mergedIndex->getObjectByPath($localObject->getRelativePath()) === null)
             {
-                $operationCollection->addOperation(new UnlinkOperation($localObject->getRelativePath()));
+                $operationList->addOperation(new UnlinkOperation($localObject->getRelativePath()));
 
                 $modifiedPaths[] = $localObject->getRelativePath();
             }
@@ -152,9 +152,9 @@ class StandardOperationCollectionBuilder implements OperationCollectionBuilderIn
         krsort($directoryMtimes);
         foreach ($directoryMtimes as $relativePath => $mtime)
         {
-            $operationCollection->addOperation(new TouchOperation($relativePath, $mtime));
+            $operationList->addOperation(new TouchOperation($relativePath, $mtime));
         }
 
-        return $operationCollection;
+        return $operationList;
     }
 }
