@@ -27,6 +27,11 @@ class StandardOperationCollectionBuilder implements OperationCollectionBuilderIn
         $this->vault = $vault;
     }
 
+    public function getVault(): Vault
+    {
+        return $this->vault;
+    }
+
     public function buildOperationCollection(Index $mergedIndex, Index $localIndex, Index $remoteIndex = null): OperationCollection
     {
         $localPath = $this->vault->getLocalPath();
@@ -68,6 +73,8 @@ class StandardOperationCollectionBuilder implements OperationCollectionBuilderIn
                 if ($localObject === null || !$localObject->isDirectory())
                 {
                     $operationCollection->addOperation(new MkdirOperation($absoluteLocalPath, $mergedIndexObject->getMode()));
+
+                    $directoryMtimes[$absoluteLocalPath] = $mergedIndexObject->getMtime();
                 }
 
                 if ($localObject !== null && $localObject->isDirectory())
@@ -148,6 +155,7 @@ class StandardOperationCollectionBuilder implements OperationCollectionBuilderIn
         }
 
         // set directory mtimes after all other modifications have been performed
+        krsort($directoryMtimes);
         foreach ($directoryMtimes as $absoluteLocalPath => $mtime)
         {
             $operationCollection->addOperation(new TouchOperation($absoluteLocalPath, $mtime));

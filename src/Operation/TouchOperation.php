@@ -13,6 +13,16 @@ class TouchOperation implements OperationInterface
         $this->mtime = $mtime;
     }
 
+    public function getAbsolutePath(): string
+    {
+        return $this->absolutePath;
+    }
+
+    public function getMtime(): int
+    {
+        return $this->mtime;
+    }
+
     public function execute(): bool
     {
         return touch($this->absolutePath, $this->mtime);
