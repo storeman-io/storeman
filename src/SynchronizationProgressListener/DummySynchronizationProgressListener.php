@@ -2,8 +2,6 @@
 
 namespace Archivr\SynchronizationProgressListener;
 
-use Archivr\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
-
 class DummySynchronizationProgressListener implements SynchronizationProgressListenerInterface
 {
     public function start(int $stepCount)
