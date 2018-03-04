@@ -73,14 +73,27 @@ class ConfigurationFileReader
                 throw new ConfigurationException(sprintf('Vault configuration #%d is missing the obligatory \'storage\' key.', $index));
             }
 
-            $lockAdapter = empty($vaultConfig['lockAdapter']) ? 'storage' : $vaultConfig['lockAdapter'];
-
-            $vaultConfiguration = new VaultConfiguration($vaultConfig['storage'], $lockAdapter);
+            $vaultConfiguration = new VaultConfiguration($vaultConfig['storage']);
             $vaultConfiguration->setSettings($vaultConfig['settings'] ?: []);
 
             if (!empty($vaultConfig['title']))
             {
                 $vaultConfiguration->setTitle($vaultConfig['title']);
+            }
+
+            if (!empty($vaultConfig['lockAdapter']))
+            {
+                $vaultConfiguration->setLockAdapter($vaultConfig['lockAdapter']);
+            }
+
+            if (!empty($vaultConfig['indexMerger']))
+            {
+                $vaultConfiguration->setIndexMerger($vaultConfig['indexMerger']);
+            }
+
+            if (!empty($vaultConfig['conflictHandler']))
+            {
+                $vaultConfiguration->setConflictHandler($vaultConfig['conflictHandler']);
             }
 
             $configuration->addVaultConfiguration($vaultConfiguration);

@@ -2,6 +2,7 @@
 
 namespace Archivr\Test\IndexMerger;
 
+use Archivr\ConflictHandler\ConflictHandlerInterface;
 use Archivr\Index;
 use Archivr\IndexMerger\StandardIndexMerger;
 use Archivr\Test\TestVault;
@@ -20,14 +21,14 @@ class StandardIndexMergerTest extends TestCase
 
         $firstState = $testVault->getIndex();
 
-        $mergedIndex = $merger->merge(new Index(), $firstState);
+        $mergedIndex = $merger->merge($this->getConflictHandlerMock(), new Index(), $firstState);
 
         $this->assertTrue($firstState->equals($mergedIndex));
 
         $testVault->remove('file1');
         $testVault->touch('file3');
 
-        $mergedIndex = $merger->merge($firstState, $testVault->getIndex(), $firstState);
+        $mergedIndex = $merger->merge($this->getConflictHandlerMock(), $firstState, $testVault->getIndex(), $firstState);
         $actualIndex = $testVault->getIndex();
 
         $this->assertTrue($mergedIndex->equals($actualIndex));
@@ -39,8 +40,7 @@ class StandardIndexMergerTest extends TestCase
         $testVault1->touch('file');
 
         $merger = new StandardIndexMerger();
-
-        $mergedIndex = $merger->merge(new Index(), $testVault1->getIndex());
+        $mergedIndex = $merger->merge($this->getConflictHandlerMock(), new Index(), $testVault1->getIndex());
 
         $this->assertEquals(1, $mergedIndex->count());
         $this->assertTrue($testVault1->getIndex()->getObjectByPath('file') == $mergedIndex->getObjectByPath('file'));
@@ -53,8 +53,7 @@ class StandardIndexMergerTest extends TestCase
         $testVaultSet->getTestVault(1)->touch('fileB');
 
         $merger = new StandardIndexMerger();
-
-        $mergedIndex = $merger->merge($testVaultSet->getIndex(0), $testVaultSet->getIndex(1));
+        $mergedIndex = $merger->merge($this->getConflictHandlerMock(), $testVaultSet->getIndex(0), $testVaultSet->getIndex(1));
 
         $this->assertEquals(2, $mergedIndex->count());
         $this->assertTrue($mergedIndex->getObjectByPath('fileA') == $testVaultSet->getIndex(0)->getObjectByPath('fileA'));
@@ -72,7 +71,7 @@ class StandardIndexMergerTest extends TestCase
         $localIndex = $testVaultSet->getIndex(0);
         $remoteIndex = $testVaultSet->getIndex(1);
 
-        $mergedIndex = $merger->merge($remoteIndex, $localIndex, $remoteIndex);
+        $mergedIndex = $merger->merge($this->getConflictHandlerMock(), $remoteIndex, $localIndex, $remoteIndex);
 
         $this->assertTrue($mergedIndex->getObjectByPath('file') == $localIndex->getObjectByPath('file'));
     }
@@ -88,8 +87,13 @@ class StandardIndexMergerTest extends TestCase
         $localIndex = $testVaultSet->getIndex(0);
         $remoteIndex = $testVaultSet->getIndex(1);
 
-        $mergedIndex = $merger->merge($remoteIndex, $localIndex, $localIndex);
+        $mergedIndex = $merger->merge($this->getConflictHandlerMock(), $remoteIndex, $localIndex, $localIndex);
 
         $this->assertTrue($mergedIndex->getObjectByPath('file') == $remoteIndex->getObjectByPath('file'));
+    }
+
+    protected function getConflictHandlerMock(): ConflictHandlerInterface
+    {
+        return $this->createMock(ConflictHandlerInterface::class);
     }
 }

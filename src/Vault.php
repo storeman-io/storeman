@@ -2,12 +2,14 @@
 
 namespace Archivr;
 
+use Archivr\ConflictHandler\ConflictHandlerFactory;
+use Archivr\ConflictHandler\ConflictHandlerInterface;
+use Archivr\IndexMerger\IndexMergerFactory;
 use Archivr\LockAdapter\LockAdapterFactory;
 use Archivr\StorageDriver\StorageDriverFactory;
 use Archivr\StorageDriver\StorageDriverInterface;
 use Archivr\Exception\Exception;
 use Archivr\IndexMerger\IndexMergerInterface;
-use Archivr\IndexMerger\StandardIndexMerger;
 use Archivr\LockAdapter\LockAdapterInterface;
 use Archivr\OperationListBuilder\OperationListBuilderInterface;
 use Archivr\OperationListBuilder\StandardOperationListBuilder;
@@ -25,14 +27,14 @@ class Vault
     const LOCK_SYNC = 'sync';
 
     /**
-     * @var VaultConfiguration
-     */
-    protected $vaultConfiguration;
-
-    /**
      * @var Configuration
      */
     protected $configuration;
+
+    /**
+     * @var VaultConfiguration
+     */
+    protected $vaultConfiguration;
 
     /**
      * @var StorageDriverFactory
@@ -40,14 +42,14 @@ class Vault
     protected $storageDriverFactory;
 
     /**
-     * @var LockAdapterFactory
-     */
-    protected $lockAdapterFactory;
-
-    /**
      * @var StorageDriverInterface
      */
     protected $storageDriver;
+
+    /**
+     * @var LockAdapterFactory
+     */
+    protected $lockAdapterFactory;
 
     /**
      * @var LockAdapterInterface
@@ -55,9 +57,19 @@ class Vault
     protected $lockAdapter;
 
     /**
+     * @var IndexMergerFactory
+     */
+    protected $indexMergerFactory;
+
+    /**
      * @var IndexMergerInterface
      */
     protected $indexMerger;
+
+    /**
+     * @var ConflictHandlerFactory
+     */
+    protected $conflictHandlerFactory;
 
     /**
      * @var OperationListBuilderInterface
@@ -90,56 +102,9 @@ class Vault
         return $this->storageDriverFactory;
     }
 
-    public function setStorageDriverFactory(StorageDriverFactory $storageDriverFactory)
+    public function setStorageDriverFactory(StorageDriverFactory $storageDriverFactory): Vault
     {
         $this->storageDriverFactory = $storageDriverFactory;
-    }
-
-    public function getLockAdapterFactory(): LockAdapterFactory
-    {
-        if ($this->lockAdapterFactory === null)
-        {
-            $this->setLockAdapterFactory(new LockAdapterFactory());
-        }
-
-        return $this->lockAdapterFactory;
-    }
-
-    public function setLockAdapterFactory(LockAdapterFactory $lockAdapterFactory)
-    {
-        $this->lockAdapterFactory = $lockAdapterFactory;
-    }
-
-    public function setIndexMerger(IndexMergerInterface $indexMerger = null)
-    {
-        $this->indexMerger = $indexMerger;
-
-        return $this;
-    }
-
-    public function getIndexMerger(): IndexMergerInterface
-    {
-        if ($this->indexMerger === null)
-        {
-            $this->indexMerger = new StandardIndexMerger();
-        }
-
-        return $this->indexMerger;
-    }
-
-    public function getOperationListBuilder(): OperationListBuilderInterface
-    {
-        if ($this->operationListBuilder === null)
-        {
-            $this->operationListBuilder = new StandardOperationListBuilder();
-        }
-
-        return $this->operationListBuilder;
-    }
-
-    public function setOperationListBuilder(OperationListBuilderInterface $operationListBuilder = null): Vault
-    {
-        $this->operationListBuilder = $operationListBuilder;
 
         return $this;
     }
@@ -157,6 +122,23 @@ class Vault
         return $this->storageDriver;
     }
 
+    public function getLockAdapterFactory(): LockAdapterFactory
+    {
+        if ($this->lockAdapterFactory === null)
+        {
+            $this->setLockAdapterFactory(new LockAdapterFactory());
+        }
+
+        return $this->lockAdapterFactory;
+    }
+
+    public function setLockAdapterFactory(LockAdapterFactory $lockAdapterFactory): Vault
+    {
+        $this->lockAdapterFactory = $lockAdapterFactory;
+
+        return $this;
+    }
+
     public function getLockAdapter(): LockAdapterInterface
     {
         if ($this->lockAdapter === null)
@@ -169,6 +151,76 @@ class Vault
         }
 
         return $this->lockAdapter;
+    }
+
+    public function getIndexMergerFactory(): IndexMergerFactory
+    {
+        if ($this->indexMergerFactory === null)
+        {
+            $this->setIndexMergerFactory(new IndexMergerFactory());
+        }
+
+        return $this->indexMergerFactory;
+    }
+
+    public function setIndexMergerFactory(IndexMergerFactory $indexMergerFactory): Vault
+    {
+        $this->indexMergerFactory = $indexMergerFactory;
+
+        return $this;
+    }
+
+    public function getIndexMerger(): IndexMergerInterface
+    {
+        if ($this->indexMerger === null)
+        {
+            $this->indexMerger = $this->getIndexMergerFactory()->create(
+                $this->vaultConfiguration->getIndexMerger()
+            );
+        }
+
+        return $this->indexMerger;
+    }
+
+    public function getConflictHandlerFactory(): ConflictHandlerFactory
+    {
+        if ($this->conflictHandlerFactory === null)
+        {
+            $this->conflictHandlerFactory = new ConflictHandlerFactory();
+        }
+
+        return $this->conflictHandlerFactory;
+    }
+
+    public function setConflictHandlerFactory(ConflictHandlerFactory $conflictHandlerFactory = null): Vault
+    {
+        $this->conflictHandlerFactory = $conflictHandlerFactory;
+
+        return $this;
+    }
+
+    public function getConflictHandler(): ConflictHandlerInterface
+    {
+        return $this->getConflictHandlerFactory()->create(
+            $this->vaultConfiguration->getConflictHandler()
+        );
+    }
+
+    public function getOperationListBuilder(): OperationListBuilderInterface
+    {
+        if ($this->operationListBuilder === null)
+        {
+            $this->operationListBuilder = new StandardOperationListBuilder();
+        }
+
+        return $this->operationListBuilder;
+    }
+
+    public function setOperationListBuilder(OperationListBuilderInterface $operationListBuilder = null): Vault
+    {
+        $this->operationListBuilder = $operationListBuilder;
+
+        return $this;
     }
 
     /**
@@ -262,13 +314,12 @@ class Vault
      * Synchronizes the local with the remote state by executing all operations returned by getOperationList()
      *
      * @param int $newRevision
-     * @param bool $preferLocal
      * @param SynchronizationProgressListenerInterface $progressionListener
      *
      * @return OperationResultList
      * @throws Exception
      */
-    public function synchronize(int $newRevision = null, bool $preferLocal = false, SynchronizationProgressListenerInterface $progressionListener = null): OperationResultList
+    public function synchronize(int $newRevision = null, SynchronizationProgressListenerInterface $progressionListener = null): OperationResultList
     {
         if ($progressionListener === null)
         {
@@ -302,17 +353,8 @@ class Vault
         $synchronization = new Synchronization($newRevision, $this->generateNewBlobId(), new \DateTime(), $this->configuration->getIdentity());
         $synchronizationList->addSynchronization($synchronization);
 
-        // don't merge indices but just use local
-        if ($preferLocal)
-        {
-            $mergedIndex = $localIndex;
-        }
-
         // compute merged index
-        else
-        {
-            $mergedIndex = $this->doBuildMergedIndex($localIndex, $lastLocalIndex, $remoteIndex);
-        }
+        $mergedIndex = $this->doBuildMergedIndex($localIndex, $lastLocalIndex, $remoteIndex);
 
         $operationList = $this->getOperationListBuilder()->buildOperationList($mergedIndex, $localIndex, $remoteIndex);
 
@@ -507,7 +549,7 @@ class Vault
             return $localIndex;
         }
 
-        return $this->getIndexMerger()->merge($remoteIndex, $localIndex, $lastLocalIndex);
+        return $this->getIndexMerger()->merge($this->getConflictHandler(), $remoteIndex, $localIndex, $lastLocalIndex);
     }
 
     protected function doRestore(int $revision = null, SynchronizationProgressListenerInterface $progressionListener = null, bool $skipLastLocalIndexUpdate = false, string $targetPath = null): OperationResultList

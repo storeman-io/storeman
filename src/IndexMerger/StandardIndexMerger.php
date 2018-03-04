@@ -6,9 +6,9 @@ use Archivr\ConflictHandler\ConflictHandlerInterface;
 use Archivr\Index;
 use Archivr\IndexObject;
 
-class StandardIndexMerger extends AbstractIndexMerger
+class StandardIndexMerger implements IndexMergerInterface
 {
-    public function merge(Index $remoteIndex, Index $localIndex, Index $lastLocalIndex = null): Index
+    public function merge(ConflictHandlerInterface $conflictHandler, Index $remoteIndex, Index $localIndex, Index $lastLocalIndex = null): Index
     {
         $mergedIndex = new Index();
 
@@ -55,7 +55,7 @@ class StandardIndexMerger extends AbstractIndexMerger
             // conflict if both the local and the remote object has been changed
             if ($localObjectModified && $remoteObjectModified)
             {
-                $this->conflict($mergedIndex, $remoteObject, $localObject, $lastLocalObject);
+                $this->conflict($conflictHandler, $mergedIndex, $remoteObject, $localObject, $lastLocalObject);
             }
 
             // add the remote object if only it has been modified
@@ -104,7 +104,7 @@ class StandardIndexMerger extends AbstractIndexMerger
                 // conflict if both the local and the remote object has been changed
                 if ($localObjectModified && $remoteObjectModified)
                 {
-                    $this->conflict($mergedIndex, $remoteObject, $localObject, $lastLocalObject);
+                    $this->conflict($conflictHandler, $mergedIndex, $remoteObject, $localObject, $lastLocalObject);
                 }
 
                 // another client added the remote object
@@ -118,9 +118,9 @@ class StandardIndexMerger extends AbstractIndexMerger
         return $mergedIndex;
     }
 
-    protected function conflict(Index $mergedIndex, IndexObject $remoteObject, IndexObject $localObject = null, IndexObject $lastLocalObject = null): void
+    protected function conflict(ConflictHandlerInterface $conflictHandler, Index $mergedIndex, IndexObject $remoteObject, IndexObject $localObject = null, IndexObject $lastLocalObject = null): void
     {
-        $solution = $this->getConflictHandler()->handleConflict($remoteObject, $localObject, $lastLocalObject);
+        $solution = $conflictHandler->handleConflict($remoteObject, $localObject, $lastLocalObject);
 
         switch ($solution)
         {

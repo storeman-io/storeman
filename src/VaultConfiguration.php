@@ -23,7 +23,23 @@ class VaultConfiguration
      *
      * @var string
      */
-    protected $lockAdapter;
+    protected $lockAdapter = 'storage';
+
+    /**
+     * Identifier for the index merger to be used.
+     * Refers to identifiers known to the IndexMergerFactory.
+     *
+     * @var string
+     */
+    protected $indexMerger = 'standard';
+
+    /**
+     * Identifier for the conflict handler to use.
+     * Refers to identifiers known to the ConflictHandlerFactory.
+     *
+     * @var string
+     */
+    protected $conflictHandler = 'panicking';
 
     /**
      * Map with additional storageDriver- or lockAdapter-specific settings.
@@ -32,10 +48,9 @@ class VaultConfiguration
      */
     protected $settings;
 
-    public function __construct(string $storageDriver, string $lockAdapter)
+    public function __construct(string $storageDriver)
     {
         $this->storageDriver = $storageDriver;
-        $this->lockAdapter = $lockAdapter;
 
         $this->setTitle($storageDriver);
     }
@@ -72,6 +87,30 @@ class VaultConfiguration
     public function setLockAdapter(string $lockAdapter): VaultConfiguration
     {
         $this->lockAdapter = $lockAdapter;
+
+        return $this;
+    }
+
+    public function getIndexMerger(): string
+    {
+        return $this->indexMerger;
+    }
+
+    public function setIndexMerger(string $indexMerger): VaultConfiguration
+    {
+        $this->indexMerger = $indexMerger;
+
+        return $this;
+    }
+
+    public function getConflictHandler(): string
+    {
+        return $this->conflictHandler;
+    }
+
+    public function setConflictHandler(string $conflictHandler): VaultConfiguration
+    {
+        $this->conflictHandler = $conflictHandler;
 
         return $this;
     }
