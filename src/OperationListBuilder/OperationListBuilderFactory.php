@@ -4,7 +4,7 @@ namespace Archivr\OperationListBuilder;
 
 use Archivr\AbstractFactory;
 
-class OperationListBuilderFactory extends AbstractFactory
+final class OperationListBuilderFactory extends AbstractFactory
 {
     protected static function requiresInstanceOf(): string
     {
@@ -13,13 +13,8 @@ class OperationListBuilderFactory extends AbstractFactory
 
     protected static function getFactoryMap(): array
     {
-        $return = [];
-
-        $return['standard'] = function()
-        {
-            return new StandardOperationListBuilder();
-        };
-
-        return $return;
+        return [
+            'standard' => StandardOperationListBuilder::class,
+        ];
     }
 }

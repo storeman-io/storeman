@@ -6,7 +6,7 @@ use Archivr\AbstractFactory;
 use Archivr\StorageDriver\StorageDriverInterface;
 use Archivr\VaultConfiguration;
 
-class LockAdapterFactory extends AbstractFactory
+final class LockAdapterFactory extends AbstractFactory
 {
     protected static function requiresInstanceOf(): string
     {

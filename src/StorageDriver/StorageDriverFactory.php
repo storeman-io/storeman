@@ -9,7 +9,7 @@ use Archivr\VaultConfiguration;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 
-class StorageDriverFactory extends AbstractFactory
+final class StorageDriverFactory extends AbstractFactory
 {
     protected static function requiresInstanceOf(): string
     {
@@ -20,10 +20,7 @@ class StorageDriverFactory extends AbstractFactory
     {
         $return = [];
 
-        $return['dummy'] = function ()
-        {
-            return new DummyStorageDriver();
-        };
+        $return['dummy'] = DummyStorageDriver::class;
 
         $return['local'] = function(VaultConfiguration $vaultConfiguration)
         {

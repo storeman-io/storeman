@@ -4,7 +4,7 @@ namespace Archivr\IndexMerger;
 
 use Archivr\AbstractFactory;
 
-class IndexMergerFactory extends AbstractFactory
+final class IndexMergerFactory extends AbstractFactory
 {
     protected static function requiresInstanceOf(): string
     {
@@ -13,13 +13,8 @@ class IndexMergerFactory extends AbstractFactory
 
     protected static function getFactoryMap(): array
     {
-        $return = [];
-
-        $return['standard'] = function()
-        {
-            return new StandardIndexMerger();
-        };
-
-        return $return;
+        return [
+            'standard' => StandardIndexMerger::class,
+        ];
     }
 }

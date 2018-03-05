@@ -4,7 +4,7 @@ namespace Archivr\ConflictHandler;
 
 use Archivr\AbstractFactory;
 
-class ConflictHandlerFactory extends AbstractFactory
+final class ConflictHandlerFactory extends AbstractFactory
 {
     protected static function requiresInstanceOf(): string
     {
@@ -13,23 +13,10 @@ class ConflictHandlerFactory extends AbstractFactory
 
     protected static function getFactoryMap(): array
     {
-        $return = [];
-
-        $return['panicking'] = function()
-        {
-            return new PanickingConflictHandler();
-        };
-
-        $return['preferLocal'] = function()
-        {
-            return new PreferLocalConflictHandler();
-        };
-
-        $return['preferRemote'] = function()
-        {
-            return new PreferRemoteConflictHandler();
-        };
-
-        return $return;
+        return [
+            'panicking' => PanickingConflictHandler::class,
+            'preferLocal' => PreferLocalConflictHandler::class,
+            'preferRemote' => PreferRemoteConflictHandler::class,
+        ];
     }
 }
