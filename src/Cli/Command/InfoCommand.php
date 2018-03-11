@@ -43,7 +43,7 @@ class InfoCommand extends AbstractConfiguredCommand
         $table->setStyle('compact');
         $table->addRow(['Base path:', sprintf('<info>%s</info>', $config->getPath())]);
         $table->addRow(['Excluded:', implode(',', $config->getExclude()) ?: '-']);
-        $table->addRow(['Identity:', sprintf('<bold>%s</bold>', $config->getIdentity())]);
+        $table->addRow(['Identity:', $config->getIdentity()]);
 
         foreach (array_values($config->getVaults()) as $index => $vaultConfiguration)
         {
@@ -52,6 +52,7 @@ class InfoCommand extends AbstractConfiguredCommand
             $vault = $archivR->getVault($vaultConfiguration->getTitle());
             $currentLock = $vault->getLockAdapter()->getLock(Vault::LOCK_SYNC);
 
+            $table->addRow([' ']); // blank line
             $table->addRow([
                 "Vault #{$index}",
                 "Title:\nAdapter:\nLock Adapter:\nSettings:\nCurrent lock:",
@@ -126,7 +127,7 @@ class InfoCommand extends AbstractConfiguredCommand
 
         if ($count = count($operationList))
         {
-            $output->writeln(sprintf('<bold>There are %d outstanding operations.</bold>', $count));
+            $output->writeln(sprintf('<bold>%d outstanding operation(s).</bold>', $count));
         }
         else
         {
