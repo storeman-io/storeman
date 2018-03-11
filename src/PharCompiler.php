@@ -21,15 +21,21 @@ class PharCompiler
         $this->filesystem = new Filesystem();
     }
 
-    public function compile(string $targetFileName): void
+    /**
+     * Compiles the phar into the given target file path and the given file mode.
+     *
+     * @param string $targetFilePath
+     * @param int $mode
+     */
+    public function compile(string $targetFilePath, int $mode = 0744): void
     {
-        if (file_exists($targetFileName))
+        if (file_exists($targetFilePath))
         {
-            $this->filesystem->remove($targetFileName);
+            $this->filesystem->remove($targetFilePath);
         }
 
 
-        $phar = new \Phar($targetFileName, 0, 'archivr.phar');
+        $phar = new \Phar($targetFilePath, 0, 'archivr.phar');
         $phar->setSignatureAlgorithm(\Phar::SHA256);
 
         $phar->startBuffering();
@@ -44,6 +50,8 @@ class PharCompiler
         $phar->compressFiles(\Phar::GZ);
 
         $phar->stopBuffering();
+
+        $this->filesystem->chmod($targetFilePath, $mode);
     }
 
     protected function addSourceFiles(\Phar $phar): void
