@@ -82,7 +82,7 @@ class Vault
         if ($this->storageDriver === null)
         {
             $this->storageDriver = StorageDriverFactory::create(
-                $this->vaultConfiguration->getStorageDriver(),
+                $this->vaultConfiguration->getAdapter(),
                 $this->vaultConfiguration
             );
         }
@@ -289,7 +289,7 @@ class Vault
         {
             /** @var OperationInterface $operation */
 
-            $success = $operation->execute($this->configuration->getLocalPath(), $this->getStorageDriver());
+            $success = $operation->execute($this->configuration->getPath(), $this->getStorageDriver());
 
             $operationResult = new OperationResult($operation, $success);
             $operationResultList->addOperationResult($operationResult);
@@ -395,13 +395,13 @@ class Vault
     protected function doBuildLocalIndex(string $path = null): Index
     {
         $finder = new Finder();
-        $finder->in($path ?: $this->configuration->getLocalPath());
+        $finder->in($path ?: $this->configuration->getPath());
         $finder->ignoreDotFiles(false);
         $finder->ignoreVCS(true);
         $finder->exclude(static::METADATA_DIRECTORY_NAME);
         $finder->notPath('archivr.json');
 
-        foreach ($this->configuration->getExclusions() as $path)
+        foreach ($this->configuration->getExclude() as $path)
         {
             $finder->notPath($path);
         }
@@ -412,14 +412,14 @@ class Vault
         {
             /** @var SplFileInfo $fileInfo */
 
-            $index->addObject(IndexObject::fromPath($this->configuration->getLocalPath(), $fileInfo->getRelativePathname()));
+            $index->addObject(IndexObject::fromPath($this->configuration->getPath(), $fileInfo->getRelativePathname()));
         }
 
         foreach ($finder->files() as $fileInfo)
         {
             /** @var SplFileInfo $fileInfo */
 
-            $index->addObject(IndexObject::fromPath($this->configuration->getLocalPath(), $fileInfo->getRelativePathname()));
+            $index->addObject(IndexObject::fromPath($this->configuration->getPath(), $fileInfo->getRelativePathname()));
         }
 
         return $index;
@@ -500,7 +500,7 @@ class Vault
             throw new Exception("Unknown revision: {$revision}");
         }
 
-        $targetPath = $targetPath ?: $this->configuration->getLocalPath();
+        $targetPath = $targetPath ?: $this->configuration->getPath();
 
         $localIndex = $this->doBuildLocalIndex($targetPath);
 
@@ -627,7 +627,7 @@ class Vault
 
     protected function initMetadataDirectory(): string
     {
-        $path = $this->configuration->getLocalPath() . static::METADATA_DIRECTORY_NAME;
+        $path = $this->configuration->getPath() . static::METADATA_DIRECTORY_NAME;
 
         if (!is_dir($path))
         {

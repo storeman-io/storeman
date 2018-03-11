@@ -3,22 +3,23 @@
 namespace Archivr;
 
 use Archivr\Exception\Exception;
+use Zend\Stdlib\ArraySerializableInterface;
 
-class Configuration
+class Configuration implements ArraySerializableInterface
 {
     /**
      * The local base path of the archive.
      *
      * @var string
      */
-    protected $localPath;
+    protected $path;
 
     /**
      * Set of excluded paths.
      *
      * @var string[]
      */
-    protected $exclusions = [];
+    protected $exclude = [];
 
     /**
      * Identity to be visible in synchronization log.
@@ -32,34 +33,34 @@ class Configuration
      *
      * @var VaultConfiguration[]
      */
-    protected $vaultConfigurations = [];
+    protected $vaults = [];
 
-    public function __construct(string $localPath)
+    public function __construct(string $localPath = './')
     {
-        $this->setLocalPath($localPath);
+        $this->setPath($localPath);
     }
 
     /**
      * @return string
      */
-    public function getLocalPath(): string
+    public function getPath(): string
     {
-        return $this->localPath;
+        return $this->path;
     }
 
     /**
-     * @param string $localPath
+     * @param string $path
      *
      * @return Configuration
      */
-    public function setLocalPath(string $localPath): Configuration
+    public function setPath(string $path): Configuration
     {
-        if (substr($localPath, -1) !== DIRECTORY_SEPARATOR)
+        if (substr($path, -1) !== DIRECTORY_SEPARATOR)
         {
-            $localPath .= DIRECTORY_SEPARATOR;
+            $path .= DIRECTORY_SEPARATOR;
         }
 
-        $this->localPath = $localPath;
+        $this->path = $path;
 
         return $this;
     }
@@ -67,9 +68,9 @@ class Configuration
     /**
      * @return \string[]
      */
-    public function getExclusions(): array
+    public function getExclude(): array
     {
-        return $this->exclusions;
+        return $this->exclude;
     }
 
     /**
@@ -77,9 +78,9 @@ class Configuration
      *
      * @return Configuration
      */
-    public function setExclusions(array $paths): Configuration
+    public function setExclude(array $paths): Configuration
     {
-        $this->exclusions = array_values($paths);
+        $this->exclude = array_values($paths);
 
         return $this;
     }
@@ -91,7 +92,7 @@ class Configuration
      */
     public function addExclusion(string $path): Configuration
     {
-        $this->exclusions[] = $path;
+        $this->exclude[] = $path;
 
         return $this;
     }
@@ -119,18 +120,18 @@ class Configuration
     /**
      * @return VaultConfiguration[]
      */
-    public function getVaultConfigurations(): array
+    public function getVaults(): array
     {
-        return $this->vaultConfigurations;
+        return $this->vaults;
     }
 
     /**
      * @param string $title
      * @return bool
      */
-    public function hasVaultConfiguration(string $title): bool
+    public function hasVault(string $title): bool
     {
-        return isset($this->vaultConfigurations[$title]);
+        return isset($this->vaults[$title]);
     }
 
     /**
@@ -138,14 +139,14 @@ class Configuration
      *
      * @return VaultConfiguration
      */
-    public function getVaultConfigurationByTitle(string $title)
+    public function getVaultByTitle(string $title)
     {
-        if (!isset($this->vaultConfigurations[$title]))
+        if (!isset($this->vaults[$title]))
         {
             throw new \InvalidArgumentException("Unknown vault configuration requested: {$title}");
         }
 
-        return $this->vaultConfigurations[$title];
+        return $this->vaults[$title];
     }
 
     /**
@@ -154,15 +155,72 @@ class Configuration
      * @return Configuration
      * @throws Exception
      */
-    public function addVaultConfiguration(VaultConfiguration $configuration): Configuration
+    public function addVault(VaultConfiguration $configuration): Configuration
     {
-        if (isset($this->vaultConfigurations[$configuration->getTitle()]))
+        if (isset($this->vaults[$configuration->getTitle()]))
         {
-            throw new Exception(sprintf('Trying to add vault configration with duplicate title %s.', $configuration->getTitle()));
+            throw new Exception(sprintf('Trying to add vault with duplicate title %s.', $configuration->getTitle()));
         }
 
-        $this->vaultConfigurations[$configuration->getTitle()] = $configuration;
+        $this->vaults[$configuration->getTitle()] = $configuration;
 
         return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function exchangeArray(array $array)
+    {
+        if ($diff = array_diff(array_keys($array), array_keys(get_object_vars($this))))
+        {
+            throw new \InvalidArgumentException("Invalid index(es): " . implode(',', $diff));
+        }
+
+        foreach ($array as $key => $value)
+        {
+            if ($key === 'vaults')
+            {
+                if (!is_array($value))
+                {
+                    throw new \InvalidArgumentException();
+                }
+
+                $this->vaults = [];
+
+                foreach ($value as $val)
+                {
+                    if (!is_array($val))
+                    {
+                        throw new \InvalidArgumentException();
+                    }
+
+                    $vaultConfig = new VaultConfiguration('dummy');
+                    $vaultConfig->exchangeArray($val);
+
+                    $this->addVault($vaultConfig);
+                }
+            }
+            else
+            {
+                // using setter to prevent skipping validation
+                call_user_func([$this, 'set' . ucfirst($key)], $value);
+            }
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getArrayCopy()
+    {
+        $return = get_object_vars($this);
+        $return['vaults'] = array_values(array_map(function(VaultConfiguration $vaultConfiguration) {
+
+            return $vaultConfiguration->getArrayCopy();
+
+        }, $this->vaults));
+
+        return $return;
     }
 }

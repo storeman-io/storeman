@@ -42,14 +42,14 @@ JSON
         $config = $reader->getConfiguration($configFilePath);
 
         $this->assertInstanceOf(Configuration::class, $config);
-        $this->assertEquals('/some/path/', $config->getLocalPath());
-        $this->assertEquals(['to/be/excluded'], $config->getExclusions());
+        $this->assertEquals('/some/path/', $config->getPath());
+        $this->assertEquals(['to/be/excluded'], $config->getExclude());
         $this->assertEquals('some identity', $config->getIdentity());
 
-        $vaultConfig = $config->getVaultConfigurationByTitle('Test');
+        $vaultConfig = $config->getVaultByTitle('Test');
 
         $this->assertInstanceOf(VaultConfiguration::class, $vaultConfig);
-        $this->assertEquals('local', $vaultConfig->getStorageDriver());
+        $this->assertEquals('local', $vaultConfig->getAdapter());
         $this->assertEquals('storage', $vaultConfig->getLockAdapter());
         $this->assertEquals('standard', $vaultConfig->getIndexMerger());
         $this->assertEquals('preferLocal', $vaultConfig->getConflictHandler());

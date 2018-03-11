@@ -4,6 +4,7 @@ namespace Archivr\Cli;
 
 use Archivr\Cli\Command\DumpCommand;
 use Archivr\Cli\Command\InfoCommand;
+use Archivr\Cli\Command\InitCommand;
 use Archivr\Cli\Command\RestoreCommand;
 use Archivr\Cli\Command\SynchronizeCommand;
 
@@ -28,6 +29,7 @@ TXT;
         return array_merge(parent::getDefaultCommands(), [
             new DumpCommand(),
             new InfoCommand(),
+            new InitCommand(),
             new RestoreCommand(),
             new SynchronizeCommand(),
         ]);

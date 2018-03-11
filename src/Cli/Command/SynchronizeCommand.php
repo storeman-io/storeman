@@ -37,14 +37,14 @@ class SynchronizeCommand extends AbstractConfiguredCommand
 
         if ($preferLocal)
         {
-            foreach ($configuration->getVaultConfigurations() as $vaultConfiguration)
+            foreach ($configuration->getVaults() as $vaultConfiguration)
             {
                 $vaultConfiguration->setConflictHandler('preferLocal');
             }
         }
         elseif ($preferRemote)
         {
-            foreach ($configuration->getVaultConfigurations() as $vaultConfiguration)
+            foreach ($configuration->getVaults() as $vaultConfiguration)
             {
                 $vaultConfiguration->setConflictHandler('preferRemote');
             }

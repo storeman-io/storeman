@@ -40,11 +40,11 @@ class InfoCommand extends AbstractConfiguredCommand
 
         $table = new Table($output);
         $table->setStyle('compact');
-        $table->addRow(['Base path:', sprintf('<info>%s</info>', $config->getLocalPath())]);
-        $table->addRow(['Excluded:', implode(',', $config->getExclusions()) ?: '-']);
+        $table->addRow(['Base path:', sprintf('<info>%s</info>', $config->getPath())]);
+        $table->addRow(['Excluded:', implode(',', $config->getExclude()) ?: '-']);
         $table->addRow(['Identity:', sprintf('<bold>%s</bold>', $config->getIdentity())]);
 
-        foreach ($config->getVaultConfigurations() as $index => $vaultConfiguration)
+        foreach ($config->getVaults() as $index => $vaultConfiguration)
         {
             $vault = $archivR->getVault($vaultConfiguration->getTitle());
             $currentLock = $vault->getLockAdapter()->getLock(Vault::LOCK_SYNC);
@@ -54,7 +54,7 @@ class InfoCommand extends AbstractConfiguredCommand
                 "Title:\nAdapter:\nLock Adapter:\nSettings:\nCurrent lock:",
                 implode("\n", [
                     "<info>{$vault->getVaultConfiguration()->getTitle()}</info>",
-                    $vaultConfiguration->getStorageDriver(),
+                    $vaultConfiguration->getAdapter(),
                     $vaultConfiguration->getLockAdapter(),
                     implode(
                         ',',

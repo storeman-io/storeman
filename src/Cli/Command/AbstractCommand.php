@@ -2,6 +2,7 @@
 
 namespace Archivr\Cli\Command;
 
+use Archivr\Cli\Style;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,12 +21,18 @@ abstract class AbstractCommand extends Command
     protected $output;
 
     /**
+     * @var Style
+     */
+    protected $outputStyle;
+
+    /**
      * {@inheritdoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->input = $input;
         $this->output = $output;
+        $this->outputStyle = new Style($input, $output);
 
         $this->registerFormatters();
     }

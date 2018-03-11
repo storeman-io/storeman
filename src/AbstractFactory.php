@@ -30,6 +30,18 @@ abstract class AbstractFactory
     }
 
     /**
+     * Returns array of all service names that this factory provides.
+     *
+     * @return array
+     */
+    public static function getProvidedServiceNames(): array
+    {
+        static::loadFactoryMap();
+
+        return array_keys(static::$factoryMaps[static::class]);
+    }
+
+    /**
      * Creates and returns the service under the given name.
      *
      * @param string $name

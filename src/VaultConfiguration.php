@@ -2,7 +2,9 @@
 
 namespace Archivr;
 
-class VaultConfiguration
+use Zend\Stdlib\ArraySerializableInterface;
+
+class VaultConfiguration implements ArraySerializableInterface
 {
     /**
      * An arbitrary user-defined title that helps to identity a vault by some user-specific information.
@@ -16,7 +18,7 @@ class VaultConfiguration
      *
      * @var string
      */
-    protected $storageDriver;
+    protected $adapter;
 
     /**
      * Identifier for the lock adapter to use.
@@ -56,10 +58,9 @@ class VaultConfiguration
      */
     protected $settings;
 
-    public function __construct(string $storageDriver)
+    public function __construct(string $storageDriver = 'unknown')
     {
-        $this->storageDriver = $storageDriver;
-
+        $this->setAdapter($storageDriver);
         $this->setTitle($storageDriver);
     }
 
@@ -75,14 +76,14 @@ class VaultConfiguration
         return $this;
     }
 
-    public function getStorageDriver(): string
+    public function getAdapter(): string
     {
-        return $this->storageDriver;
+        return $this->adapter;
     }
 
-    public function setStorageDriver(string $storageDriver): VaultConfiguration
+    public function setAdapter(string $adapter): VaultConfiguration
     {
-        $this->storageDriver = $storageDriver;
+        $this->adapter = $adapter;
 
         return $this;
     }
@@ -157,5 +158,30 @@ class VaultConfiguration
         $this->settings[$name] = $value;
 
         return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function exchangeArray(array $array)
+    {
+        if ($diff = array_diff(array_keys($array), array_keys($this->getArrayCopy())))
+        {
+            throw new \InvalidArgumentException("Invalid index(es): " . implode(',', $diff));
+        }
+
+        foreach ($array as $key => $value)
+        {
+            // using setter to prevent skipping validation
+            call_user_func([$this, 'set' . ucfirst($key)], $value);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getArrayCopy()
+    {
+        return get_object_vars($this);
     }
 }

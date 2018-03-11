@@ -10,12 +10,7 @@ class ConfigurationFileReader
 {
     public function getConfiguration(string $configurationFilePath)
     {
-        if (!is_file($configurationFilePath) || !is_readable($configurationFilePath))
-        {
-            throw new Exception(sprintf('Configuration file path "%s" does not exist or is not readable.', $configurationFilePath));
-        }
-
-        $configurationFilePath = realpath($configurationFilePath);
+        $configurationFilePath = PathUtils::getAbsolutePath($configurationFilePath);
 
         $json = file_get_contents($configurationFilePath);
 
@@ -63,18 +58,18 @@ class ConfigurationFileReader
                 throw new ConfigurationException('Config key "exclude" has to be an array.');
             }
 
-            $configuration->setExclusions($array['exclude']);
+            $configuration->setExclude($array['exclude']);
         }
 
         foreach ($array['vaults'] as $index => $vaultConfig)
         {
-            if (empty($vaultConfig['storage']))
+            if (empty($vaultConfig['adapter']))
             {
-                throw new ConfigurationException(sprintf('Vault configuration #%d is missing the obligatory \'storage\' key.', $index));
+                throw new ConfigurationException("Vault configuration #{$index} is missing the obligatory 'adapter' key.");
             }
 
-            $vaultConfiguration = new VaultConfiguration($vaultConfig['storage']);
-            $vaultConfiguration->setSettings($vaultConfig['settings'] ?: []);
+            $vaultConfiguration = new VaultConfiguration($vaultConfig['adapter']);
+            $vaultConfiguration->setSettings(empty($vaultConfig['settings']) ? [] : $vaultConfig['settings']);
 
             if (!empty($vaultConfig['title']))
             {
@@ -96,7 +91,7 @@ class ConfigurationFileReader
                 $vaultConfiguration->setConflictHandler($vaultConfig['conflictHandler']);
             }
 
-            $configuration->addVaultConfiguration($vaultConfiguration);
+            $configuration->addVault($vaultConfiguration);
         }
 
         return $configuration;
