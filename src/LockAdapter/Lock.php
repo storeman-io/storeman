@@ -50,7 +50,7 @@ class Lock
         return $this->acquired;
     }
 
-    public function getPayload()
+    public function getPayload(): string
     {
         return json_encode([
             'name' => $this->name,
@@ -59,7 +59,7 @@ class Lock
         ]);
     }
 
-    public static function fromPayload(string $payload)
+    public static function fromPayload(string $payload): Lock
     {
         $info = json_decode($payload, true);
 
