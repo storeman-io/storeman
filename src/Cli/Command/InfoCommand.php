@@ -7,6 +7,7 @@ use Archivr\Cli\Application;
 use Archivr\Configuration;
 use Archivr\Synchronization;
 use Archivr\Vault;
+use Archivr\VaultConfiguration;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -44,8 +45,10 @@ class InfoCommand extends AbstractConfiguredCommand
         $table->addRow(['Excluded:', implode(',', $config->getExclude()) ?: '-']);
         $table->addRow(['Identity:', sprintf('<bold>%s</bold>', $config->getIdentity())]);
 
-        foreach ($config->getVaults() as $index => $vaultConfiguration)
+        foreach (array_values($config->getVaults()) as $index => $vaultConfiguration)
         {
+            /** @var VaultConfiguration $vaultConfiguration */
+
             $vault = $archivR->getVault($vaultConfiguration->getTitle());
             $currentLock = $vault->getLockAdapter()->getLock(Vault::LOCK_SYNC);
 
