@@ -195,7 +195,7 @@ class Configuration implements ArraySerializableInterface
                         throw new \InvalidArgumentException();
                     }
 
-                    $vaultConfig = new VaultConfiguration('dummy');
+                    $vaultConfig = new VaultConfiguration();
                     $vaultConfig->exchangeArray($val);
 
                     $this->addVault($vaultConfig);
