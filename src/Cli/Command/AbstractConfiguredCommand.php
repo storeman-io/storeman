@@ -25,6 +25,8 @@ abstract class AbstractConfiguredCommand extends AbstractCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        parent::execute($input, $output);
+
         $config = $this->getConfiguration($input);
 
         if ($config === null)
