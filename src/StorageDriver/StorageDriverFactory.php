@@ -21,8 +21,6 @@ final class StorageDriverFactory extends AbstractFactory
     {
         $return = [];
 
-        $return['dummy'] = DummyStorageDriver::class;
-
         $return['local'] = function(VaultConfiguration $vaultConfiguration)
         {
             if (!($path = $vaultConfiguration->getSetting('path')))

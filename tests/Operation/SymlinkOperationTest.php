@@ -2,8 +2,8 @@
 
 namespace Archivr\Test\Operation;
 
-use Archivr\StorageDriver\DummyStorageDriver;
 use Archivr\Operation\SymlinkOperation;
+use Archivr\StorageDriver\StorageDriverInterface;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use PHPUnit\Framework\TestCase;
 
@@ -23,7 +23,7 @@ class SymlinkOperationTest extends TestCase
         $this->assertTrue(touch($absoluteTargetPath));
 
         $operation = new SymlinkOperation($linkName, $targetName, 0754);
-        $operation->execute($tempDir, new DummyStorageDriver());
+        $operation->execute($tempDir, $this->createMock(StorageDriverInterface::class));
 
         $this->assertTrue(is_link($absoluteLinkPath));
         $this->assertEquals(0754, fileperms($absoluteLinkPath) & 0777);

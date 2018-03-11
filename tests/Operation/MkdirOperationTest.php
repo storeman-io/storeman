@@ -2,8 +2,8 @@
 
 namespace Archivr\Test\Operation;
 
-use Archivr\StorageDriver\DummyStorageDriver;
 use Archivr\Operation\MkdirOperation;
+use Archivr\StorageDriver\StorageDriverInterface;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use PHPUnit\Framework\TestCase;
 
@@ -18,7 +18,7 @@ class MkdirOperationTest extends TestCase
         $absolutePath = $tempDir . DIRECTORY_SEPARATOR . $newDirName;
 
         $operation = new MkdirOperation($newDirName, 0754);
-        $operation->execute($tempDir . DIRECTORY_SEPARATOR, new DummyStorageDriver());
+        $operation->execute($tempDir . DIRECTORY_SEPARATOR, $this->createMock(StorageDriverInterface::class));
 
         $this->assertTrue(is_dir($absolutePath));
         $this->assertEquals(0754, fileperms($absolutePath) & 0777);
