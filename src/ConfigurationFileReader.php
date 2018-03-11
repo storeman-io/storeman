@@ -12,6 +12,11 @@ class ConfigurationFileReader
     {
         $configurationFilePath = PathUtils::getAbsolutePath($configurationFilePath);
 
+        if (!is_file($configurationFilePath) || !is_readable($configurationFilePath))
+        {
+            throw new Exception("Configuration file {$configurationFilePath} is not a readable file.");
+        }
+
         $json = file_get_contents($configurationFilePath);
 
         if (!$json)
