@@ -2,9 +2,8 @@
 
 namespace Archivr\Cli\Command;
 
-use Archivr\Cli\Style;
+use Archivr\Cli\ConsoleStyle;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -21,9 +20,9 @@ abstract class AbstractCommand extends Command
     protected $output;
 
     /**
-     * @var Style
+     * @var ConsoleStyle
      */
-    protected $outputStyle;
+    protected $consoleStyle;
 
     /**
      * {@inheritdoc}
@@ -32,16 +31,6 @@ abstract class AbstractCommand extends Command
     {
         $this->input = $input;
         $this->output = $output;
-        $this->outputStyle = new Style($input, $output);
-
-        $this->registerFormatters();
-    }
-
-    /**
-     * Registers some custom formatters to the given output.
-     */
-    protected function registerFormatters(): void
-    {
-        $this->output->getFormatter()->setStyle('bold', new OutputFormatterStyle(null, null, ['bold']));
+        $this->consoleStyle = new ConsoleStyle($input, $output);
     }
 }

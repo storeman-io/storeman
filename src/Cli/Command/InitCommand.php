@@ -49,23 +49,23 @@ class InitCommand extends AbstractCommand
         }
 
 
-        $configuration = new Configuration($input->getOption('path') ?: $this->outputStyle->ask('Local path', '.'));
-        $configuration->setIdentity($input->getOption('identity') ?: $this->outputStyle->ask('Identity', get_current_user()));
-        $configuration->setExclude($input->getOption('exclude') ?: $this->outputStyle->askMultiple('Excluded path(s)'));
+        $configuration = new Configuration($input->getOption('path') ?: $this->consoleStyle->ask('Local path', '.'));
+        $configuration->setIdentity($input->getOption('identity') ?: $this->consoleStyle->ask('Identity', get_current_user()));
+        $configuration->setExclude($input->getOption('exclude') ?: $this->consoleStyle->askMultiple('Excluded path(s)'));
 
         // at least one storage driver has to be set up
         do
         {
-            $vaultConfig = new VaultConfiguration($this->outputStyle->choice('Storage driver', StorageDriverFactory::getProvidedServiceNames()));
-            $vaultConfig->setTitle($this->outputStyle->ask('Title', $vaultConfig->getAdapter()));
-            $vaultConfig->setLockAdapter($this->outputStyle->choice('Lock adapter', LockAdapterFactory::getProvidedServiceNames(), $vaultConfig->getLockAdapter()));
-            $vaultConfig->setIndexMerger($this->outputStyle->choice('Index merger', IndexMergerFactory::getProvidedServiceNames(), $vaultConfig->getIndexMerger()));
-            $vaultConfig->setConflictHandler($this->outputStyle->choice('Conflict handler', ConflictHandlerFactory::getProvidedServiceNames(), $vaultConfig->getConflictHandler()));
-            $vaultConfig->setOperationListBuilder($this->outputStyle->choice('Operation list builder', OperationListBuilderFactory::getProvidedServiceNames(), $vaultConfig->getOperationListBuilder()));
+            $vaultConfig = new VaultConfiguration($this->consoleStyle->choice('Storage driver', StorageDriverFactory::getProvidedServiceNames()));
+            $vaultConfig->setTitle($this->consoleStyle->ask('Title', $vaultConfig->getAdapter()));
+            $vaultConfig->setLockAdapter($this->consoleStyle->choice('Lock adapter', LockAdapterFactory::getProvidedServiceNames(), $vaultConfig->getLockAdapter()));
+            $vaultConfig->setIndexMerger($this->consoleStyle->choice('Index merger', IndexMergerFactory::getProvidedServiceNames(), $vaultConfig->getIndexMerger()));
+            $vaultConfig->setConflictHandler($this->consoleStyle->choice('Conflict handler', ConflictHandlerFactory::getProvidedServiceNames(), $vaultConfig->getConflictHandler()));
+            $vaultConfig->setOperationListBuilder($this->consoleStyle->choice('Operation list builder', OperationListBuilderFactory::getProvidedServiceNames(), $vaultConfig->getOperationListBuilder()));
 
-            while ($settingName = $this->outputStyle->ask('Additional setting name'))
+            while ($settingName = $this->consoleStyle->ask('Additional setting name'))
             {
-                if ($settingValue = $this->outputStyle->ask('Additional setting value'))
+                if ($settingValue = $this->consoleStyle->ask('Additional setting value'))
                 {
                     $vaultConfig->setSetting($settingName, $settingValue);
                 }
@@ -73,7 +73,7 @@ class InitCommand extends AbstractCommand
 
             $configuration->addVault($vaultConfig);
         }
-        while($this->outputStyle->choice('Add another vault?', ['y', 'n'], 'n') === 'y');
+        while($this->consoleStyle->choice('Add another vault?', ['y', 'n'], 'n') === 'y');
 
 
         $skipDefaults = !$input->getOption('writeDefaults');
@@ -83,7 +83,7 @@ class InitCommand extends AbstractCommand
         $output->writeln("The following content will be written to {$configFilePath}:");
         $output->writeln($configurationFileWriter->buildConfigurationFile($configuration, $skipDefaults));
 
-        if ($this->outputStyle->confirm('Continue? ', true))
+        if ($this->consoleStyle->confirm('Continue? ', true))
         {
             $configurationFileWriter->writeConfigurationFile($configuration, $configFilePath, $skipDefaults);
 
