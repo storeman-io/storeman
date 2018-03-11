@@ -18,7 +18,7 @@ class RestoreCommandTest extends AbstractCommandTest
         $config = [
             'vaults' => [
                 [
-                    'storage' => 'local',
+                    'adapter' => 'local',
                     'settings' => [
                         'path' => $this->getTemporaryPathGenerator()->getTemporaryDirectory(),
                     ],

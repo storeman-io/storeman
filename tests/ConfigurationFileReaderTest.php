@@ -24,7 +24,7 @@ class ConfigurationFileReaderTest extends TestCase
     "vaults": [
         {
             "title": "Test",
-            "storage": "local",
+            "adapter": "local",
             "lockAdapter": "storage",
             "indexMerger": "standard",
             "conflictHandler": "preferLocal",
