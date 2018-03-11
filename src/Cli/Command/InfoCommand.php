@@ -9,19 +9,19 @@ use Archivr\Synchronization;
 use Archivr\Vault;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class InfoCommand extends AbstractCommand
+class InfoCommand extends AbstractConfiguredCommand
 {
     protected function configure()
     {
+        parent::configure();
+
         $this->setName('info');
         $this->setDescription('Displays information about a vault and its local representation.');
-        $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Configuration file to use. Defaults to "archivr.json".');
     }
 
-    protected function executePrepared(InputInterface $input, OutputInterface $output, Configuration $configuration): int
+    protected function executeConfigured(InputInterface $input, OutputInterface $output, Configuration $configuration): int
     {
         $archivr = new ArchivR($configuration);
 
