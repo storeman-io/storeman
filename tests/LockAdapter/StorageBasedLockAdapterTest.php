@@ -2,12 +2,11 @@
 
 namespace LockAdapter\Test\LockAdapter;
 
-use Archivr\StorageAdapter\FlysystemStorageAdapter;
 use Archivr\LockAdapter\StorageBasedLockAdapter;
 use Archivr\LockAdapter\LockAdapterInterface;
+use Archivr\StorageAdapter\LocalStorageAdapter;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
-use League\Flysystem\Adapter\Local;
-use League\Flysystem\Filesystem;
+use Archivr\VaultConfiguration;
 use LockAdapter\AbstractLockAdapterTest;
 
 class StorageBasedLockAdapterTest extends AbstractLockAdapterTest
@@ -16,8 +15,11 @@ class StorageBasedLockAdapterTest extends AbstractLockAdapterTest
 
     protected function getLockAdapter(): LockAdapterInterface
     {
-        $connection = new FlysystemStorageAdapter(new Filesystem(new Local($this->getTemporaryPathGenerator()->getTemporaryDirectory())));
+        $vaultConfiguration = new VaultConfiguration('local');
+        $vaultConfiguration->setSetting('path', $this->getTemporaryPathGenerator()->getTemporaryDirectory());
 
-        return new StorageBasedLockAdapter($connection);
+        $storageAdapter = new LocalStorageAdapter($vaultConfiguration);
+
+        return new StorageBasedLockAdapter($storageAdapter);
     }
 }

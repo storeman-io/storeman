@@ -3,10 +3,9 @@
 namespace Archivr\StorageAdapter;
 
 use Archivr\Exception\Exception;
-use League\Flysystem\Exception as FlysystemException;
 use League\Flysystem\Filesystem;
 
-class FlysystemStorageAdapter implements StorageAdapterInterface
+abstract class FlysystemStorageAdapter implements StorageAdapterInterface
 {
     /**
      * @var Filesystem
@@ -29,7 +28,7 @@ class FlysystemStorageAdapter implements StorageAdapterInterface
                 throw new Exception(sprintf('read() failed for %s.', $relativePath));
             }
         }
-        catch (FlysystemException $exception)
+        catch (\Exception $exception)
         {
             throw new Exception($exception->getMessage(), 0, $exception);
         }
@@ -48,7 +47,7 @@ class FlysystemStorageAdapter implements StorageAdapterInterface
                 throw new Exception(sprintf('write() failed for %s.', $relativePath));
             }
         }
-        catch (FlysystemException $exception)
+        catch (\Exception $exception)
         {
             throw new Exception($exception->getMessage(), 0, $exception);
         }
@@ -65,7 +64,7 @@ class FlysystemStorageAdapter implements StorageAdapterInterface
                 throw new Exception(sprintf('writeStream() failed for %s.', $relativePath));
             }
         }
-        catch (FlysystemException $exception)
+        catch (\Exception $exception)
         {
             throw new Exception($exception->getMessage(), 0, $exception);
         }
@@ -77,7 +76,7 @@ class FlysystemStorageAdapter implements StorageAdapterInterface
         {
             return $this->filesystem->has($relativePath);
         }
-        catch (FlysystemException $exception)
+        catch (\Exception $exception)
         {
             throw new Exception($exception->getMessage(), 0, $exception);
         }
@@ -94,7 +93,7 @@ class FlysystemStorageAdapter implements StorageAdapterInterface
                 throw new Exception(sprintf('unlink() failed for %s', $relativePath));
             }
         }
-        catch (FlysystemException $exception)
+        catch (\Exception $exception)
         {
             throw new Exception($exception->getMessage(), 0, $exception);
         }
@@ -113,7 +112,7 @@ class FlysystemStorageAdapter implements StorageAdapterInterface
 
             return $stream;
         }
-        catch (FlysystemException $exception)
+        catch (\Exception $exception)
         {
             throw new Exception($exception->getMessage(), 0, $exception);
         }

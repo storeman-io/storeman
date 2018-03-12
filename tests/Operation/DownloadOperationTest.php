@@ -2,12 +2,11 @@
 
 namespace Archivr\Test\Operation;
 
-use Archivr\StorageAdapter\FlysystemStorageAdapter;
 use Archivr\Operation\DownloadOperation;
+use Archivr\StorageAdapter\LocalStorageAdapter;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use Archivr\Test\TestVault;
-use League\Flysystem\Adapter\Local;
-use League\Flysystem\Filesystem;
+use Archivr\VaultConfiguration;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 
@@ -23,12 +22,10 @@ class DownloadOperationTest extends TestCase
         $testVault = new TestVault();
         $testVault->fwrite($testBlobId, $testFileContent);
 
-        $testVaultConnection = new FlysystemStorageAdapter(new Filesystem(new Local($testVault->getBasePath())));
-
         $targetFilePath = $this->getTemporaryPathGenerator()->getTemporaryFile();
 
         $operation = new DownloadOperation(basename($targetFilePath), $testBlobId);
-        $operation->execute(dirname($targetFilePath) . DIRECTORY_SEPARATOR, $testVaultConnection);
+        $operation->execute(dirname($targetFilePath) . DIRECTORY_SEPARATOR, $this->getLocalStorageAdapter($testVault->getBasePath()));
 
         $this->assertEquals($testFileContent, file_get_contents($targetFilePath));
     }
@@ -41,15 +38,21 @@ class DownloadOperationTest extends TestCase
         $testVault = new TestVault();
         $testVault->fwrite($testBlobId, str_rot13($testFileContent));
 
-        $testVaultConnection = new FlysystemStorageAdapter(new Filesystem(new Local($testVault->getBasePath())));
-
         $targetFilePath = $this->getTemporaryPathGenerator()->getTemporaryFile();
 
         $operation = new DownloadOperation(basename($targetFilePath), $testBlobId, [
             'string.rot13' => []
         ]);
-        $operation->execute(dirname($targetFilePath) . DIRECTORY_SEPARATOR, $testVaultConnection);
+        $operation->execute(dirname($targetFilePath) . DIRECTORY_SEPARATOR, $this->getLocalStorageAdapter($testVault->getBasePath()));
 
         $this->assertEquals($testFileContent, file_get_contents($targetFilePath));
+    }
+
+    protected function getLocalStorageAdapter(string $path): LocalStorageAdapter
+    {
+        $vaultConfig = new VaultConfiguration();
+        $vaultConfig->setSetting('path', $path);
+
+        return new LocalStorageAdapter($vaultConfig);
     }
 }

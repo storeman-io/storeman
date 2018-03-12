@@ -2,14 +2,14 @@
 
 namespace Archivr\Test\StorageAdapter;
 
-use Archivr\StorageAdapter\FlysystemStorageAdapter;
 use Archivr\Exception\Exception;
+use Archivr\StorageAdapter\LocalStorageAdapter;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
-use League\Flysystem\Adapter\Local;
+use Archivr\VaultConfiguration;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
-class FlysystemStorageAdapterTest extends TestCase
+class LocalStorageAdapterTest extends TestCase
 {
     use TemporaryPathGeneratorProviderTrait;
 
@@ -20,7 +20,7 @@ class FlysystemStorageAdapterTest extends TestCase
 
     public function testRead()
     {
-        /** @var FlysystemStorageAdapter $adapter */
+        /** @var LocalStorageAdapter $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $this->getFilesystem()->dumpFile($filePath, $fileContent);
@@ -34,7 +34,7 @@ class FlysystemStorageAdapterTest extends TestCase
 
     public function testWrite()
     {
-        /** @var FlysystemStorageAdapter $adapter */
+        /** @var LocalStorageAdapter $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $adapter->write($fileName, $fileContent);
@@ -44,7 +44,7 @@ class FlysystemStorageAdapterTest extends TestCase
 
     public function testWriteStream()
     {
-        /** @var FlysystemStorageAdapter $adapter */
+        /** @var LocalStorageAdapter $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $stream = fopen('php://memory', 'r+b');
@@ -58,7 +58,7 @@ class FlysystemStorageAdapterTest extends TestCase
 
     public function testExists()
     {
-        /** @var FlysystemStorageAdapter $adapter */
+        /** @var LocalStorageAdapter $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $this->getFilesystem()->dumpFile($filePath, $fileContent);
@@ -69,7 +69,7 @@ class FlysystemStorageAdapterTest extends TestCase
 
     public function testUnlink()
     {
-        /** @var FlysystemStorageAdapter $adapter */
+        /** @var LocalStorageAdapter $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $this->getFilesystem()->dumpFile($filePath, $fileContent);
@@ -87,7 +87,7 @@ class FlysystemStorageAdapterTest extends TestCase
 
     public function testGetReadStream()
     {
-        /** @var FlysystemStorageAdapter $adapter */
+        /** @var LocalStorageAdapter $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $this->getFilesystem()->dumpFile($filePath, $fileContent);
@@ -106,12 +106,14 @@ class FlysystemStorageAdapterTest extends TestCase
         $basePath = $this->getTemporaryPathGenerator()->getTemporaryDirectory();
         $fileName = uniqid() . '.ext';
         $fileContent = md5(mt_rand());
+        $vaultConfiguration = new VaultConfiguration();
+        $vaultConfiguration->setSetting('path', $basePath);
 
         return [
             $fileName,
             $basePath . $fileName,
             $fileContent,
-            new FlysystemStorageAdapter(new \League\Flysystem\Filesystem(new Local($basePath)))
+            new LocalStorageAdapter($vaultConfiguration),
         ];
     }
 
