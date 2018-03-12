@@ -2,6 +2,7 @@
 
 namespace Archivr\Test;
 
+use Archivr\ArchivR;
 use Archivr\Configuration;
 use Archivr\Index;
 use Archivr\IndexObject;
@@ -171,11 +172,15 @@ class VaultTest extends TestCase
 
     private function getLocalVault(string $basePath, string $remotePath): Vault
     {
-        $configuration = new Configuration($basePath);
-
-        $vaultConfiguration = new VaultConfiguration('local', 'storage');
+        $vaultConfiguration = new VaultConfiguration('local');
+        $vaultConfiguration->setLockAdapter('storage');
         $vaultConfiguration->setSetting('path', $remotePath);
 
-        return new Vault($configuration, $vaultConfiguration);
+        $configuration = new Configuration($basePath);
+        $configuration->addVault($vaultConfiguration);
+
+        $archivr = new ArchivR($configuration);
+
+        return new Vault($archivr, $vaultConfiguration);
     }
 }

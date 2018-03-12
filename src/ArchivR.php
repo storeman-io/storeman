@@ -39,7 +39,7 @@ class ArchivR
         {
             $vaultConfiguration = $this->getConfiguration()->getVaultByTitle($vaultTitle);
 
-            $this->vaults[$vaultTitle] = new Vault($this->configuration, $vaultConfiguration);
+            $this->vaults[$vaultTitle] = new Vault($this, $vaultConfiguration);
         }
 
         return $this->vaults[$vaultTitle];

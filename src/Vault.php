@@ -27,9 +27,9 @@ class Vault
     const LOCK_SYNC = 'sync';
 
     /**
-     * @var Configuration
+     * @var ArchivR
      */
-    protected $configuration;
+    protected $archivr;
 
     /**
      * @var VaultConfiguration
@@ -61,15 +61,10 @@ class Vault
      */
     protected $operationListBuilder;
 
-    public function __construct(Configuration $configuration, VaultConfiguration $vaultConfiguration)
+    public function __construct(ArchivR $archivR, VaultConfiguration $vaultConfiguration)
     {
-        $this->configuration = $configuration;
+        $this->archivr = $archivR;
         $this->vaultConfiguration = $vaultConfiguration;
-    }
-
-    public function getConfiguration(): Configuration
-    {
-        return $this->configuration;
     }
 
     public function getVaultConfiguration(): VaultConfiguration
@@ -267,7 +262,7 @@ class Vault
             $remoteIndex = null;
         }
 
-        $synchronization = new Synchronization($newRevision, $this->generateNewBlobId(), new \DateTime(), $this->configuration->getIdentity());
+        $synchronization = new Synchronization($newRevision, $this->generateNewBlobId(), new \DateTime(), $this->archivr->getConfiguration()->getIdentity());
         $synchronizationList->addSynchronization($synchronization);
 
         // compute merged index
@@ -289,7 +284,7 @@ class Vault
         {
             /** @var OperationInterface $operation */
 
-            $success = $operation->execute($this->configuration->getPath(), $this->getStorageAdapter());
+            $success = $operation->execute($this->archivr->getConfiguration()->getPath(), $this->getStorageAdapter());
 
             $operationResult = new OperationResult($operation, $success);
             $operationResultList->addOperationResult($operationResult);
@@ -395,13 +390,13 @@ class Vault
     protected function doBuildLocalIndex(string $path = null): Index
     {
         $finder = new Finder();
-        $finder->in($path ?: $this->configuration->getPath());
+        $finder->in($path ?: $this->archivr->getConfiguration()->getPath());
         $finder->ignoreDotFiles(false);
         $finder->ignoreVCS(true);
         $finder->exclude(static::METADATA_DIRECTORY_NAME);
         $finder->notPath('archivr.json');
 
-        foreach ($this->configuration->getExclude() as $path)
+        foreach ($this->archivr->getConfiguration()->getExclude() as $path)
         {
             $finder->notPath($path);
         }
@@ -412,14 +407,14 @@ class Vault
         {
             /** @var SplFileInfo $fileInfo */
 
-            $index->addObject(IndexObject::fromPath($this->configuration->getPath(), $fileInfo->getRelativePathname()));
+            $index->addObject(IndexObject::fromPath($this->archivr->getConfiguration()->getPath(), $fileInfo->getRelativePathname()));
         }
 
         foreach ($finder->files() as $fileInfo)
         {
             /** @var SplFileInfo $fileInfo */
 
-            $index->addObject(IndexObject::fromPath($this->configuration->getPath(), $fileInfo->getRelativePathname()));
+            $index->addObject(IndexObject::fromPath($this->archivr->getConfiguration()->getPath(), $fileInfo->getRelativePathname()));
         }
 
         return $index;
@@ -500,7 +495,7 @@ class Vault
             throw new Exception("Unknown revision: {$revision}");
         }
 
-        $targetPath = $targetPath ?: $this->configuration->getPath();
+        $targetPath = $targetPath ?: $this->archivr->getConfiguration()->getPath();
 
         $localIndex = $this->doBuildLocalIndex($targetPath);
 
@@ -627,7 +622,7 @@ class Vault
 
     protected function initMetadataDirectory(): string
     {
-        $path = $this->configuration->getPath() . static::METADATA_DIRECTORY_NAME;
+        $path = $this->archivr->getConfiguration()->getPath() . static::METADATA_DIRECTORY_NAME;
 
         if (!is_dir($path))
         {
