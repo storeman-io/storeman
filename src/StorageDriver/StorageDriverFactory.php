@@ -4,7 +4,6 @@ namespace Archivr\StorageDriver;
 
 use Archivr\AbstractFactory;
 use Archivr\Exception\ConfigurationException;
-use Archivr\Exception\ConflictException;
 use Archivr\PathUtils;
 use Archivr\VaultConfiguration;
 use League\Flysystem\Adapter\Local;
@@ -25,7 +24,7 @@ final class StorageDriverFactory extends AbstractFactory
         {
             if (!($path = $vaultConfiguration->getSetting('path')))
             {
-                throw new ConflictException("Missing vault config setting 'path' for vault '{$vaultConfiguration->getTitle()}'.'");
+                throw new ConfigurationException("Missing vault config setting 'path' for vault '{$vaultConfiguration->getTitle()}'.'");
             }
 
             $path = PathUtils::getAbsolutePath($path);
