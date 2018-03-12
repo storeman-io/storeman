@@ -2,7 +2,7 @@
 
 namespace Archivr\Operation;
 
-use Archivr\StorageDriver\StorageDriverInterface;
+use Archivr\StorageAdapter\StorageAdapterInterface;
 
 class UnlinkOperation implements OperationInterface
 {
@@ -13,7 +13,7 @@ class UnlinkOperation implements OperationInterface
         $this->relativePath = $relativePath;
     }
 
-    public function execute(string $localBasePath, StorageDriverInterface $storageDriver): bool
+    public function execute(string $localBasePath, StorageAdapterInterface $storageAdapter): bool
     {
         return unlink($localBasePath . $this->relativePath);
     }

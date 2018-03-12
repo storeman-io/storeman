@@ -8,7 +8,7 @@ use Archivr\ConflictHandler\ConflictHandlerFactory;
 use Archivr\IndexMerger\IndexMergerFactory;
 use Archivr\LockAdapter\LockAdapterFactory;
 use Archivr\OperationListBuilder\OperationListBuilderFactory;
-use Archivr\StorageDriver\StorageDriverFactory;
+use Archivr\StorageAdapter\StorageAdapterFactory;
 use Archivr\PathUtils;
 use Archivr\VaultConfiguration;
 use Symfony\Component\Console\Input\InputArgument;
@@ -56,7 +56,7 @@ class InitCommand extends AbstractCommand
         // at least one storage driver has to be set up
         do
         {
-            $vaultConfig = new VaultConfiguration($this->consoleStyle->choice('Storage driver', StorageDriverFactory::getProvidedServiceNames()));
+            $vaultConfig = new VaultConfiguration($this->consoleStyle->choice('Storage driver', StorageAdapterFactory::getProvidedServiceNames()));
             $vaultConfig->setTitle($this->consoleStyle->ask('Title', $vaultConfig->getAdapter()));
             $vaultConfig->setLockAdapter($this->consoleStyle->choice('Lock adapter', LockAdapterFactory::getProvidedServiceNames(), $vaultConfig->getLockAdapter()));
             $vaultConfig->setIndexMerger($this->consoleStyle->choice('Index merger', IndexMergerFactory::getProvidedServiceNames(), $vaultConfig->getIndexMerger()));

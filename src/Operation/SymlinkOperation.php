@@ -2,7 +2,7 @@
 
 namespace Archivr\Operation;
 
-use Archivr\StorageDriver\StorageDriverInterface;
+use Archivr\StorageAdapter\StorageAdapterInterface;
 
 class SymlinkOperation implements OperationInterface
 {
@@ -28,7 +28,7 @@ class SymlinkOperation implements OperationInterface
         $this->mode = $mode;
     }
 
-    public function execute(string $localBasePath, StorageDriverInterface $storageDriver): bool
+    public function execute(string $localBasePath, StorageAdapterInterface $storageAdapter): bool
     {
         $absolutePath = $localBasePath . $this->relativePath;
         $absoluteLinkTarget = $localBasePath . $this->relativeLinkTarget;

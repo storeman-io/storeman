@@ -2,7 +2,7 @@
 
 namespace Archivr\Test\Operation;
 
-use Archivr\StorageDriver\FlysystemStorageDriver;
+use Archivr\StorageAdapter\FlysystemStorageAdapter;
 use Archivr\Operation\DownloadOperation;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use Archivr\Test\TestVault;
@@ -23,7 +23,7 @@ class DownloadOperationTest extends TestCase
         $testVault = new TestVault();
         $testVault->fwrite($testBlobId, $testFileContent);
 
-        $testVaultConnection = new FlysystemStorageDriver(new Filesystem(new Local($testVault->getBasePath())));
+        $testVaultConnection = new FlysystemStorageAdapter(new Filesystem(new Local($testVault->getBasePath())));
 
         $targetFilePath = $this->getTemporaryPathGenerator()->getTemporaryFile();
 
@@ -41,7 +41,7 @@ class DownloadOperationTest extends TestCase
         $testVault = new TestVault();
         $testVault->fwrite($testBlobId, str_rot13($testFileContent));
 
-        $testVaultConnection = new FlysystemStorageDriver(new Filesystem(new Local($testVault->getBasePath())));
+        $testVaultConnection = new FlysystemStorageAdapter(new Filesystem(new Local($testVault->getBasePath())));
 
         $targetFilePath = $this->getTemporaryPathGenerator()->getTemporaryFile();
 

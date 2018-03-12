@@ -1,6 +1,6 @@
 <?php
 
-namespace Archivr\StorageDriver;
+namespace Archivr\StorageAdapter;
 
 use Archivr\AbstractFactory;
 use Archivr\Exception\ConfigurationException;
@@ -9,11 +9,11 @@ use Archivr\VaultConfiguration;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 
-final class StorageDriverFactory extends AbstractFactory
+final class StorageAdapterFactory extends AbstractFactory
 {
     protected static function requiresInstanceOf(): string
     {
-        return StorageDriverInterface::class;
+        return StorageAdapterInterface::class;
     }
 
     protected static function getFactoryMap(): array
@@ -37,7 +37,7 @@ final class StorageDriverFactory extends AbstractFactory
             $adapter = new Local($path);
             $filesystem = new Filesystem($adapter);
 
-            return new FlysystemStorageDriver($filesystem);
+            return new FlysystemStorageAdapter($filesystem);
         };
 
         return $return;

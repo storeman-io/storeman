@@ -1,15 +1,15 @@
 <?php
 
-namespace Archivr\Test\StorageDriver;
+namespace Archivr\Test\StorageAdapter;
 
-use Archivr\StorageDriver\FlysystemStorageDriver;
+use Archivr\StorageAdapter\FlysystemStorageAdapter;
 use Archivr\Exception\Exception;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use League\Flysystem\Adapter\Local;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
-class FlysystemStorageDriverTest extends TestCase
+class FlysystemStorageAdapterTest extends TestCase
 {
     use TemporaryPathGeneratorProviderTrait;
 
@@ -20,7 +20,7 @@ class FlysystemStorageDriverTest extends TestCase
 
     public function testRead()
     {
-        /** @var FlysystemStorageDriver $adapter */
+        /** @var FlysystemStorageAdapter $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $this->getFilesystem()->dumpFile($filePath, $fileContent);
@@ -34,7 +34,7 @@ class FlysystemStorageDriverTest extends TestCase
 
     public function testWrite()
     {
-        /** @var FlysystemStorageDriver $adapter */
+        /** @var FlysystemStorageAdapter $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $adapter->write($fileName, $fileContent);
@@ -44,7 +44,7 @@ class FlysystemStorageDriverTest extends TestCase
 
     public function testWriteStream()
     {
-        /** @var FlysystemStorageDriver $adapter */
+        /** @var FlysystemStorageAdapter $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $stream = fopen('php://memory', 'r+b');
@@ -58,7 +58,7 @@ class FlysystemStorageDriverTest extends TestCase
 
     public function testExists()
     {
-        /** @var FlysystemStorageDriver $adapter */
+        /** @var FlysystemStorageAdapter $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $this->getFilesystem()->dumpFile($filePath, $fileContent);
@@ -69,7 +69,7 @@ class FlysystemStorageDriverTest extends TestCase
 
     public function testUnlink()
     {
-        /** @var FlysystemStorageDriver $adapter */
+        /** @var FlysystemStorageAdapter $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $this->getFilesystem()->dumpFile($filePath, $fileContent);
@@ -87,7 +87,7 @@ class FlysystemStorageDriverTest extends TestCase
 
     public function testGetReadStream()
     {
-        /** @var FlysystemStorageDriver $adapter */
+        /** @var FlysystemStorageAdapter $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $this->getFilesystem()->dumpFile($filePath, $fileContent);
@@ -111,7 +111,7 @@ class FlysystemStorageDriverTest extends TestCase
             $fileName,
             $basePath . $fileName,
             $fileContent,
-            new FlysystemStorageDriver(new \League\Flysystem\Filesystem(new Local($basePath)))
+            new FlysystemStorageAdapter(new \League\Flysystem\Filesystem(new Local($basePath)))
         ];
     }
 

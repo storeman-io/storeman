@@ -6,7 +6,7 @@ use Archivr\ConflictHandler\ConflictHandlerFactory;
 use Archivr\IndexMerger\IndexMergerFactory;
 use Archivr\LockAdapter\LockAdapterFactory;
 use Archivr\OperationListBuilder\OperationListBuilderFactory;
-use Archivr\StorageDriver\StorageDriverFactory;
+use Archivr\StorageAdapter\StorageAdapterFactory;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Zend\Stdlib\ArraySerializableInterface;
@@ -59,16 +59,16 @@ class VaultConfiguration implements ArraySerializableInterface
     protected $operationListBuilder = 'standard';
 
     /**
-     * Map with additional storageDriver- or lockAdapter-specific settings.
+     * Map with additional storageAdapter- or lockAdapter-specific settings.
      *
      * @var array
      */
     protected $settings = [];
 
-    public function __construct(string $storageDriver = 'unknown')
+    public function __construct(string $storageAdapter = 'unknown')
     {
-        $this->setAdapter($storageDriver);
-        $this->setTitle($storageDriver);
+        $this->setAdapter($storageAdapter);
+        $this->setTitle($storageAdapter);
     }
 
     public function getTitle(): string
@@ -195,7 +195,7 @@ class VaultConfiguration implements ArraySerializableInterface
     public static function loadValidatorMetadata(ClassMetadata $metadata)
     {
         $metadata->addPropertyConstraint('title', new Assert\NotBlank());
-        $metadata->addPropertyConstraint('adapter', new Assert\Choice(['choices' => StorageDriverFactory::getProvidedServiceNames()]));
+        $metadata->addPropertyConstraint('adapter', new Assert\Choice(['choices' => StorageAdapterFactory::getProvidedServiceNames()]));
         $metadata->addPropertyConstraint('lockAdapter', new Assert\Choice(['choices' => LockAdapterFactory::getProvidedServiceNames()]));
         $metadata->addPropertyConstraint('indexMerger', new Assert\Choice(['choices' => IndexMergerFactory::getProvidedServiceNames()]));
         $metadata->addPropertyConstraint('conflictHandler', new Assert\Choice(['choices' => ConflictHandlerFactory::getProvidedServiceNames()]));

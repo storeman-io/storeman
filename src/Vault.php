@@ -7,8 +7,8 @@ use Archivr\ConflictHandler\ConflictHandlerInterface;
 use Archivr\IndexMerger\IndexMergerFactory;
 use Archivr\LockAdapter\LockAdapterFactory;
 use Archivr\OperationListBuilder\OperationListBuilderFactory;
-use Archivr\StorageDriver\StorageDriverFactory;
-use Archivr\StorageDriver\StorageDriverInterface;
+use Archivr\StorageAdapter\StorageAdapterFactory;
+use Archivr\StorageAdapter\StorageAdapterInterface;
 use Archivr\Exception\Exception;
 use Archivr\IndexMerger\IndexMergerInterface;
 use Archivr\LockAdapter\LockAdapterInterface;
@@ -37,9 +37,9 @@ class Vault
     protected $vaultConfiguration;
 
     /**
-     * @var StorageDriverInterface
+     * @var StorageAdapterInterface
      */
-    protected $storageDriver;
+    protected $storageAdapter;
 
     /**
      * @var LockAdapterInterface
@@ -77,17 +77,17 @@ class Vault
         return $this->vaultConfiguration;
     }
 
-    public function getStorageDriver(): StorageDriverInterface
+    public function getStorageAdapter(): StorageAdapterInterface
     {
-        if ($this->storageDriver === null)
+        if ($this->storageAdapter === null)
         {
-            $this->storageDriver = StorageDriverFactory::create(
+            $this->storageAdapter = StorageAdapterFactory::create(
                 $this->vaultConfiguration->getAdapter(),
                 $this->vaultConfiguration
             );
         }
 
-        return $this->storageDriver;
+        return $this->storageAdapter;
     }
 
     public function getLockAdapter(): LockAdapterInterface
@@ -97,7 +97,7 @@ class Vault
             $this->lockAdapter = LockAdapterFactory::create(
                 $this->vaultConfiguration->getLockAdapter(),
                 $this->vaultConfiguration,
-                $this->getStorageDriver()
+                $this->getStorageAdapter()
             );
         }
 
@@ -289,7 +289,7 @@ class Vault
         {
             /** @var OperationInterface $operation */
 
-            $success = $operation->execute($this->configuration->getPath(), $this->getStorageDriver());
+            $success = $operation->execute($this->configuration->getPath(), $this->getStorageAdapter());
 
             $operationResult = new OperationResult($operation, $success);
             $operationResultList->addOperationResult($operationResult);
@@ -306,7 +306,7 @@ class Vault
         // upload new index
         $readStream = fopen($mergedIndexFilePath, 'rb');
         $compressionFilter = stream_filter_append($readStream, 'zlib.deflate');
-        $this->storageDriver->writeStream($synchronization->getBlobId(), $readStream);
+        $this->storageAdapter->writeStream($synchronization->getBlobId(), $readStream);
         rewind($readStream);
         stream_filter_remove($compressionFilter);
 
@@ -324,7 +324,7 @@ class Vault
         $synchronizationListFilePath = $this->writeSynchronizationListToTemporaryFile($synchronizationList);
         $readStream = fopen($synchronizationListFilePath, 'rb');
         stream_filter_append($readStream, 'zlib.deflate');
-        $this->storageDriver->writeStream(static::SYNCHRONIZATION_LIST_FILE_NAME, $readStream);
+        $this->storageAdapter->writeStream(static::SYNCHRONIZATION_LIST_FILE_NAME, $readStream);
         fclose($readStream);
 
         // release lock
@@ -346,12 +346,12 @@ class Vault
      */
     public function loadSynchronizationList(): SynchronizationList
     {
-        $storageDriver = $this->getStorageDriver();
+        $storageAdapter = $this->getStorageAdapter();
         $list = null;
 
-        if ($storageDriver->exists(static::SYNCHRONIZATION_LIST_FILE_NAME))
+        if ($storageAdapter->exists(static::SYNCHRONIZATION_LIST_FILE_NAME))
         {
-            $stream = $storageDriver->getReadStream(static::SYNCHRONIZATION_LIST_FILE_NAME);
+            $stream = $storageAdapter->getReadStream(static::SYNCHRONIZATION_LIST_FILE_NAME);
 
             stream_filter_append($stream, 'zlib.inflate');
 
@@ -441,9 +441,9 @@ class Vault
 
         $index = null;
 
-        if ($this->storageDriver->exists($synchronization->getBlobId()))
+        if ($this->storageAdapter->exists($synchronization->getBlobId()))
         {
-            $stream = $this->storageDriver->getReadStream($synchronization->getBlobId());
+            $stream = $this->storageAdapter->getReadStream($synchronization->getBlobId());
 
             stream_filter_append($stream, 'zlib.inflate');
 
@@ -517,7 +517,7 @@ class Vault
         {
             /** @var OperationInterface $operation */
 
-            $success = $operation->execute($targetPath, $this->getStorageDriver());
+            $success = $operation->execute($targetPath, $this->getStorageAdapter());
 
             $operationResult = new OperationResult($operation, $success);
             $operationResultList->addOperationResult($operationResult);
@@ -620,7 +620,7 @@ class Vault
         {
             $blobId = Uuid::uuid4()->toString();
         }
-        while ($this->storageDriver->exists($blobId));
+        while ($this->storageAdapter->exists($blobId));
 
         return $blobId;
     }

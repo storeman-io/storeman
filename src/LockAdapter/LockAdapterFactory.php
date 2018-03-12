@@ -3,7 +3,7 @@
 namespace Archivr\LockAdapter;
 
 use Archivr\AbstractFactory;
-use Archivr\StorageDriver\StorageDriverInterface;
+use Archivr\StorageAdapter\StorageAdapterInterface;
 use Archivr\VaultConfiguration;
 
 final class LockAdapterFactory extends AbstractFactory
@@ -17,9 +17,9 @@ final class LockAdapterFactory extends AbstractFactory
     {
         $return = [];
 
-        $return['storage'] = function(VaultConfiguration $vaultConfiguration, StorageDriverInterface $storageDriver)
+        $return['storage'] = function(VaultConfiguration $vaultConfiguration, StorageAdapterInterface $storageAdapter)
         {
-            return new StorageBasedLockAdapter($storageDriver);
+            return new StorageBasedLockAdapter($storageAdapter);
         };
 
         return $return;

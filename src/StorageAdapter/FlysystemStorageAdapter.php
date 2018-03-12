@@ -1,12 +1,12 @@
 <?php
 
-namespace Archivr\StorageDriver;
+namespace Archivr\StorageAdapter;
 
 use Archivr\Exception\Exception;
 use League\Flysystem\Exception as FlysystemException;
 use League\Flysystem\Filesystem;
 
-class FlysystemStorageDriver implements StorageDriverInterface
+class FlysystemStorageAdapter implements StorageAdapterInterface
 {
     /**
      * @var Filesystem

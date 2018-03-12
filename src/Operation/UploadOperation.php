@@ -2,7 +2,7 @@
 
 namespace Archivr\Operation;
 
-use Archivr\StorageDriver\StorageDriverInterface;
+use Archivr\StorageAdapter\StorageAdapterInterface;
 use Archivr\Exception\Exception;
 
 class UploadOperation implements OperationInterface
@@ -29,7 +29,7 @@ class UploadOperation implements OperationInterface
         $this->streamFilterConfigMap = $streamFilterConfigMap;
     }
 
-    public function execute(string $localBasePath, StorageDriverInterface $storageDriver): bool
+    public function execute(string $localBasePath, StorageAdapterInterface $storageAdapter): bool
     {
         $absolutePath = $localBasePath . $this->relativePath;
 
@@ -42,7 +42,7 @@ class UploadOperation implements OperationInterface
 
         try
         {
-            $storageDriver->writeStream($this->blobId, $localStream);
+            $storageAdapter->writeStream($this->blobId, $localStream);
 
             fclose($localStream);
 

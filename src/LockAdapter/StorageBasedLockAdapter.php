@@ -2,28 +2,28 @@
 
 namespace Archivr\LockAdapter;
 
-use Archivr\StorageDriver\StorageDriverInterface;
+use Archivr\StorageAdapter\StorageAdapterInterface;
 
 class StorageBasedLockAdapter extends AbstractLockAdapter
 {
     /**
-     * @var StorageDriverInterface
+     * @var StorageAdapterInterface
      */
-    protected $storageDriver;
+    protected $storageAdapter;
 
-    public function __construct(StorageDriverInterface $storageDriver)
+    public function __construct(StorageAdapterInterface $storageAdapter)
     {
-        $this->storageDriver = $storageDriver;
+        $this->storageAdapter = $storageAdapter;
     }
 
     protected function doGetLock(string $name)
     {
-        if (!$this->storageDriver->exists($this->getLockFileName($name)))
+        if (!$this->storageAdapter->exists($this->getLockFileName($name)))
         {
             return null;
         }
 
-        return Lock::fromPayload($this->storageDriver->read($this->getLockFileName($name)));
+        return Lock::fromPayload($this->storageAdapter->read($this->getLockFileName($name)));
     }
 
     protected function doAcquireLock(string $name, int $timeout = null): bool
@@ -35,9 +35,9 @@ class StorageBasedLockAdapter extends AbstractLockAdapter
 
         while(true)
         {
-            if (!$this->storageDriver->exists($lockFileName))
+            if (!$this->storageAdapter->exists($lockFileName))
             {
-                $this->storageDriver->write($lockFileName, $payload);
+                $this->storageAdapter->write($lockFileName, $payload);
 
                 return true;
             }
@@ -60,7 +60,7 @@ class StorageBasedLockAdapter extends AbstractLockAdapter
 
     protected function doReleaseLock(string $name)
     {
-        $this->storageDriver->unlink($this->getLockFileName($name));
+        $this->storageAdapter->unlink($this->getLockFileName($name));
     }
 
     protected function getLockFileName(string $lockName): string

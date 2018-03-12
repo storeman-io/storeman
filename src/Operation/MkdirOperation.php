@@ -2,7 +2,7 @@
 
 namespace Archivr\Operation;
 
-use Archivr\StorageDriver\StorageDriverInterface;
+use Archivr\StorageAdapter\StorageAdapterInterface;
 
 class MkdirOperation implements OperationInterface
 {
@@ -22,7 +22,7 @@ class MkdirOperation implements OperationInterface
         $this->mode = $mode;
     }
 
-    public function execute(string $localBasePath, StorageDriverInterface $storageDriver): bool
+    public function execute(string $localBasePath, StorageAdapterInterface $storageAdapter): bool
     {
         $absolutePath = $localBasePath . $this->relativePath;
 

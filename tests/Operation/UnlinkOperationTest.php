@@ -3,7 +3,7 @@
 namespace Archivr\Test\Operation;
 
 use Archivr\Operation\UnlinkOperation;
-use Archivr\StorageDriver\StorageDriverInterface;
+use Archivr\StorageAdapter\StorageAdapterInterface;
 use Archivr\Test\TemporaryPathGeneratorProviderTrait;
 use PHPUnit\Framework\TestCase;
 
@@ -18,7 +18,7 @@ class UnlinkOperationTest extends TestCase
         $this->assertTrue(is_file($tempFile));
 
         $operation = new UnlinkOperation(basename($tempFile));
-        $operation->execute(dirname($tempFile) . DIRECTORY_SEPARATOR, $this->createMock(StorageDriverInterface::class));
+        $operation->execute(dirname($tempFile) . DIRECTORY_SEPARATOR, $this->createMock(StorageAdapterInterface::class));
 
         $this->assertFalse(is_file($tempFile));
     }
