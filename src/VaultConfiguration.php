@@ -2,6 +2,13 @@
 
 namespace Archivr;
 
+use Archivr\ConflictHandler\ConflictHandlerFactory;
+use Archivr\IndexMerger\IndexMergerFactory;
+use Archivr\LockAdapter\LockAdapterFactory;
+use Archivr\OperationListBuilder\OperationListBuilderFactory;
+use Archivr\StorageDriver\StorageDriverFactory;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Zend\Stdlib\ArraySerializableInterface;
 
 class VaultConfiguration implements ArraySerializableInterface
@@ -56,7 +63,7 @@ class VaultConfiguration implements ArraySerializableInterface
      *
      * @var array
      */
-    protected $settings;
+    protected $settings = [];
 
     public function __construct(string $storageDriver = 'unknown')
     {
@@ -183,5 +190,15 @@ class VaultConfiguration implements ArraySerializableInterface
     public function getArrayCopy()
     {
         return get_object_vars($this);
+    }
+
+    public static function loadValidatorMetadata(ClassMetadata $metadata)
+    {
+        $metadata->addPropertyConstraint('title', new Assert\NotBlank());
+        $metadata->addPropertyConstraint('adapter', new Assert\Choice(['choices' => StorageDriverFactory::getProvidedServiceNames()]));
+        $metadata->addPropertyConstraint('lockAdapter', new Assert\Choice(['choices' => LockAdapterFactory::getProvidedServiceNames()]));
+        $metadata->addPropertyConstraint('indexMerger', new Assert\Choice(['choices' => IndexMergerFactory::getProvidedServiceNames()]));
+        $metadata->addPropertyConstraint('conflictHandler', new Assert\Choice(['choices' => ConflictHandlerFactory::getProvidedServiceNames()]));
+        $metadata->addPropertyConstraint('operationListBuilder', new Assert\Choice(['choices' => OperationListBuilderFactory::getProvidedServiceNames()]));
     }
 }

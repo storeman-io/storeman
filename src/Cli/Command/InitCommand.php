@@ -50,7 +50,7 @@ class InitCommand extends AbstractCommand
 
 
         $configuration = new Configuration($input->getOption('path') ?: $this->consoleStyle->ask('Local path', '.'));
-        $configuration->setIdentity($input->getOption('identity') ?: $this->consoleStyle->ask('Identity', get_current_user()));
+        $configuration->setIdentity($input->getOption('identity') ?: $this->consoleStyle->ask('Identity'));
         $configuration->setExclude($input->getOption('exclude') ?: $this->consoleStyle->askMultiple('Excluded path(s)'));
 
         // at least one storage driver has to be set up

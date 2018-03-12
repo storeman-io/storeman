@@ -2,7 +2,7 @@
 
 namespace Archivr;
 
-abstract class ArrayUtils
+abstract class ArrayUtils extends \Zend\Stdlib\ArrayUtils
 {
     /**
      * @see http://php.net/manual/en/function.array-diff.php#91756

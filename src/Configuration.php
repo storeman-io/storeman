@@ -3,7 +3,9 @@
 namespace Archivr;
 
 use Archivr\Exception\Exception;
+use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Zend\Stdlib\ArraySerializableInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 class Configuration implements ArraySerializableInterface
 {
@@ -222,5 +224,12 @@ class Configuration implements ArraySerializableInterface
         }, $this->vaults));
 
         return $return;
+    }
+
+    public static function loadValidatorMetadata(ClassMetadata $metadata)
+    {
+        $metadata->addPropertyConstraint('path', new Assert\NotBlank());
+        $metadata->addPropertyConstraint('identity', new Assert\NotBlank());
+        $metadata->addPropertyConstraint('vaults', new Assert\Count(['min' => 1]));
     }
 }

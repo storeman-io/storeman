@@ -4,6 +4,7 @@ namespace Archivr\Test;
 
 use Archivr\Configuration;
 use Archivr\ConfigurationFileReader;
+use Archivr\Exception\ConfigurationException;
 use Archivr\VaultConfiguration;
 use Archivr\Exception\Exception;
 use PHPUnit\Framework\TestCase;
@@ -78,7 +79,7 @@ JSON
 
     public function testMissingVaults()
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
 
         $configFilePath = $this->writeConfig('{}');
 
@@ -88,7 +89,7 @@ JSON
 
     public function testWrongVaultsType()
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
 
         $configFilePath = $this->writeConfig('{"vaults": "test"}');
 
@@ -98,7 +99,7 @@ JSON
 
     public function testMissingVaultAdapter()
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
 
         $configFilePath = $this->writeConfig('{"vaults": [{}]}');
 
