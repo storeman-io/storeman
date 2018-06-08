@@ -6,7 +6,6 @@ use Storeman\Configuration;
 use Storeman\ConfigurationFileWriter;
 use Storeman\PathUtils;
 use Storeman\VaultConfiguration;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -19,7 +18,6 @@ class InitCommand extends AbstractCommand
 
         $this->setName('init');
         $this->setDescription('Sets up a local archive copy.');
-        $this->addArgument('target', InputArgument::OPTIONAL, 'Local target path to write the configuration file to.', './storeman.json');
         $this->addOption('path', null, InputOption::VALUE_REQUIRED, 'Path to use as local path for the archive.');
         $this->addOption('identity', 'i', InputOption::VALUE_REQUIRED, 'Identity to be used.');
         $this->addOption('exclude', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Relative path exclusion(s).');
@@ -33,7 +31,7 @@ class InitCommand extends AbstractCommand
     {
         parent::execute($input, $output);
 
-        $configFilePath = PathUtils::getAbsolutePath($input->getArgument('target'));
+        $configFilePath = PathUtils::getAbsolutePath($input->getOption('config'));
         $configFileDir = dirname($configFilePath);
 
         if (!is_writable($configFileDir))

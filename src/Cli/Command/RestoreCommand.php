@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class RestoreCommand extends AbstractPreparedCommand
+class RestoreCommand extends AbstractCommand
 {
     protected function configure()
     {

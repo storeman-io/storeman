@@ -11,7 +11,7 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class InfoCommand extends AbstractPreparedCommand
+class InfoCommand extends AbstractCommand
 {
     protected function configure()
     {
