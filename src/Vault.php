@@ -61,9 +61,9 @@ class Vault
      */
     protected $operationListBuilder;
 
-    public function __construct(Storeman $archivR, VaultConfiguration $vaultConfiguration)
+    public function __construct(Storeman $storeman, VaultConfiguration $vaultConfiguration)
     {
-        $this->storeman = $archivR;
+        $this->storeman = $storeman;
         $this->vaultConfiguration = $vaultConfiguration;
     }
 

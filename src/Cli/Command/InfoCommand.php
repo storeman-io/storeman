@@ -35,9 +35,9 @@ class InfoCommand extends AbstractConfiguredCommand
         return 0;
     }
 
-    protected function displayGeneralInfo(Storeman $archivR, OutputInterface $output)
+    protected function displayGeneralInfo(Storeman $storeman, OutputInterface $output)
     {
-        $config = $archivR->getConfiguration();
+        $config = $storeman->getConfiguration();
 
         $table = new Table($output);
         $table->setStyle('compact');
@@ -49,7 +49,7 @@ class InfoCommand extends AbstractConfiguredCommand
         {
             /** @var VaultConfiguration $vaultConfiguration */
 
-            $vault = $archivR->getVault($vaultConfiguration->getTitle());
+            $vault = $storeman->getVault($vaultConfiguration->getTitle());
             $currentLock = $vault->getLockAdapter()->getLock(Vault::LOCK_SYNC);
 
             $table->addRow([' ']); // blank line
@@ -76,11 +76,11 @@ class InfoCommand extends AbstractConfiguredCommand
         $table->render();
     }
 
-    protected function displaySynchronizationHistory(Storeman $archivR, OutputInterface $output)
+    protected function displaySynchronizationHistory(Storeman $storeman, OutputInterface $output)
     {
         $output->writeln('');
 
-        $history = array_reverse($archivR->buildSynchronizationHistory(), true);
+        $history = array_reverse($storeman->buildSynchronizationHistory(), true);
 
         if (count($history))
         {
@@ -118,12 +118,12 @@ class InfoCommand extends AbstractConfiguredCommand
         }
     }
 
-    protected function displayOutstandingOperations(Storeman $archivR, OutputInterface $output)
+    protected function displayOutstandingOperations(Storeman $storeman, OutputInterface $output)
     {
         $output->writeln('');
         $output->write('Current state: ');
 
-        $operationList = $archivR->buildOperationList();
+        $operationList = $storeman->buildOperationList();
 
         if ($count = count($operationList))
         {
