@@ -1,6 +1,0 @@
-
-rules:
-  php.use_exit_function:
-    enabled: false
-  php.use_php_sleep_function:
-    enabled: false
