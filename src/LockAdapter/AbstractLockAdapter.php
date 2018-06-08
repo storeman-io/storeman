@@ -24,7 +24,7 @@ abstract class AbstractLockAdapter implements LockAdapterInterface
         return isset($this->lockDepthMap[$name]);
     }
 
-    public function getLock(string $name)
+    public function getLock(string $name): ?Lock
     {
         return $this->doGetLock($name);
     }
@@ -95,7 +95,7 @@ abstract class AbstractLockAdapter implements LockAdapterInterface
         return (new Lock($name, $this->identity))->getPayload();
     }
 
-    abstract protected function doGetLock(string $name);
+    abstract protected function doGetLock(string $name): ?Lock;
     abstract protected function doAcquireLock(string $name, int $timeout = null): bool;
-    abstract protected function doReleaseLock(string $name);
+    abstract protected function doReleaseLock(string $name): void;
 }

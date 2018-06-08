@@ -8,7 +8,7 @@ use Storeman\OperationList;
 interface OperationListBuilderInterface
 {
     /**
-     * This method is called after the index merger has mergerd the local, lastLocal and remote indices into a "merged"
+     * This method is called after the index merger has merged the local, lastLocal and remote indices into a "merged"
      * index that represents the new state of the vault.
      *
      * Takes the local, remote and merged indices and has to return a ordered list of operations represented by

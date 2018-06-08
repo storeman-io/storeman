@@ -33,7 +33,7 @@ interface LockAdapterInterface
      *
      * @return Lock
      */
-    public function getLock(string $name);
+    public function getLock(string $name): ?Lock;
 
     /**
      * Tries to acquire a lock.
@@ -68,5 +68,5 @@ interface LockAdapterInterface
     /**
      * @return string
      */
-    public function getIdentity();
+    public function getIdentity(): string;
 }

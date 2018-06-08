@@ -16,7 +16,7 @@ class StorageBasedLockAdapter extends AbstractLockAdapter
         $this->storageAdapter = $storageAdapter;
     }
 
-    protected function doGetLock(string $name)
+    protected function doGetLock(string $name): ?Lock
     {
         if (!$this->storageAdapter->exists($this->getLockFileName($name)))
         {
@@ -58,7 +58,7 @@ class StorageBasedLockAdapter extends AbstractLockAdapter
         return false;
     }
 
-    protected function doReleaseLock(string $name)
+    protected function doReleaseLock(string $name): void
     {
         $this->storageAdapter->unlink($this->getLockFileName($name));
     }

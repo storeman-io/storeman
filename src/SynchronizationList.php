@@ -47,7 +47,7 @@ class SynchronizationList implements \Countable, \IteratorAggregate
      *
      * @return Synchronization
      */
-    public function getLastSynchronization()
+    public function getLastSynchronization(): ?Synchronization
     {
         if ($this->synchronizations)
         {
@@ -62,19 +62,19 @@ class SynchronizationList implements \Countable, \IteratorAggregate
      *
      * @return Synchronization
      */
-    public function getSynchronizationByRevision(int $revision)
+    public function getSynchronizationByRevision(int $revision): ?Synchronization
     {
         return isset($this->synchronizations[$revision]) ? $this->synchronizations[$revision] : null;
     }
 
     /**
-     * Returns the synchronization that was the current one for the given date.
+     * Returns the synchronization that was the current one for the given datetime.
      *
      * @param \DateTime $time
      *
      * @return Synchronization
      */
-    public function getSynchronizationByTime(\DateTime $time)
+    public function getSynchronizationByTime(\DateTime $time): ?Synchronization
     {
         $current = null;
 

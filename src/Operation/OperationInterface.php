@@ -4,6 +4,9 @@ namespace Storeman\Operation;
 
 use Storeman\StorageAdapter\StorageAdapterInterface;
 
+/**
+ * Represents entries in an ordered list of operations that have to be executed in order to perform some action.
+ */
 interface OperationInterface
 {
     /**

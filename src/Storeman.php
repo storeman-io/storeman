@@ -5,6 +5,9 @@ namespace Storeman;
 use Storeman\Exception\ConfigurationException;
 use Storeman\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 
+/**
+ * This class coordinates executions with multiple vaults involved.
+ */
 class Storeman
 {
     /**
@@ -46,7 +49,7 @@ class Storeman
     }
 
     /**
-     * Returns all vaults within this archive.
+     * Returns all vaults.
      *
      * @return Vault[]
      */

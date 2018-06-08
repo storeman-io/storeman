@@ -51,7 +51,7 @@ class Index implements \Countable, \IteratorAggregate
      * @param string $path
      * @return IndexObject|null
      */
-    public function getObjectByPath(string $path)
+    public function getObjectByPath(string $path): ?IndexObject
     {
         return isset($this->pathMap[$path]) ? $this->pathMap[$path] : null;
     }
@@ -62,7 +62,7 @@ class Index implements \Countable, \IteratorAggregate
      * @param string $blobId
      * @return IndexObject|null
      */
-    public function getObjectByBlobId(string $blobId)
+    public function getObjectByBlobId(string $blobId): ?IndexObject
     {
         foreach ($this->pathMap as $object)
         {

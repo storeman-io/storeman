@@ -105,7 +105,7 @@ class Configuration implements ArraySerializableInterface
     /**
      * @return string
      */
-    public function getIdentity()
+    public function getIdentity(): ?string
     {
         return $this->identity;
     }
@@ -144,7 +144,7 @@ class Configuration implements ArraySerializableInterface
      *
      * @return VaultConfiguration
      */
-    public function getVaultByTitle(string $title)
+    public function getVaultByTitle(string $title): VaultConfiguration
     {
         if (!isset($this->vaults[$title]))
         {

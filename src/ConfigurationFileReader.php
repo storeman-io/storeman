@@ -11,7 +11,7 @@ class ConfigurationFileReader
     public const CONFIG_CLASS = Configuration::class;
 
 
-    public function getConfiguration(string $configurationFilePath)
+    public function getConfiguration(string $configurationFilePath): Configuration
     {
         $configurationFilePath = PathUtils::getAbsolutePath($configurationFilePath);
 

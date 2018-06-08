@@ -151,7 +151,7 @@ class Vault
      * @return Index
      * @throws Exception
      */
-    public function loadLastLocalIndex()
+    public function loadLastLocalIndex(): ?Index
     {
         $index = null;
         $path = $this->getLastLocalIndexFilePath();
@@ -175,7 +175,7 @@ class Vault
      *
      * @return Index
      */
-    public function loadRemoteIndex(int $revision = null)
+    public function loadRemoteIndex(int $revision = null): ?Index
     {
         $list = null;
 
@@ -420,7 +420,7 @@ class Vault
         return $index;
     }
 
-    protected function doLoadRemoteIndex(int $revision, SynchronizationList $synchronizationList = null)
+    protected function doLoadRemoteIndex(int $revision, SynchronizationList $synchronizationList = null): ?Index
     {
         if ($synchronizationList === null)
         {
@@ -450,7 +450,7 @@ class Vault
         return $index;
     }
 
-    protected function doBuildMergedIndex(Index $localIndex = null, Index $lastLocalIndex = null, Index $remoteIndex = null)
+    protected function doBuildMergedIndex(Index $localIndex = null, Index $lastLocalIndex = null, Index $remoteIndex = null): Index
     {
         $localIndex = $localIndex ?: $this->buildLocalIndex();
         $lastLocalIndex = $lastLocalIndex ?: $this->loadLastLocalIndex();
@@ -555,7 +555,7 @@ class Vault
         return $index;
     }
 
-    protected function writeIndexToFile(Index $index, string $path)
+    protected function writeIndexToFile(Index $index, string $path): void
     {
         $stream = fopen($path, 'wb');
 

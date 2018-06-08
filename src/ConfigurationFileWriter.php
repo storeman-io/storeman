@@ -9,7 +9,7 @@ class ConfigurationFileWriter
      * @param string $path File path to write the configuration file to.
      * @param bool $skipDefaults If true only settings that do not match the default are written.
      */
-    public function writeConfigurationFile(Configuration $configuration, string $path, bool $skipDefaults = true)
+    public function writeConfigurationFile(Configuration $configuration, string $path, bool $skipDefaults = true): void
     {
         if (!file_put_contents($path, $this->buildConfigurationFile($configuration, $skipDefaults)))
         {

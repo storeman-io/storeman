@@ -56,7 +56,7 @@ class Synchronization
     /**
      * @return string
      */
-    public function getIdentity()
+    public function getIdentity(): ?string
     {
         return $this->identity;
     }

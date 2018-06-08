@@ -14,7 +14,7 @@ class DummyLockAdapter extends AbstractLockAdapter
         return array_keys($this->lockMap);
     }
 
-    protected function doGetLock(string $name)
+    protected function doGetLock(string $name): ?Lock
     {
         return isset($this->lockMap[$name]) ? $this->lockMap[$name] : null;
     }
@@ -26,7 +26,7 @@ class DummyLockAdapter extends AbstractLockAdapter
         return true;
     }
 
-    protected function doReleaseLock(string $name)
+    protected function doReleaseLock(string $name): void
     {
         unset($this->lockMap[$name]);
     }

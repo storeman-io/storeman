@@ -98,17 +98,17 @@ class IndexObject
         return $this->mode;
     }
 
-    public function getSize()
+    public function getSize(): ?int
     {
         return $this->size;
     }
 
-    public function getLinkTarget()
+    public function getLinkTarget(): ?string
     {
         return $this->linkTarget;
     }
 
-    public function getBlobId()
+    public function getBlobId(): ?string
     {
         return $this->blobId;
     }
