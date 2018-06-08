@@ -1,6 +1,6 @@
 <?php
 
-namespace Archivr\LockAdapter;
+namespace Storeman\LockAdapter;
 
 abstract class AbstractLockAdapter implements LockAdapterInterface
 {

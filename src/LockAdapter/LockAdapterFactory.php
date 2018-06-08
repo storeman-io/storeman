@@ -1,10 +1,10 @@
 <?php
 
-namespace Archivr\LockAdapter;
+namespace Storeman\LockAdapter;
 
-use Archivr\AbstractFactory;
-use Archivr\StorageAdapter\StorageAdapterInterface;
-use Archivr\VaultConfiguration;
+use Storeman\AbstractFactory;
+use Storeman\StorageAdapter\StorageAdapterInterface;
+use Storeman\VaultConfiguration;
 
 final class LockAdapterFactory extends AbstractFactory
 {

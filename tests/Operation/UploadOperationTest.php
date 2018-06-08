@@ -1,13 +1,13 @@
 <?php
 
-namespace Archivr\Test\Operation;
+namespace Storeman\Test\Operation;
 
-use Archivr\StorageAdapter\FlysystemStorageAdapter;
-use Archivr\Operation\UploadOperation;
-use Archivr\StorageAdapter\LocalStorageAdapter;
-use Archivr\Test\TemporaryPathGeneratorProviderTrait;
-use Archivr\Test\TestVault;
-use Archivr\VaultConfiguration;
+use Storeman\StorageAdapter\FlysystemStorageAdapter;
+use Storeman\Operation\UploadOperation;
+use Storeman\StorageAdapter\LocalStorageAdapter;
+use Storeman\Test\TemporaryPathGeneratorProviderTrait;
+use Storeman\Test\TestVault;
+use Storeman\VaultConfiguration;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 use PHPUnit\Framework\TestCase;

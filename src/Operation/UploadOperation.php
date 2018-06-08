@@ -1,9 +1,9 @@
 <?php
 
-namespace Archivr\Operation;
+namespace Storeman\Operation;
 
-use Archivr\StorageAdapter\StorageAdapterInterface;
-use Archivr\Exception\Exception;
+use Storeman\StorageAdapter\StorageAdapterInterface;
+use Storeman\Exception\Exception;
 
 class UploadOperation implements OperationInterface
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr\LockAdapter;
+namespace Storeman\LockAdapter;
 
-use Archivr\StorageAdapter\StorageAdapterInterface;
+use Storeman\StorageAdapter\StorageAdapterInterface;
 
 class StorageBasedLockAdapter extends AbstractLockAdapter
 {

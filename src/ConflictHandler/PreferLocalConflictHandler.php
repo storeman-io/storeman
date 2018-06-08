@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr\ConflictHandler;
+namespace Storeman\ConflictHandler;
 
-use Archivr\IndexObject;
+use Storeman\IndexObject;
 
 /**
  * This conflict handler always prefers the local change.

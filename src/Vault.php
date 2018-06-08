@@ -1,35 +1,35 @@
 <?php
 
-namespace Archivr;
+namespace Storeman;
 
-use Archivr\ConflictHandler\ConflictHandlerFactory;
-use Archivr\ConflictHandler\ConflictHandlerInterface;
-use Archivr\IndexMerger\IndexMergerFactory;
-use Archivr\LockAdapter\LockAdapterFactory;
-use Archivr\OperationListBuilder\OperationListBuilderFactory;
-use Archivr\StorageAdapter\StorageAdapterFactory;
-use Archivr\StorageAdapter\StorageAdapterInterface;
-use Archivr\Exception\Exception;
-use Archivr\IndexMerger\IndexMergerInterface;
-use Archivr\LockAdapter\LockAdapterInterface;
-use Archivr\OperationListBuilder\OperationListBuilderInterface;
-use Archivr\SynchronizationProgressListener\DummySynchronizationProgressListener;
-use Archivr\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
+use Storeman\ConflictHandler\ConflictHandlerFactory;
+use Storeman\ConflictHandler\ConflictHandlerInterface;
+use Storeman\IndexMerger\IndexMergerFactory;
+use Storeman\LockAdapter\LockAdapterFactory;
+use Storeman\OperationListBuilder\OperationListBuilderFactory;
+use Storeman\StorageAdapter\StorageAdapterFactory;
+use Storeman\StorageAdapter\StorageAdapterInterface;
+use Storeman\Exception\Exception;
+use Storeman\IndexMerger\IndexMergerInterface;
+use Storeman\LockAdapter\LockAdapterInterface;
+use Storeman\OperationListBuilder\OperationListBuilderInterface;
+use Storeman\SynchronizationProgressListener\DummySynchronizationProgressListener;
+use Storeman\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use Archivr\Operation\OperationInterface;
+use Storeman\Operation\OperationInterface;
 
 class Vault
 {
-    const METADATA_DIRECTORY_NAME = '.archivr';
+    const METADATA_DIRECTORY_NAME = '.storeman';
     const SYNCHRONIZATION_LIST_FILE_NAME = 'index';
     const LOCK_SYNC = 'sync';
 
     /**
-     * @var ArchivR
+     * @var Storeman
      */
-    protected $archivr;
+    protected $storeman;
 
     /**
      * @var VaultConfiguration
@@ -61,9 +61,9 @@ class Vault
      */
     protected $operationListBuilder;
 
-    public function __construct(ArchivR $archivR, VaultConfiguration $vaultConfiguration)
+    public function __construct(Storeman $archivR, VaultConfiguration $vaultConfiguration)
     {
-        $this->archivr = $archivR;
+        $this->storeman = $archivR;
         $this->vaultConfiguration = $vaultConfiguration;
     }
 
@@ -262,7 +262,7 @@ class Vault
             $remoteIndex = null;
         }
 
-        $synchronization = new Synchronization($newRevision, $this->generateNewBlobId(), new \DateTime(), $this->archivr->getConfiguration()->getIdentity());
+        $synchronization = new Synchronization($newRevision, $this->generateNewBlobId(), new \DateTime(), $this->storeman->getConfiguration()->getIdentity());
         $synchronizationList->addSynchronization($synchronization);
 
         // compute merged index
@@ -284,7 +284,7 @@ class Vault
         {
             /** @var OperationInterface $operation */
 
-            $success = $operation->execute($this->archivr->getConfiguration()->getPath(), $this->getStorageAdapter());
+            $success = $operation->execute($this->storeman->getConfiguration()->getPath(), $this->getStorageAdapter());
 
             $operationResult = new OperationResult($operation, $success);
             $operationResultList->addOperationResult($operationResult);
@@ -390,13 +390,13 @@ class Vault
     protected function doBuildLocalIndex(string $path = null): Index
     {
         $finder = new Finder();
-        $finder->in($path ?: $this->archivr->getConfiguration()->getPath());
+        $finder->in($path ?: $this->storeman->getConfiguration()->getPath());
         $finder->ignoreDotFiles(false);
         $finder->ignoreVCS(true);
         $finder->exclude(static::METADATA_DIRECTORY_NAME);
-        $finder->notPath('archivr.json');
+        $finder->notPath('storeman.json');
 
-        foreach ($this->archivr->getConfiguration()->getExclude() as $path)
+        foreach ($this->storeman->getConfiguration()->getExclude() as $path)
         {
             $finder->notPath($path);
         }
@@ -407,14 +407,14 @@ class Vault
         {
             /** @var SplFileInfo $fileInfo */
 
-            $index->addObject(IndexObject::fromPath($this->archivr->getConfiguration()->getPath(), $fileInfo->getRelativePathname()));
+            $index->addObject(IndexObject::fromPath($this->storeman->getConfiguration()->getPath(), $fileInfo->getRelativePathname()));
         }
 
         foreach ($finder->files() as $fileInfo)
         {
             /** @var SplFileInfo $fileInfo */
 
-            $index->addObject(IndexObject::fromPath($this->archivr->getConfiguration()->getPath(), $fileInfo->getRelativePathname()));
+            $index->addObject(IndexObject::fromPath($this->storeman->getConfiguration()->getPath(), $fileInfo->getRelativePathname()));
         }
 
         return $index;
@@ -495,7 +495,7 @@ class Vault
             throw new Exception("Unknown revision: {$revision}");
         }
 
-        $targetPath = $targetPath ?: $this->archivr->getConfiguration()->getPath();
+        $targetPath = $targetPath ?: $this->storeman->getConfiguration()->getPath();
 
         $localIndex = $this->doBuildLocalIndex($targetPath);
 
@@ -622,7 +622,7 @@ class Vault
 
     protected function initMetadataDirectory(): string
     {
-        $path = $this->archivr->getConfiguration()->getPath() . static::METADATA_DIRECTORY_NAME;
+        $path = $this->storeman->getConfiguration()->getPath() . static::METADATA_DIRECTORY_NAME;
 
         if (!is_dir($path))
         {

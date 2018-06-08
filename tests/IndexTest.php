@@ -1,9 +1,9 @@
 <?php
 
-namespace Archivr\Test;
+namespace Storeman\Test;
 
-use Archivr\Index;
-use Archivr\IndexObject;
+use Storeman\Index;
+use Storeman\IndexObject;
 use PHPUnit\Framework\TestCase;
 
 class IndexTest extends TestCase

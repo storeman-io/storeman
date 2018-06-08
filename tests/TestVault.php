@@ -1,10 +1,10 @@
 <?php
 
-namespace Archivr\Test;
+namespace Storeman\Test;
 
-use Archivr\Index;
-use Archivr\IndexObject;
-use Archivr\Vault;
+use Storeman\Index;
+use Storeman\IndexObject;
+use Storeman\Vault;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;

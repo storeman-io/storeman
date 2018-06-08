@@ -1,6 +1,6 @@
 <?php
 
-namespace Archivr;
+namespace Storeman;
 
 class ConfigurationFileWriter
 {

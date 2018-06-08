@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr\Cli;
+namespace Storeman\Cli;
 
-class VaultConfiguration extends \Archivr\VaultConfiguration
+class VaultConfiguration extends \Storeman\VaultConfiguration
 {
     /**
      * {@inheritdoc}

@@ -1,12 +1,12 @@
 <?php
 
-namespace Archivr\Test\Operation;
+namespace Storeman\Test\Operation;
 
-use Archivr\Operation\DownloadOperation;
-use Archivr\StorageAdapter\LocalStorageAdapter;
-use Archivr\Test\TemporaryPathGeneratorProviderTrait;
-use Archivr\Test\TestVault;
-use Archivr\VaultConfiguration;
+use Storeman\Operation\DownloadOperation;
+use Storeman\StorageAdapter\LocalStorageAdapter;
+use Storeman\Test\TemporaryPathGeneratorProviderTrait;
+use Storeman\Test\TestVault;
+use Storeman\VaultConfiguration;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 

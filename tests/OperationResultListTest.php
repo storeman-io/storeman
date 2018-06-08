@@ -1,9 +1,9 @@
 <?php
 
-namespace Archivr\Test;
+namespace Storeman\Test;
 
-use Archivr\OperationResult;
-use Archivr\OperationResultList;
+use Storeman\OperationResult;
+use Storeman\OperationResultList;
 use PHPUnit\Framework\TestCase;
 
 class OperationResultListTest extends TestCase

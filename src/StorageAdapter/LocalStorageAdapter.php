@@ -1,10 +1,10 @@
 <?php
 
-namespace Archivr\StorageAdapter;
+namespace Storeman\StorageAdapter;
 
-use Archivr\Exception\ConfigurationException;
-use Archivr\PathUtils;
-use Archivr\VaultConfiguration;
+use Storeman\Exception\ConfigurationException;
+use Storeman\PathUtils;
+use Storeman\VaultConfiguration;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 

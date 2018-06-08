@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr\Operation;
+namespace Storeman\Operation;
 
-use Archivr\StorageAdapter\StorageAdapterInterface;
+use Storeman\StorageAdapter\StorageAdapterInterface;
 
 class DownloadOperation implements OperationInterface
 {

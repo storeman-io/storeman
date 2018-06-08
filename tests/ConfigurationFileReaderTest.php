@@ -1,12 +1,12 @@
 <?php
 
-namespace Archivr\Test;
+namespace Storeman\Test;
 
-use Archivr\Configuration;
-use Archivr\ConfigurationFileReader;
-use Archivr\Exception\ConfigurationException;
-use Archivr\VaultConfiguration;
-use Archivr\Exception\Exception;
+use Storeman\Configuration;
+use Storeman\ConfigurationFileReader;
+use Storeman\Exception\ConfigurationException;
+use Storeman\VaultConfiguration;
+use Storeman\Exception\Exception;
 use PHPUnit\Framework\TestCase;
 
 class ConfigurationFileReaderTest extends TestCase

@@ -1,11 +1,11 @@
 <?php
 
-namespace Archivr\Test\StorageAdapter;
+namespace Storeman\Test\StorageAdapter;
 
-use Archivr\Exception\Exception;
-use Archivr\StorageAdapter\LocalStorageAdapter;
-use Archivr\Test\TemporaryPathGeneratorProviderTrait;
-use Archivr\VaultConfiguration;
+use Storeman\Exception\Exception;
+use Storeman\StorageAdapter\LocalStorageAdapter;
+use Storeman\Test\TemporaryPathGeneratorProviderTrait;
+use Storeman\VaultConfiguration;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 

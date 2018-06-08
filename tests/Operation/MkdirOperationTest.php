@@ -1,10 +1,10 @@
 <?php
 
-namespace Archivr\Test\Operation;
+namespace Storeman\Test\Operation;
 
-use Archivr\Operation\MkdirOperation;
-use Archivr\StorageAdapter\StorageAdapterInterface;
-use Archivr\Test\TemporaryPathGeneratorProviderTrait;
+use Storeman\Operation\MkdirOperation;
+use Storeman\StorageAdapter\StorageAdapterInterface;
+use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 use PHPUnit\Framework\TestCase;
 
 class MkdirOperationTest extends TestCase

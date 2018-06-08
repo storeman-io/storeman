@@ -1,6 +1,6 @@
 <?php
 
-namespace Archivr\LockAdapter;
+namespace Storeman\LockAdapter;
 
 /**
  * A LockAdapter is used to synchronize interaction with a vault across multiple users.

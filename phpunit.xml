@@ -10,7 +10,7 @@
          stopOnFailure="false"
          syntaxCheck="false">
     <testsuites>
-        <testsuite name="ArchivR">
+        <testsuite name="Storeman">
             <directory suffix=".php">./tests/</directory>
         </testsuite>
     </testsuites>

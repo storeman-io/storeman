@@ -1,7 +1,7 @@
 {
-    "name": "agroskurth/archivr",
-    "description": "ArchivR is a secure file-synchronization and -backup utility that can be used with a large variety of storage providers.",
-    "keywords": ["archivr", "cloud", "sync", "synchronization", "backup", "storage"],
+    "name": "storeman-io/storeman",
+    "description": "Storeman is a secure file-synchronization and -backup utility that can be used with a large variety of storage providers.",
+    "keywords": ["storeman", "cloud", "sync", "synchronization", "backup", "storage"],
     "license": "MIT",
     "authors": [
         {
@@ -25,17 +25,17 @@
         "phpunit/phpunit": "^6.1"
     },
     "autoload": {
-        "psr-4": {"Archivr\\": "src/"}
+        "psr-4": {"Storeman\\": "src/"}
     },
     "autoload-dev": {
-        "psr-4": {"Archivr\\Test\\": "tests/"}
+        "psr-4": {"Storeman\\Test\\": "tests/"}
     },
     "scripts": {
         "build": "@php -d phar.readonly=0 bin/build",
         "test": "phpunit --colors=always --verbose"
     },
     "bin": [
-        "bin/archivr"
+        "bin/storeman"
     ],
     "extra": {
         "branch-alias": {

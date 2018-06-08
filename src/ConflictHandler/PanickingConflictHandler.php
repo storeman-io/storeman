@@ -1,9 +1,9 @@
 <?php
 
-namespace Archivr\ConflictHandler;
+namespace Storeman\ConflictHandler;
 
-use Archivr\Exception\ConflictException;
-use Archivr\IndexObject;
+use Storeman\Exception\ConflictException;
+use Storeman\IndexObject;
 
 class PanickingConflictHandler implements ConflictHandlerInterface
 {

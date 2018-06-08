@@ -1,11 +1,11 @@
 <?php
 
-namespace Archivr\Test\ConflictHandler;
+namespace Storeman\Test\ConflictHandler;
 
-use Archivr\ConflictHandler\PanickingConflictHandler;
-use Archivr\Exception\ConflictException;
-use Archivr\IndexObject;
-use Archivr\Test\TemporaryPathGenerator;
+use Storeman\ConflictHandler\PanickingConflictHandler;
+use Storeman\Exception\ConflictException;
+use Storeman\IndexObject;
+use Storeman\Test\TemporaryPathGenerator;
 use PHPUnit\Framework\TestCase;
 
 class PanickingConflictHandlerTest extends TestCase

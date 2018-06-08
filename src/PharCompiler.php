@@ -1,6 +1,6 @@
 <?php
 
-namespace Archivr;
+namespace Storeman;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -35,7 +35,7 @@ class PharCompiler
         }
 
 
-        $phar = new \Phar($targetFilePath, 0, 'archivr.phar');
+        $phar = new \Phar($targetFilePath, 0, 'storeman.phar');
         $phar->setSignatureAlgorithm(\Phar::SHA256);
 
         $phar->startBuffering();
@@ -44,7 +44,7 @@ class PharCompiler
         $this->addDependencyFiles($phar);
 
         $this->addFile($phar, new \SplFileInfo(__DIR__ . '/../bootstrap.php'));
-        $this->addFile($phar, new \SplFileInfo(__DIR__ . '/../bin/archivr'));
+        $this->addFile($phar, new \SplFileInfo(__DIR__ . '/../bin/storeman'));
 
         $phar->setStub($this->getStub());
         $phar->compressFiles(\Phar::GZ);
@@ -154,9 +154,9 @@ class PharCompiler
 #!/usr/bin/env php
 <?php
 
-Phar::mapPhar('archivr.phar');
+Phar::mapPhar('storeman.phar');
 
-require 'phar://archivr.phar/bin/archivr';
+require 'phar://storeman.phar/bin/storeman';
 
 __HALT_COMPILER();
 EOF;

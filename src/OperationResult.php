@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr;
+namespace Storeman;
 
-use Archivr\Operation\OperationInterface;
+use Storeman\Operation\OperationInterface;
 
 class OperationResult
 {

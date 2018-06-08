@@ -1,6 +1,6 @@
 <?php
 
-namespace Archivr;
+namespace Storeman;
 
 class OperationResultList implements \Countable, \IteratorAggregate
 {

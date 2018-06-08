@@ -1,12 +1,12 @@
 <?php
 
-namespace Archivr;
+namespace Storeman;
 
-use Archivr\ConflictHandler\ConflictHandlerFactory;
-use Archivr\IndexMerger\IndexMergerFactory;
-use Archivr\LockAdapter\LockAdapterFactory;
-use Archivr\OperationListBuilder\OperationListBuilderFactory;
-use Archivr\StorageAdapter\StorageAdapterFactory;
+use Storeman\ConflictHandler\ConflictHandlerFactory;
+use Storeman\IndexMerger\IndexMergerFactory;
+use Storeman\LockAdapter\LockAdapterFactory;
+use Storeman\OperationListBuilder\OperationListBuilderFactory;
+use Storeman\StorageAdapter\StorageAdapterFactory;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Zend\Stdlib\ArraySerializableInterface;

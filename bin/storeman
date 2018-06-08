@@ -3,5 +3,5 @@
 
 require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bootstrap.php';
 
-$application = new \Archivr\Cli\Application('ArchivR', 'alpha');
+$application = new \Storeman\Cli\Application('Storeman', 'alpha');
 $application->run();

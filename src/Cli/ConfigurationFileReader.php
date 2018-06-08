@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr\Cli;
+namespace Storeman\Cli;
 
-class ConfigurationFileReader extends \Archivr\ConfigurationFileReader
+class ConfigurationFileReader extends \Storeman\ConfigurationFileReader
 {
     public const CONFIG_CLASS = Configuration::class;
 }

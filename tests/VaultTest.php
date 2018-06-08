@@ -1,14 +1,14 @@
 <?php
 
-namespace Archivr\Test;
+namespace Storeman\Test;
 
-use Archivr\ArchivR;
-use Archivr\Configuration;
-use Archivr\Index;
-use Archivr\IndexObject;
-use Archivr\OperationResultList;
-use Archivr\Vault;
-use Archivr\VaultConfiguration;
+use Storeman\Storeman;
+use Storeman\Configuration;
+use Storeman\Index;
+use Storeman\IndexObject;
+use Storeman\OperationResultList;
+use Storeman\Vault;
+use Storeman\VaultConfiguration;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -179,8 +179,8 @@ class VaultTest extends TestCase
         $configuration = new Configuration($basePath);
         $configuration->addVault($vaultConfiguration);
 
-        $archivr = new ArchivR($configuration);
+        $storeman = new Storeman($configuration);
 
-        return new Vault($archivr, $vaultConfiguration);
+        return new Vault($storeman, $vaultConfiguration);
     }
 }

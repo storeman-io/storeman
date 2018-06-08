@@ -1,10 +1,10 @@
 <?php
 
-namespace Archivr\Cli\Command;
+namespace Storeman\Cli\Command;
 
-use Archivr\ArchivR;
-use Archivr\Cli\SynchronizationProgressListener;
-use Archivr\Configuration;
+use Storeman\Storeman;
+use Storeman\Cli\SynchronizationProgressListener;
+use Storeman\Configuration;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -25,8 +25,8 @@ class DumpCommand extends AbstractConfiguredCommand
 
     protected function executeConfigured(InputInterface $input, OutputInterface $output, Configuration $configuration): int
     {
-        $archivr = new ArchivR($configuration);
-        $archivr->dump(
+        $storeman = new Storeman($configuration);
+        $storeman->dump(
             $input->getArgument('path'),
             $input->getOption(  'revision') ? (int)$input->getOption('revision') : null,
             $input->getOption('vault'),

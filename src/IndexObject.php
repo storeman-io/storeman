@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr;
+namespace Storeman;
 
-use Archivr\Exception\Exception;
+use Storeman\Exception\Exception;
 
 /**
  * An index object is the representation of one of this filesystem primitives contained in the index.

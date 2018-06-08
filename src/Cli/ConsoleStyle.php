@@ -1,6 +1,6 @@
 <?php
 
-namespace Archivr\Cli;
+namespace Storeman\Cli;
 
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputInterface;

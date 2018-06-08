@@ -2,10 +2,10 @@
 
 namespace Cli\Command;
 
-use Archivr\Cli\Command\RestoreCommand;
-use Archivr\Cli\Command\SynchronizeCommand;
-use Archivr\Test\TemporaryPathGeneratorProviderTrait;
-use Archivr\Test\TestVault;
+use Storeman\Cli\Command\RestoreCommand;
+use Storeman\Cli\Command\SynchronizeCommand;
+use Storeman\Test\TemporaryPathGeneratorProviderTrait;
+use Storeman\Test\TestVault;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -29,7 +29,7 @@ class RestoreCommandTest extends AbstractCommandTest
         $originalContent = md5(rand());
 
         $testVault = new TestVault();
-        $testVault->fwrite('archivr.json', json_encode($config));
+        $testVault->fwrite('storeman.json', json_encode($config));
         $testVault->fwrite('test.ext', $originalContent);
 
         $this->assertTrue(chdir($testVault->getBasePath()));

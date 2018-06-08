@@ -2,8 +2,8 @@
 
 namespace LockAdapter\Test\LockAdapter;
 
-use Archivr\LockAdapter\DummyLockAdapter;
-use Archivr\LockAdapter\LockAdapterInterface;
+use Storeman\LockAdapter\DummyLockAdapter;
+use Storeman\LockAdapter\LockAdapterInterface;
 use LockAdapter\AbstractLockAdapterTest;
 
 class DummyLockAdapterTest extends AbstractLockAdapterTest

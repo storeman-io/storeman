@@ -1,13 +1,13 @@
 <?php
 
-namespace Archivr\Test;
+namespace Storeman\Test;
 
-use Archivr\ArchivR;
-use Archivr\Configuration;
-use Archivr\VaultConfiguration;
+use Storeman\Storeman;
+use Storeman\Configuration;
+use Storeman\VaultConfiguration;
 use PHPUnit\Framework\TestCase;
 
-class ArchivRTest extends TestCase
+class StoremanTest extends TestCase
 {
     use TemporaryPathGeneratorProviderTrait;
 
@@ -20,11 +20,11 @@ class ArchivRTest extends TestCase
         $config->addVault($this->getTestVaultConfig()->setTitle('First'));
         $config->addVault($this->getTestVaultConfig()->setTitle('Second'));
 
-        $archivr = new ArchivR($config);
+        $storeman = new Storeman($config);
 
-        $this->assertCount(2, $archivr->buildOperationList());
+        $this->assertCount(2, $storeman->buildOperationList());
 
-        $operationResultList = $archivr->synchronize();
+        $operationResultList = $storeman->synchronize();
 
         $this->assertCount(2, $operationResultList);
     }

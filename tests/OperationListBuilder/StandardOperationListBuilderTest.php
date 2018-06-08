@@ -1,14 +1,14 @@
 <?php
 
-namespace Archivr\Test\OperationListBuilder;
+namespace Storeman\Test\OperationListBuilder;
 
-use Archivr\Index;
-use Archivr\IndexObject;
-use Archivr\Operation\OperationInterface;
-use Archivr\Operation\TouchOperation;
-use Archivr\OperationListBuilder\StandardOperationListBuilder;
-use Archivr\Test\TemporaryPathGeneratorProviderTrait;
-use Archivr\Test\TestVault;
+use Storeman\Index;
+use Storeman\IndexObject;
+use Storeman\Operation\OperationInterface;
+use Storeman\Operation\TouchOperation;
+use Storeman\OperationListBuilder\StandardOperationListBuilder;
+use Storeman\Test\TemporaryPathGeneratorProviderTrait;
+use Storeman\Test\TestVault;
 use PHPUnit\Framework\TestCase;
 
 class StandardOperationListBuilderTest extends TestCase

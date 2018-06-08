@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr;
+namespace Storeman;
 
-use Archivr\Exception\Exception;
+use Storeman\Exception\Exception;
 
 /**
  * todo: Consider replacement by reference implementation

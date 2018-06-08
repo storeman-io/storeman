@@ -1,10 +1,10 @@
 <?php
 
-namespace Archivr\Test;
+namespace Storeman\Test;
 
-use Archivr\Test\Tree\SimpleTreeGenerator;
-use Archivr\Test\Tree\TreeGeneratorInterface;
-use Archivr\Test\Tree\TreeNode;
+use Storeman\Test\Tree\SimpleTreeGenerator;
+use Storeman\Test\Tree\TreeGeneratorInterface;
+use Storeman\Test\Tree\TreeNode;
 use Symfony\Component\Filesystem\Filesystem;
 
 class TestVaultGenerator

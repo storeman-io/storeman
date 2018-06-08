@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr\Test;
+namespace Storeman\Test;
 
-use Archivr\PathUtils;
+use Storeman\PathUtils;
 use PHPUnit\Framework\TestCase;
 
 class PathUtilsTest extends TestCase

@@ -1,16 +1,16 @@
 <?php
 
-namespace Archivr\Cli\Command;
+namespace Storeman\Cli\Command;
 
-use Archivr\Configuration;
-use Archivr\ConfigurationFileWriter;
-use Archivr\ConflictHandler\ConflictHandlerFactory;
-use Archivr\IndexMerger\IndexMergerFactory;
-use Archivr\LockAdapter\LockAdapterFactory;
-use Archivr\OperationListBuilder\OperationListBuilderFactory;
-use Archivr\StorageAdapter\StorageAdapterFactory;
-use Archivr\PathUtils;
-use Archivr\VaultConfiguration;
+use Storeman\Configuration;
+use Storeman\ConfigurationFileWriter;
+use Storeman\ConflictHandler\ConflictHandlerFactory;
+use Storeman\IndexMerger\IndexMergerFactory;
+use Storeman\LockAdapter\LockAdapterFactory;
+use Storeman\OperationListBuilder\OperationListBuilderFactory;
+use Storeman\StorageAdapter\StorageAdapterFactory;
+use Storeman\PathUtils;
+use Storeman\VaultConfiguration;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -24,7 +24,7 @@ class InitCommand extends AbstractCommand
 
         $this->setName('init');
         $this->setDescription('Sets up a local archive copy.');
-        $this->addArgument('target', InputArgument::OPTIONAL, 'Local target path to write the configuration file to.', './archivr.json');
+        $this->addArgument('target', InputArgument::OPTIONAL, 'Local target path to write the configuration file to.', './storeman.json');
         $this->addOption('path', null, InputOption::VALUE_REQUIRED, 'Path to use as local path for the archive.');
         $this->addOption('identity', 'i', InputOption::VALUE_REQUIRED, 'Identity to be used.');
         $this->addOption('exclude', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Relative path exclusion(s).');

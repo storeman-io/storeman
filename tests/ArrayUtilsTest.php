@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr\Test;
+namespace Storeman\Test;
 
-use Archivr\ArrayUtils;
+use Storeman\ArrayUtils;
 use PHPUnit\Framework\TestCase;
 
 class ArrayUtilsTest extends TestCase

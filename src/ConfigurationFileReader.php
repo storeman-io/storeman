@@ -1,9 +1,9 @@
 <?php
 
-namespace Archivr;
+namespace Storeman;
 
-use Archivr\Exception\ConfigurationException;
-use Archivr\Exception\Exception;
+use Storeman\Exception\ConfigurationException;
+use Storeman\Exception\Exception;
 use Symfony\Component\Validator\Validation;
 
 class ConfigurationFileReader

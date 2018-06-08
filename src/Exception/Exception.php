@@ -1,6 +1,6 @@
 <?php
 
-namespace Archivr\Exception;
+namespace Storeman\Exception;
 
 class Exception extends \Exception
 {

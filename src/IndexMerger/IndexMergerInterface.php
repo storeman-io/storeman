@@ -1,9 +1,9 @@
 <?php
 
-namespace Archivr\IndexMerger;
+namespace Storeman\IndexMerger;
 
-use Archivr\ConflictHandler\ConflictHandlerInterface;
-use Archivr\Index;
+use Storeman\ConflictHandler\ConflictHandlerInterface;
+use Storeman\Index;
 
 interface IndexMergerInterface
 {

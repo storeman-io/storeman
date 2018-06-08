@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr\Cli\Command;
+namespace Storeman\Cli\Command;
 
-use Archivr\Cli\ConsoleStyle;
+use Storeman\Cli\ConsoleStyle;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

@@ -1,13 +1,13 @@
 <?php
 
-namespace Archivr\Cli\Command;
+namespace Storeman\Cli\Command;
 
-use Archivr\ArchivR;
-use Archivr\Cli\Application;
-use Archivr\Configuration;
-use Archivr\Synchronization;
-use Archivr\Vault;
-use Archivr\VaultConfiguration;
+use Storeman\Storeman;
+use Storeman\Cli\Application;
+use Storeman\Configuration;
+use Storeman\Synchronization;
+use Storeman\Vault;
+use Storeman\VaultConfiguration;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -24,18 +24,18 @@ class InfoCommand extends AbstractConfiguredCommand
 
     protected function executeConfigured(InputInterface $input, OutputInterface $output, Configuration $configuration): int
     {
-        $archivr = new ArchivR($configuration);
+        $storeman = new Storeman($configuration);
 
         $output->writeln(Application::LOGO);
 
-        $this->displayGeneralInfo($archivr, $output);
-        $this->displaySynchronizationHistory($archivr, $output);
-        $this->displayOutstandingOperations($archivr, $output);
+        $this->displayGeneralInfo($storeman, $output);
+        $this->displaySynchronizationHistory($storeman, $output);
+        $this->displayOutstandingOperations($storeman, $output);
 
         return 0;
     }
 
-    protected function displayGeneralInfo(ArchivR $archivR, OutputInterface $output)
+    protected function displayGeneralInfo(Storeman $archivR, OutputInterface $output)
     {
         $config = $archivR->getConfiguration();
 
@@ -76,7 +76,7 @@ class InfoCommand extends AbstractConfiguredCommand
         $table->render();
     }
 
-    protected function displaySynchronizationHistory(ArchivR $archivR, OutputInterface $output)
+    protected function displaySynchronizationHistory(Storeman $archivR, OutputInterface $output)
     {
         $output->writeln('');
 
@@ -118,7 +118,7 @@ class InfoCommand extends AbstractConfiguredCommand
         }
     }
 
-    protected function displayOutstandingOperations(ArchivR $archivR, OutputInterface $output)
+    protected function displayOutstandingOperations(Storeman $archivR, OutputInterface $output)
     {
         $output->writeln('');
         $output->write('Current state: ');

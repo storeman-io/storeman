@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr\ConflictHandler;
+namespace Storeman\ConflictHandler;
 
-use Archivr\AbstractFactory;
+use Storeman\AbstractFactory;
 
 final class ConflictHandlerFactory extends AbstractFactory
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Archivr\Test;
+namespace Storeman\Test;
 
 trait TestVaultGeneratorProviderTrait
 {

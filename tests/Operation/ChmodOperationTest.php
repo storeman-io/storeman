@@ -1,10 +1,10 @@
 <?php
 
-namespace Archivr\Test\Operation;
+namespace Storeman\Test\Operation;
 
-use Archivr\Operation\ChmodOperation;
-use Archivr\StorageAdapter\StorageAdapterInterface;
-use Archivr\Test\TemporaryPathGeneratorProviderTrait;
+use Storeman\Operation\ChmodOperation;
+use Storeman\StorageAdapter\StorageAdapterInterface;
+use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 use PHPUnit\Framework\TestCase;
 
 class ChmodOperationTest extends TestCase

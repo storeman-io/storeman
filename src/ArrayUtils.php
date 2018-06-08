@@ -1,6 +1,6 @@
 <?php
 
-namespace Archivr;
+namespace Storeman;
 
 abstract class ArrayUtils extends \Zend\Stdlib\ArrayUtils
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace Archivr;
+namespace Storeman;
 
-use Archivr\Exception\ConfigurationException;
-use Archivr\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
+use Storeman\Exception\ConfigurationException;
+use Storeman\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 
-class ArchivR
+class Storeman
 {
     /**
      * @var Configuration

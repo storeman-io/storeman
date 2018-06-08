@@ -1,18 +1,18 @@
 <?php
 
-namespace Archivr\OperationListBuilder;
+namespace Storeman\OperationListBuilder;
 
-use Archivr\Exception\Exception;
-use Archivr\Index;
-use Archivr\IndexObject;
-use Archivr\Operation\ChmodOperation;
-use Archivr\Operation\DownloadOperation;
-use Archivr\Operation\MkdirOperation;
-use Archivr\Operation\SymlinkOperation;
-use Archivr\Operation\TouchOperation;
-use Archivr\Operation\UnlinkOperation;
-use Archivr\Operation\UploadOperation;
-use Archivr\OperationList;
+use Storeman\Exception\Exception;
+use Storeman\Index;
+use Storeman\IndexObject;
+use Storeman\Operation\ChmodOperation;
+use Storeman\Operation\DownloadOperation;
+use Storeman\Operation\MkdirOperation;
+use Storeman\Operation\SymlinkOperation;
+use Storeman\Operation\TouchOperation;
+use Storeman\Operation\UnlinkOperation;
+use Storeman\Operation\UploadOperation;
+use Storeman\OperationList;
 
 class StandardOperationListBuilder implements OperationListBuilderInterface
 {

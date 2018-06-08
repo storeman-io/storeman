@@ -2,8 +2,8 @@
 
 namespace LockAdapter;
 
-use Archivr\LockAdapter\Lock;
-use Archivr\LockAdapter\LockAdapterInterface;
+use Storeman\LockAdapter\Lock;
+use Storeman\LockAdapter\LockAdapterInterface;
 use PHPUnit\Framework\TestCase;
 
 abstract class AbstractLockAdapterTest extends TestCase

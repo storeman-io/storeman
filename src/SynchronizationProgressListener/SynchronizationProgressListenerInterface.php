@@ -1,6 +1,6 @@
 <?php
 
-namespace Archivr\SynchronizationProgressListener;
+namespace Storeman\SynchronizationProgressListener;
 
 interface SynchronizationProgressListenerInterface
 {

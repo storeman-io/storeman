@@ -1,12 +1,12 @@
 <?php
 
-namespace Archivr\Test\IndexMerger;
+namespace Storeman\Test\IndexMerger;
 
-use Archivr\ConflictHandler\ConflictHandlerInterface;
-use Archivr\Index;
-use Archivr\IndexMerger\StandardIndexMerger;
-use Archivr\Test\TestVault;
-use Archivr\Test\TestVaultSet;
+use Storeman\ConflictHandler\ConflictHandlerInterface;
+use Storeman\Index;
+use Storeman\IndexMerger\StandardIndexMerger;
+use Storeman\Test\TestVault;
+use Storeman\Test\TestVaultSet;
 use PHPUnit\Framework\TestCase;
 
 class StandardIndexMergerTest extends TestCase

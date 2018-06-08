@@ -1,9 +1,9 @@
 <?php
 
-namespace Archivr\OperationListBuilder;
+namespace Storeman\OperationListBuilder;
 
-use Archivr\Index;
-use Archivr\OperationList;
+use Storeman\Index;
+use Storeman\OperationList;
 
 interface OperationListBuilderInterface
 {
@@ -12,7 +12,7 @@ interface OperationListBuilderInterface
      * index that represents the new state of the vault.
      *
      * Takes the local, remote and merged indices and has to return a ordered list of operations represented by
-     * implementations of the Archivr\Operation\OperationInterface that have to be executed for both the local and
+     * implementations of the Storeman\Operation\OperationInterface that have to be executed for both the local and
      * remote index equaling the merged index afterwards.
      *
      * @param Index $mergedIndex

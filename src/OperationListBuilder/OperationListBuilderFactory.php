@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr\OperationListBuilder;
+namespace Storeman\OperationListBuilder;
 
-use Archivr\AbstractFactory;
+use Storeman\AbstractFactory;
 
 final class OperationListBuilderFactory extends AbstractFactory
 {

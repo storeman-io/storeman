@@ -1,10 +1,10 @@
 <?php
 
-namespace Archivr\IndexMerger;
+namespace Storeman\IndexMerger;
 
-use Archivr\ConflictHandler\ConflictHandlerInterface;
-use Archivr\Index;
-use Archivr\IndexObject;
+use Storeman\ConflictHandler\ConflictHandlerInterface;
+use Storeman\Index;
+use Storeman\IndexObject;
 
 class StandardIndexMerger implements IndexMergerInterface
 {

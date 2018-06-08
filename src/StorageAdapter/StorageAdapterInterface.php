@@ -1,6 +1,6 @@
 <?php
 
-namespace Archivr\StorageAdapter;
+namespace Storeman\StorageAdapter;
 
 interface StorageAdapterInterface
 {

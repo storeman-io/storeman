@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr\StorageAdapter;
+namespace Storeman\StorageAdapter;
 
-use Archivr\Exception\Exception;
+use Storeman\Exception\Exception;
 use League\Flysystem\Filesystem;
 
 abstract class FlysystemStorageAdapter implements StorageAdapterInterface

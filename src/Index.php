@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr;
+namespace Storeman;
 
-use Archivr\Exception\Exception;
+use Storeman\Exception\Exception;
 use Ramsey\Uuid\Uuid;
 
 /**

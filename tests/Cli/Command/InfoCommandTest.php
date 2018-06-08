@@ -2,9 +2,9 @@
 
 namespace Cli\Command;
 
-use Archivr\Cli\Command\InfoCommand;
-use Archivr\Test\TemporaryPathGeneratorProviderTrait;
-use Archivr\Test\TestVault;
+use Storeman\Cli\Command\InfoCommand;
+use Storeman\Test\TemporaryPathGeneratorProviderTrait;
+use Storeman\Test\TestVault;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -32,11 +32,11 @@ class InfoCommandTest extends AbstractCommandTest
         ];
 
         $testVault = new TestVault();
-        $testVault->fwrite('archivr.json', json_encode($config));
+        $testVault->fwrite('storeman.json', json_encode($config));
 
         $tester = new CommandTester(new InfoCommand());
         $returnCode = $tester->execute([
-            '-c' => $testVault->getBasePath() . 'archivr.json',
+            '-c' => $testVault->getBasePath() . 'storeman.json',
         ]);
         $output = $tester->getDisplay(true);
 

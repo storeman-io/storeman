@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr;
+namespace Storeman;
 
-use Archivr\Exception\Exception;
+use Storeman\Exception\Exception;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Zend\Stdlib\ArraySerializableInterface;
 use Symfony\Component\Validator\Constraints as Assert;

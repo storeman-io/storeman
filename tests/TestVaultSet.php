@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr\Test;
+namespace Storeman\Test;
 
-use Archivr\Index;
+use Storeman\Index;
 
 class TestVaultSet
 {

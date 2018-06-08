@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr\Cli;
+namespace Storeman\Cli;
 
-use Archivr\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
+use Storeman\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;
 

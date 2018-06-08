@@ -1,9 +1,9 @@
 <?php
 
-namespace Archivr\Test;
+namespace Storeman\Test;
 
-use Archivr\Synchronization;
-use Archivr\SynchronizationList;
+use Storeman\Synchronization;
+use Storeman\SynchronizationList;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Archivr\Test\Tree;
+namespace Storeman\Test\Tree;
 
 class TreeNode extends \ArrayIterator implements \RecursiveIterator
 {

@@ -2,10 +2,10 @@
 
 namespace Cli\Command;
 
-use Archivr\Cli\Command\SynchronizeCommand;
-use Archivr\Test\TemporaryPathGeneratorProviderTrait;
-use Archivr\Test\TestVault;
-use Archivr\Test\TestVaultGeneratorProviderTrait;
+use Storeman\Cli\Command\SynchronizeCommand;
+use Storeman\Test\TemporaryPathGeneratorProviderTrait;
+use Storeman\Test\TestVault;
+use Storeman\Test\TestVaultGeneratorProviderTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Finder\SplFileInfo;
@@ -34,10 +34,10 @@ class SynchronizationCommandTest extends AbstractCommandTest
         $secondConfig['identity'] = 'Some other one';
 
         $firstTestVault = $this->getTestVaultGenerator()->generate();
-        $firstTestVault->fwrite('archivr.json', json_encode($firstConfig));
+        $firstTestVault->fwrite('storeman.json', json_encode($firstConfig));
 
         $secondTestVault = new TestVault();
-        $secondTestVault->fwrite('archivr.json', json_encode($secondConfig));
+        $secondTestVault->fwrite('storeman.json', json_encode($secondConfig));
 
         $tester = new CommandTester(new SynchronizeCommand());
 

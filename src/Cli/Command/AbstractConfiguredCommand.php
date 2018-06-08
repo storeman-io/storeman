@@ -1,11 +1,11 @@
 <?php
 
-namespace Archivr\Cli\Command;
+namespace Storeman\Cli\Command;
 
-use Archivr\Cli\ConfigurationFileReader;
-use Archivr\Cli\ConflictHandler\ConsolePromptConflictHandler;
-use Archivr\Configuration;
-use Archivr\ConflictHandler\ConflictHandlerFactory;
+use Storeman\Cli\ConfigurationFileReader;
+use Storeman\Cli\ConflictHandler\ConsolePromptConflictHandler;
+use Storeman\Configuration;
+use Storeman\ConflictHandler\ConflictHandlerFactory;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -19,7 +19,7 @@ abstract class AbstractConfiguredCommand extends AbstractCommand
     {
         parent::configure();
 
-        $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Configuration file to use. Defaults to "archivr.json".');
+        $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Configuration file to use. Defaults to "storeman.json".');
     }
 
     /**
@@ -66,9 +66,9 @@ abstract class AbstractConfiguredCommand extends AbstractCommand
         {
             $config = $reader->getConfiguration($input->getOption('config'));
         }
-        elseif (is_file('archivr.json'))
+        elseif (is_file('storeman.json'))
         {
-            $config = $reader->getConfiguration('archivr.json');
+            $config = $reader->getConfiguration('storeman.json');
         }
 
         return $config;

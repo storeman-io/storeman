@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr\IndexMerger;
+namespace Storeman\IndexMerger;
 
-use Archivr\AbstractFactory;
+use Storeman\AbstractFactory;
 
 final class IndexMergerFactory extends AbstractFactory
 {

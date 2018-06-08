@@ -1,12 +1,12 @@
 <?php
 
-namespace Archivr\Cli;
+namespace Storeman\Cli;
 
-use Archivr\Cli\Command\DumpCommand;
-use Archivr\Cli\Command\InfoCommand;
-use Archivr\Cli\Command\InitCommand;
-use Archivr\Cli\Command\RestoreCommand;
-use Archivr\Cli\Command\SynchronizeCommand;
+use Storeman\Cli\Command\DumpCommand;
+use Storeman\Cli\Command\InfoCommand;
+use Storeman\Cli\Command\InitCommand;
+use Storeman\Cli\Command\RestoreCommand;
+use Storeman\Cli\Command\SynchronizeCommand;
 
 class Application extends \Symfony\Component\Console\Application
 {

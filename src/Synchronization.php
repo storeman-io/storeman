@@ -1,8 +1,8 @@
 <?php
 
-namespace Archivr;
+namespace Storeman;
 
-use Archivr\Exception\Exception;
+use Storeman\Exception\Exception;
 
 /**
  * As the name suggests this class represents the synchronization for a specific revision.

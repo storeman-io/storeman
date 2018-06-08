@@ -1,10 +1,10 @@
 <?php
 
-namespace Archivr\Cli\ConflictHandler;
+namespace Storeman\Cli\ConflictHandler;
 
-use Archivr\Cli\ConsoleStyle;
-use Archivr\ConflictHandler\ConflictHandlerInterface;
-use Archivr\IndexObject;
+use Storeman\Cli\ConsoleStyle;
+use Storeman\ConflictHandler\ConflictHandlerInterface;
+use Storeman\IndexObject;
 
 /**
  * This implementation of a conflict handler asks the user to resolve it manually.
