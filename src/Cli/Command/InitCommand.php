@@ -29,7 +29,7 @@ class InitCommand extends AbstractCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        parent::execute($input, $output);
+        $this->setUpIO($input, $output);
 
         $configFilePath = PathUtils::getAbsolutePath($input->getOption('config'));
         $configFileDir = dirname($configFilePath);

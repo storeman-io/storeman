@@ -40,12 +40,13 @@ final class Container implements ContainerInterface
      *
      * Note: Be very careful with shared services as the container is used shared by all vaults of a storeman instance.
      */
-    public function __construct()
+    public function __construct(Configuration $configuration = null)
     {
         $this->delegate = new InspectableContainer();
 
-        // just a shortcut
-        $this->delegate->add('vaultConfiguration', function(Vault $vault) { return $vault->getVaultConfiguration(); })->withArgument('vault');
+        $this->delegate->add('vaults', new VaultContainer(), true);
+        $this->delegate->add('configuration', $configuration ?: new Configuration(), true);
+        $this->delegate->add('vaultConfiguration', function(Vault $vault) { return $vault->getVaultConfiguration(); })->withArgument('vault'); // just a shortcut
 
         $this->registerVaultServiceFactory('conflictHandler');
         $this->addConflictHandler('panicking', PanickingConflictHandler::class, true);
@@ -66,6 +67,16 @@ final class Container implements ContainerInterface
         $this->addStorageAdapter('local', LocalStorageAdapter::class)->withArgument('vaultConfiguration');
     }
 
+    public function registerStoreman(Storeman $storeman): void
+    {
+        if ($this->has('storeman'))
+        {
+            throw new \RuntimeException();
+        }
+
+        $this->delegate->add('storeman', $storeman, true);
+    }
+
     /**
      * Selects the given vault (or no vault) as the current one.
      *
@@ -74,7 +85,7 @@ final class Container implements ContainerInterface
      */
     public function selectVault(Vault $vault = null): Container
     {
-        $this->delegate->add('vault', $vault);
+        $this->delegate->add('vault', $vault, true);
 
         return $this;
     }
@@ -93,6 +104,27 @@ final class Container implements ContainerInterface
     public function has($id)
     {
         return $this->delegate->has($id);
+    }
+
+
+    public function getStoreman(): Storeman
+    {
+        return $this->get('storeman');
+    }
+
+    public function getConfiguration(): Configuration
+    {
+        return $this->get('configuration');
+    }
+
+    public function getVaults(): VaultContainer
+    {
+        return $this->get('vaults');
+    }
+
+    public function getSelectedVault(): ?Vault
+    {
+        return $this->get('vault');
     }
 
 

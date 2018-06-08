@@ -2,6 +2,7 @@
 
 namespace Storeman\Test;
 
+use Storeman\Container;
 use Storeman\Storeman;
 use Storeman\Configuration;
 use Storeman\Index;
@@ -179,7 +180,7 @@ class VaultTest extends TestCase
         $configuration = new Configuration($basePath);
         $configuration->addVault($vaultConfiguration);
 
-        $storeman = new Storeman($configuration);
+        $storeman = new Storeman(new Container($configuration));
 
         return new Vault($storeman, $vaultConfiguration);
     }

@@ -51,7 +51,6 @@ abstract class AbstractCommand extends Command
     {
         $this->setUpIO($input, $output);
 
-        $container = $this->getContainer();
         $config = $this->getConfiguration($input);
 
         if ($config === null)
@@ -61,7 +60,7 @@ abstract class AbstractCommand extends Command
             return 1;
         }
 
-        $storeman = new Storeman($config, $container);
+        $storeman = new Storeman($this->getContainer($config));
 
         return $this->executeConfigured($input, $output, $storeman);
     }
@@ -81,11 +80,12 @@ abstract class AbstractCommand extends Command
     /**
      * Builds and returns container to be used in a CLI context.
      *
+     * @param Configuration $configuration
      * @return Container
      */
-    protected function getContainer(): Container
+    protected function getContainer(Configuration $configuration = null): Container
     {
-        $container = new Container();
+        $container = new Container($configuration);
 
         $container->addConflictHandler('consolePrompt', ConsolePromptConflictHandler::class)->withArgument($this->consoleStyle);
 

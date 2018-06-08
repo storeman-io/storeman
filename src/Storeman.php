@@ -11,29 +11,19 @@ use Storeman\SynchronizationProgressListener\SynchronizationProgressListenerInte
 class Storeman
 {
     /**
-     * @var Configuration
-     */
-    protected $configuration;
-
-    /**
      * @var Container
      */
     protected $container;
 
-    /**
-     * @var Vault[]
-     */
-    protected $vaults = [];
-
-    public function __construct(Configuration $configuration, Container $container = null)
+    public function __construct(Container $container = null)
     {
-        $this->configuration = $configuration;
         $this->container = $container ?: new Container();
+        $this->container->registerStoreman($this);
     }
 
     public function getConfiguration(): Configuration
     {
-        return $this->configuration;
+        return $this->container->get('configuration');
     }
 
     /**
@@ -57,18 +47,20 @@ class Storeman
      */
     public function getVault(string $vaultTitle): Vault
     {
-        if (!isset($this->vaults[$vaultTitle]))
+        $vaults = $this->container->getVaults();
+
+        if (!$vaults->has($vaultTitle))
         {
             $vaultConfiguration = $this->getConfiguration()->getVaultByTitle($vaultTitle);
 
-            $this->vaults[$vaultTitle] = new Vault($this, $vaultConfiguration);
+            $vaults->register(new Vault($this, $vaultConfiguration));
         }
 
-        return $this->vaults[$vaultTitle];
+        return $vaults->get($vaultTitle);
     }
 
     /**
-     * Returns all vaults.
+     * Returns all configured vaults.
      *
      * @return Vault[]
      */
@@ -78,7 +70,7 @@ class Storeman
 
             return $this->getVault($vaultConfiguration->getTitle());
 
-        }, $this->configuration->getVaults()));
+        }, $this->getConfiguration()->getVaults()));
     }
 
     /**
