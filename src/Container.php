@@ -66,8 +66,13 @@ final class Container implements ContainerInterface
         $this->addStorageAdapter('local', LocalStorageAdapter::class)->withArgument('vaultConfiguration');
     }
 
-
-    public function setVault(Vault $vault = null): Container
+    /**
+     * Selects the given vault (or no vault) as the current one.
+     *
+     * @param Vault $vault
+     * @return Container
+     */
+    public function selectVault(Vault $vault = null): Container
     {
         $this->delegate->add('vault', $vault);
 

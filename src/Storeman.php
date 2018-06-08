@@ -46,7 +46,7 @@ class Storeman
      */
     public function getContainer(Vault $vault = null): Container
     {
-        return $this->container->setVault($vault);
+        return $this->container->selectVault($vault);
     }
 
     /**
