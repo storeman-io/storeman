@@ -2,8 +2,10 @@
 
 namespace Archivr\Cli\Command;
 
+use Archivr\Cli\ConfigurationFileReader;
+use Archivr\Cli\ConflictHandler\ConsolePromptConflictHandler;
 use Archivr\Configuration;
-use Archivr\ConfigurationFileReader;
+use Archivr\ConflictHandler\ConflictHandlerFactory;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -26,6 +28,8 @@ abstract class AbstractConfiguredCommand extends AbstractCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         parent::execute($input, $output);
+
+        ConflictHandlerFactory::registerFactory('consolePrompt', new ConsolePromptConflictHandler($this->consoleStyle));
 
         $config = $this->getConfiguration($input);
 
@@ -56,7 +60,7 @@ abstract class AbstractConfiguredCommand extends AbstractCommand
     protected function getConfiguration(InputInterface $input)
     {
         $config = null;
-        $reader = new ConfigurationFileReader();
+        $reader = new ConfigurationFileReader(); // todo: DI
 
         if ($input->getOption('config'))
         {

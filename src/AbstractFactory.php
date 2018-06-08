@@ -96,16 +96,10 @@ abstract class AbstractFactory
      *
      * @param string $name
      * @param string|\Closure|object $factory
-     * @param bool $allowOverride
      */
-    public static function registerFactory(string $name, $factory, bool $allowOverride = false): void
+    public static function registerFactory(string $name, $factory): void
     {
         static::loadFactoryMap();
-
-        if (!$allowOverride && isset(static::$factoryMaps[static::class][$name]))
-        {
-            throw new \RuntimeException(sprintf('Trying to register a factory named "%s" to "%s" which already exists.', $name, static::class));
-        }
 
         if (is_string($factory))
         {

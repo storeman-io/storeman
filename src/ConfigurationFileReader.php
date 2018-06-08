@@ -8,6 +8,9 @@ use Symfony\Component\Validator\Validation;
 
 class ConfigurationFileReader
 {
+    public const CONFIG_CLASS = Configuration::class;
+
+
     public function getConfiguration(string $configurationFilePath)
     {
         $configurationFilePath = PathUtils::getAbsolutePath($configurationFilePath);
@@ -37,7 +40,10 @@ class ConfigurationFileReader
 
         try
         {
-            $configuration = new Configuration();
+            $className = static::CONFIG_CLASS;
+
+            /** @var Configuration $configuration */
+            $configuration = new $className();
             $configuration->exchangeArray($array);
         }
         catch (\InvalidArgumentException $exception)
