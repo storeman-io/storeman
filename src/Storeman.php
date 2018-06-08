@@ -90,6 +90,9 @@ class Storeman
         return $return;
     }
 
+    /**
+     * @todo: subdivide
+     */
     public function synchronize(array $vaultTitles = [], SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
         $lastRevision = 0;
@@ -188,6 +191,9 @@ class Storeman
         return $return;
     }
 
+    /**
+     * @todo: any vault might be false as we need to use the vault with the highest revision
+     */
     protected function getAnyVault(): Vault
     {
         $vaults = array_values($this->getVaults());
