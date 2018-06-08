@@ -16,18 +16,37 @@ class Storeman
     protected $configuration;
 
     /**
+     * @var Container
+     */
+    protected $container;
+
+    /**
      * @var Vault[]
      */
     protected $vaults = [];
 
-    public function __construct(Configuration $configuration)
+    public function __construct(Configuration $configuration, Container $container = null)
     {
         $this->configuration = $configuration;
+        $this->container = $container ?: new Container();
     }
 
     public function getConfiguration(): Configuration
     {
         return $this->configuration;
+    }
+
+    /**
+     * Returns the DI container of this storeman instance.
+     * Some service names resolve to different implementations depending on the current vault which can be set as a context.
+     * E.g. "storageAdapter" resolves to the storage adapter implementation configured for the current vault.
+     *
+     * @param Vault $vault
+     * @return Container
+     */
+    public function getContainer(Vault $vault = null): Container
+    {
+        return $this->container->setVault($vault);
     }
 
     /**

@@ -4,11 +4,6 @@ namespace Storeman\Cli\Command;
 
 use Storeman\Configuration;
 use Storeman\ConfigurationFileWriter;
-use Storeman\ConflictHandler\ConflictHandlerFactory;
-use Storeman\IndexMerger\IndexMergerFactory;
-use Storeman\LockAdapter\LockAdapterFactory;
-use Storeman\OperationListBuilder\OperationListBuilderFactory;
-use Storeman\StorageAdapter\StorageAdapterFactory;
 use Storeman\PathUtils;
 use Storeman\VaultConfiguration;
 use Symfony\Component\Console\Input\InputArgument;
@@ -49,6 +44,8 @@ class InitCommand extends AbstractCommand
         }
 
 
+        $container = $this->getContainer();
+
         $configuration = new Configuration($input->getOption('path') ?: $this->consoleStyle->ask('Local path', '.'));
         $configuration->setIdentity($input->getOption('identity') ?: $this->consoleStyle->ask('Identity', get_current_user()));
         $configuration->setExclude($input->getOption('exclude') ?: $this->consoleStyle->askMultiple('Excluded path(s)'));
@@ -56,12 +53,12 @@ class InitCommand extends AbstractCommand
         // at least one storage driver has to be set up
         do
         {
-            $vaultConfig = new VaultConfiguration($this->consoleStyle->choice('Storage driver', StorageAdapterFactory::getProvidedServiceNames()));
+            $vaultConfig = new VaultConfiguration($this->consoleStyle->choice('Storage driver', $container->getStorageAdapterNames()));
             $vaultConfig->setTitle($this->consoleStyle->ask('Title', $vaultConfig->getAdapter()));
-            $vaultConfig->setLockAdapter($this->consoleStyle->choice('Lock adapter', LockAdapterFactory::getProvidedServiceNames(), $vaultConfig->getLockAdapter()));
-            $vaultConfig->setIndexMerger($this->consoleStyle->choice('Index merger', IndexMergerFactory::getProvidedServiceNames(), $vaultConfig->getIndexMerger()));
-            $vaultConfig->setConflictHandler($this->consoleStyle->choice('Conflict handler', ConflictHandlerFactory::getProvidedServiceNames(), $vaultConfig->getConflictHandler()));
-            $vaultConfig->setOperationListBuilder($this->consoleStyle->choice('Operation list builder', OperationListBuilderFactory::getProvidedServiceNames(), $vaultConfig->getOperationListBuilder()));
+            $vaultConfig->setLockAdapter($this->consoleStyle->choice('Lock adapter', $container->getLockAdapterNames(), $vaultConfig->getLockAdapter()));
+            $vaultConfig->setIndexMerger($this->consoleStyle->choice('Index merger', $container->getIndexMergerNames(), $vaultConfig->getIndexMerger()));
+            $vaultConfig->setConflictHandler($this->consoleStyle->choice('Conflict handler', $container->getConflictHandlerNames(), $vaultConfig->getConflictHandler()));
+            $vaultConfig->setOperationListBuilder($this->consoleStyle->choice('Operation list builder', $container->getOperationListBuilderNames(), $vaultConfig->getOperationListBuilder()));
 
             while ($settingName = $this->consoleStyle->ask('Additional setting name'))
             {

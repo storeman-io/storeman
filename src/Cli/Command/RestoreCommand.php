@@ -4,12 +4,11 @@ namespace Storeman\Cli\Command;
 
 use Storeman\Storeman;
 use Storeman\Cli\SynchronizationProgressListener;
-use Storeman\Configuration;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class RestoreCommand extends AbstractConfiguredCommand
+class RestoreCommand extends AbstractPreparedCommand
 {
     protected function configure()
     {
@@ -21,9 +20,8 @@ class RestoreCommand extends AbstractConfiguredCommand
         $this->addOption('vault', null, InputOption::VALUE_REQUIRED, 'Vault to use to download state from.');
     }
 
-    protected function executeConfigured(InputInterface $input, OutputInterface $output, Configuration $configuration): int
+    protected function executeConfigured(InputInterface $input, OutputInterface $output, Storeman $storeman): int
     {
-        $storeman = new Storeman($configuration);
         $storeman->restore(
             $input->getOption('revision') ? (int)$input->getOption('revision') : null,
             $input->getOption('vault'),

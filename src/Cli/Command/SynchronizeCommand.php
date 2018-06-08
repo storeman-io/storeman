@@ -4,12 +4,11 @@ namespace Storeman\Cli\Command;
 
 use Storeman\Storeman;
 use Storeman\Cli\SynchronizationProgressListener;
-use Storeman\Configuration;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class SynchronizeCommand extends AbstractConfiguredCommand
+class SynchronizeCommand extends AbstractPreparedCommand
 {
     protected function configure()
     {
@@ -22,7 +21,7 @@ class SynchronizeCommand extends AbstractConfiguredCommand
         $this->addOption('prefer-remote', null, InputOption::VALUE_NONE, 'Always prefers remote changes over local changes.');
     }
 
-    protected function executeConfigured(InputInterface $input, OutputInterface $output, Configuration $configuration): int
+    protected function executeConfigured(InputInterface $input, OutputInterface $output, Storeman $storeman): int
     {
         $vaultTitles = $input->getOption('vaults') ? explode(',', $input->getOption('vaults')) : [];
         $preferLocal = $input->getOption('prefer-local');
@@ -34,6 +33,8 @@ class SynchronizeCommand extends AbstractConfiguredCommand
 
             return 1;
         }
+
+        $configuration = $storeman->getConfiguration();
 
         if ($preferLocal)
         {
@@ -50,7 +51,6 @@ class SynchronizeCommand extends AbstractConfiguredCommand
             }
         }
 
-        $storeman = new Storeman($configuration);
         $storeman->synchronize($vaultTitles, new SynchronizationProgressListener($output));
 
         $output->writeln(PHP_EOL . '<info>Done!</info>');

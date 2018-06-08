@@ -4,7 +4,6 @@ namespace Storeman\Cli\Command;
 
 use Storeman\Storeman;
 use Storeman\Cli\Application;
-use Storeman\Configuration;
 use Storeman\Synchronization;
 use Storeman\Vault;
 use Storeman\VaultConfiguration;
@@ -12,7 +11,7 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class InfoCommand extends AbstractConfiguredCommand
+class InfoCommand extends AbstractPreparedCommand
 {
     protected function configure()
     {
@@ -22,10 +21,8 @@ class InfoCommand extends AbstractConfiguredCommand
         $this->setDescription('Displays information about a vault and its local representation.');
     }
 
-    protected function executeConfigured(InputInterface $input, OutputInterface $output, Configuration $configuration): int
+    protected function executeConfigured(InputInterface $input, OutputInterface $output, Storeman $storeman): int
     {
-        $storeman = new Storeman($configuration);
-
         $output->writeln(Application::LOGO);
 
         $this->displayGeneralInfo($storeman, $output);

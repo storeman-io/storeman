@@ -2,11 +2,6 @@
 
 namespace Storeman;
 
-use Storeman\ConflictHandler\ConflictHandlerFactory;
-use Storeman\IndexMerger\IndexMergerFactory;
-use Storeman\LockAdapter\LockAdapterFactory;
-use Storeman\OperationListBuilder\OperationListBuilderFactory;
-use Storeman\StorageAdapter\StorageAdapterFactory;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Zend\Stdlib\ArraySerializableInterface;
@@ -36,7 +31,6 @@ class VaultConfiguration implements ArraySerializableInterface
 
     /**
      * Identifier for the index merger to be used.
-     * Refers to identifiers known to the IndexMergerFactory.
      *
      * @var string
      */
@@ -44,7 +38,6 @@ class VaultConfiguration implements ArraySerializableInterface
 
     /**
      * Identifier for the conflict handler to use.
-     * Refers to identifiers known to the ConflictHandlerFactory.
      *
      * @var string
      */
@@ -52,7 +45,6 @@ class VaultConfiguration implements ArraySerializableInterface
 
     /**
      * Identifier for the operation list builder to use.
-     * Refers to identifiers known to the OperationListBuilderFactory.
      *
      * @var string
      */
@@ -195,10 +187,10 @@ class VaultConfiguration implements ArraySerializableInterface
     public static function loadValidatorMetadata(ClassMetadata $metadata)
     {
         $metadata->addPropertyConstraint('title', new Assert\NotBlank());
-        $metadata->addPropertyConstraint('adapter', new Assert\Choice(['choices' => StorageAdapterFactory::getProvidedServiceNames()]));
-        $metadata->addPropertyConstraint('lockAdapter', new Assert\Choice(['choices' => LockAdapterFactory::getProvidedServiceNames()]));
-        $metadata->addPropertyConstraint('indexMerger', new Assert\Choice(['choices' => IndexMergerFactory::getProvidedServiceNames()]));
-        $metadata->addPropertyConstraint('conflictHandler', new Assert\Choice(['choices' => ConflictHandlerFactory::getProvidedServiceNames()]));
-        $metadata->addPropertyConstraint('operationListBuilder', new Assert\Choice(['choices' => OperationListBuilderFactory::getProvidedServiceNames()]));
+        //$metadata->addPropertyConstraint('adapter', new Assert\Choice(['choices' => StorageAdapterFactory::getProvidedServiceNames()]));
+        //$metadata->addPropertyConstraint('lockAdapter', new Assert\Choice(['choices' => LockAdapterFactory::getProvidedServiceNames()]));
+        //$metadata->addPropertyConstraint('indexMerger', new Assert\Choice(['choices' => IndexMergerFactory::getProvidedServiceNames()]));
+        //$metadata->addPropertyConstraint('conflictHandler', new Assert\Choice(['choices' => ConflictHandlerFactory::getProvidedServiceNames()]));
+        //$metadata->addPropertyConstraint('operationListBuilder', new Assert\Choice(['choices' =>< OperationListBuilderFactory::getProvidedServiceNames()]));
     }
 }

@@ -2,12 +2,7 @@
 
 namespace Storeman;
 
-use Storeman\ConflictHandler\ConflictHandlerFactory;
 use Storeman\ConflictHandler\ConflictHandlerInterface;
-use Storeman\IndexMerger\IndexMergerFactory;
-use Storeman\LockAdapter\LockAdapterFactory;
-use Storeman\OperationListBuilder\OperationListBuilderFactory;
-use Storeman\StorageAdapter\StorageAdapterFactory;
 use Storeman\StorageAdapter\StorageAdapterInterface;
 use Storeman\Exception\Exception;
 use Storeman\IndexMerger\IndexMergerInterface;
@@ -74,65 +69,27 @@ class Vault
 
     public function getStorageAdapter(): StorageAdapterInterface
     {
-        if ($this->storageAdapter === null)
-        {
-            $this->storageAdapter = StorageAdapterFactory::create(
-                $this->vaultConfiguration->getAdapter(),
-                $this->vaultConfiguration
-            );
-        }
-
-        return $this->storageAdapter;
+        return $this->storageAdapter ?: ($this->storageAdapter = $this->getContainer()->get('storageAdapter'));
     }
 
     public function getLockAdapter(): LockAdapterInterface
     {
-        if ($this->lockAdapter === null)
-        {
-            $this->lockAdapter = LockAdapterFactory::create(
-                $this->vaultConfiguration->getLockAdapter(),
-                $this->vaultConfiguration,
-                $this->getStorageAdapter()
-            );
-        }
-
-        return $this->lockAdapter;
+        return $this->lockAdapter ?: ($this->lockAdapter = $this->getContainer()->get('lockAdapter'));
     }
 
     public function getIndexMerger(): IndexMergerInterface
     {
-        if ($this->indexMerger === null)
-        {
-            $this->indexMerger = IndexMergerFactory::create(
-                $this->vaultConfiguration->getIndexMerger()
-            );
-        }
-
-        return $this->indexMerger;
+        return $this->indexMerger ?: ($this->indexMerger = $this->getContainer()->get('indexMerger'));
     }
 
     public function getConflictHandler(): ConflictHandlerInterface
     {
-        if ($this->conflictHandler === null)
-        {
-            $this->conflictHandler = ConflictHandlerFactory::create(
-                $this->vaultConfiguration->getConflictHandler()
-            );
-        }
-
-        return $this->conflictHandler;
+        return $this->conflictHandler ?: ($this->conflictHandler = $this->getContainer()->get('conflictHandler'));
     }
 
     public function getOperationListBuilder(): OperationListBuilderInterface
     {
-        if ($this->operationListBuilder === null)
-        {
-            $this->operationListBuilder = OperationListBuilderFactory::create(
-                $this->vaultConfiguration->getOperationListBuilder()
-            );
-        }
-
-        return $this->operationListBuilder;
+        return $this->operationListBuilder ?: ($this->operationListBuilder = $this->getContainer()->get('operationListBuilder'));
     }
 
     /**
@@ -638,5 +595,15 @@ class Vault
     protected function getLastLocalIndexFilePath(): string
     {
         return $this->initMetadataDirectory() . sprintf('lastLocalIndex-%s', $this->vaultConfiguration->getTitle());
+    }
+
+    /**
+     * Returns the service container with this vault as its context.
+     *
+     * @return Container
+     */
+    protected function getContainer(): Container
+    {
+        return $this->storeman->getContainer($this);
     }
 }
