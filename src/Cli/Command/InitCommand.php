@@ -2,10 +2,10 @@
 
 namespace Storeman\Cli\Command;
 
-use Storeman\Configuration;
+use Storeman\Cli\Configuration;
+use Storeman\Cli\VaultConfiguration;
 use Storeman\ConfigurationFileWriter;
 use Storeman\PathUtils;
-use Storeman\VaultConfiguration;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;

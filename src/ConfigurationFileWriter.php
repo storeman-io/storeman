@@ -30,12 +30,12 @@ class ConfigurationFileWriter
 
         if ($skipDefaults)
         {
-            $nonDefaults = ArrayUtils::recursiveArrayDiff($configArray, (new Configuration())->getArrayCopy());
+            $nonDefaults = ArrayUtils::recursiveArrayDiff($configArray, $this->getDefaultConfiguration($configuration)->getArrayCopy());
 
             $vaultConfigs = [];
             foreach ($configuration->getVaults() as $vaultConfiguration)
             {
-                $vaultConfigs[] = ArrayUtils::recursiveArrayDiff($vaultConfiguration->getArrayCopy(), (new VaultConfiguration())->getArrayCopy());
+                $vaultConfigs[] = ArrayUtils::recursiveArrayDiff($vaultConfiguration->getArrayCopy(), $this->getDefaultVaultConfiguration($vaultConfiguration)->getArrayCopy());
             }
 
             $nonDefaults['vaults'] = $vaultConfigs;
@@ -44,5 +44,19 @@ class ConfigurationFileWriter
         }
 
         return json_encode($configArray, JSON_PRETTY_PRINT);
+    }
+
+    protected function getDefaultConfiguration(Configuration $configuration): Configuration
+    {
+        $class = get_class($configuration);
+
+        return new $class;
+    }
+
+    protected function getDefaultVaultConfiguration(VaultConfiguration $vaultConfiguration): VaultConfiguration
+    {
+        $class = get_class($vaultConfiguration);
+
+        return new $class;
     }
 }
