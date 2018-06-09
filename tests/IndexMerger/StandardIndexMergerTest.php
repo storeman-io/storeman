@@ -92,6 +92,62 @@ class StandardIndexMergerTest extends TestCase
         $this->assertTrue($mergedIndex->getObjectByPath('file') == $remoteIndex->getObjectByPath('file'));
     }
 
+    public function testConflictHandlingLocalUsage()
+    {
+        $time = time();
+        $merger = new StandardIndexMerger();
+
+
+        $testVaultSet = new TestVaultSet(3);
+        $testVaultSet->getTestVault(0)->touch('file', $time - 10);
+        $testVaultSet->getTestVault(1)->touch('file', $time - 5);
+        $testVaultSet->getTestVault(2)->touch('file', $time - 3);
+
+        $lastLocalIndex = $testVaultSet->getIndex(0);
+        $localIndex =  $testVaultSet->getIndex(1);
+        $remoteIndex = $testVaultSet->getIndex(2);
+
+        $conflictHandler = $this->createMock(ConflictHandlerInterface::class);
+        $conflictHandler
+            ->expects($this->once())
+            ->method('handleConflict')
+            ->willReturn(ConflictHandlerInterface::USE_LOCAL);
+
+        /** @var ConflictHandlerInterface $conflictHandler */
+
+        $mergedIndex = $merger->merge($conflictHandler, $remoteIndex, $localIndex, $lastLocalIndex);
+
+        $this->assertTrue($mergedIndex->getObjectByPath('file') == $localIndex->getObjectByPath('file'));
+    }
+
+    public function testConflictHandlingRemoteUsage()
+    {
+        $time = time();
+        $merger = new StandardIndexMerger();
+
+
+        $testVaultSet = new TestVaultSet(3);
+        $testVaultSet->getTestVault(0)->touch('file', $time - 10);
+        $testVaultSet->getTestVault(1)->touch('file', $time - 3);
+        $testVaultSet->getTestVault(2)->touch('file', $time - 5);
+
+        $lastLocalIndex = $testVaultSet->getIndex(0);
+        $localIndex =  $testVaultSet->getIndex(1);
+        $remoteIndex = $testVaultSet->getIndex(2);
+
+        $conflictHandler = $this->createMock(ConflictHandlerInterface::class);
+        $conflictHandler
+            ->expects($this->once())
+            ->method('handleConflict')
+            ->willReturn(ConflictHandlerInterface::USE_REMOTE);
+
+        /** @var ConflictHandlerInterface $conflictHandler */
+
+        $mergedIndex = $merger->merge($conflictHandler, $remoteIndex, $localIndex, $lastLocalIndex);
+
+        $this->assertTrue($mergedIndex->getObjectByPath('file') == $remoteIndex->getObjectByPath('file'));
+    }
+
     protected function getConflictHandlerMock(): ConflictHandlerInterface
     {
         return $this->createMock(ConflictHandlerInterface::class);
