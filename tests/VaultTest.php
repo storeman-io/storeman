@@ -180,7 +180,7 @@ class VaultTest extends TestCase
         $configuration = new Configuration($basePath);
         $configuration->addVault($vaultConfiguration);
 
-        $storeman = new Storeman(new Container($configuration));
+        $storeman = new Storeman((new Container())->injectConfiguration($configuration));
 
         return new Vault($storeman, $vaultConfiguration);
     }

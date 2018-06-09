@@ -51,7 +51,8 @@ abstract class AbstractCommand extends Command
     {
         $this->setUpIO($input, $output);
 
-        $config = $this->getConfiguration($input);
+        $container = $this->getContainer();
+        $config = $this->getConfiguration($container, $input);
 
         if ($config === null)
         {
@@ -60,7 +61,7 @@ abstract class AbstractCommand extends Command
             return 1;
         }
 
-        $storeman = new Storeman($this->getContainer($config));
+        $storeman = new Storeman($container->injectConfiguration($config));
 
         return $this->executeConfigured($input, $output, $storeman);
     }
@@ -80,12 +81,11 @@ abstract class AbstractCommand extends Command
     /**
      * Builds and returns container to be used in a CLI context.
      *
-     * @param Configuration $configuration
      * @return Container
      */
-    protected function getContainer(Configuration $configuration = null): Container
+    protected function getContainer(): Container
     {
-        $container = new Container($configuration);
+        $container = new Container();
 
         $container->addConflictHandler('consolePrompt', ConsolePromptConflictHandler::class)->withArgument($this->consoleStyle);
 
@@ -95,16 +95,17 @@ abstract class AbstractCommand extends Command
     /**
      * Tries to read in the archive configuration either from the default path or a user provided one.
      *
+     * @param Container $container
      * @param InputInterface $input
      * @return Configuration
      */
-    protected function getConfiguration(InputInterface $input): ?Configuration
+    protected function getConfiguration(Container $container, InputInterface $input): ?Configuration
     {
         $configFilePath = $input->getOption('config');
 
         if ($configFilePath && is_file($configFilePath))
         {
-            return (new ConfigurationFileReader())->getConfiguration($configFilePath);
+            return (new ConfigurationFileReader($container))->getConfiguration($configFilePath);
         }
 
         return null;

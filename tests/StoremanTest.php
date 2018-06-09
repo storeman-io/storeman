@@ -21,7 +21,7 @@ class StoremanTest extends TestCase
         $config->addVault($this->getTestVaultConfig()->setTitle('First'));
         $config->addVault($this->getTestVaultConfig()->setTitle('Second'));
 
-        $storeman = new Storeman(new Container($config));
+        $storeman = new Storeman((new Container())->injectConfiguration($config));
 
         $this->assertCount(2, $storeman->buildOperationList());
 

@@ -2,6 +2,7 @@
 
 namespace Storeman;
 
+use Storeman\Validation\Constraints as StoremanAssert;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Zend\Stdlib\ArraySerializableInterface;
@@ -187,10 +188,10 @@ class VaultConfiguration implements ArraySerializableInterface
     public static function loadValidatorMetadata(ClassMetadata $metadata)
     {
         $metadata->addPropertyConstraint('title', new Assert\NotBlank());
-        //$metadata->addPropertyConstraint('adapter', new Assert\Choice(['choices' => StorageAdapterFactory::getProvidedServiceNames()]));
-        //$metadata->addPropertyConstraint('lockAdapter', new Assert\Choice(['choices' => LockAdapterFactory::getProvidedServiceNames()]));
-        //$metadata->addPropertyConstraint('indexMerger', new Assert\Choice(['choices' => IndexMergerFactory::getProvidedServiceNames()]));
-        //$metadata->addPropertyConstraint('conflictHandler', new Assert\Choice(['choices' => ConflictHandlerFactory::getProvidedServiceNames()]));
-        //$metadata->addPropertyConstraint('operationListBuilder', new Assert\Choice(['choices' =>< OperationListBuilderFactory::getProvidedServiceNames()]));
+        $metadata->addPropertyConstraint('adapter', new StoremanAssert\StorageAdapterExists());
+        $metadata->addPropertyConstraint('conflictHandler', new StoremanAssert\ConflictHandlerExists());
+        $metadata->addPropertyConstraint('indexMerger', new StoremanAssert\IndexMergerExists());
+        $metadata->addPropertyConstraint('lockAdapter', new StoremanAssert\LockAdapterExists());
+        $metadata->addPropertyConstraint('operationListBuilder', new StoremanAssert\OperationListBuilderExists());
     }
 }

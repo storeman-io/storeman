@@ -17,9 +17,11 @@ use Storeman\OperationListBuilder\OperationListBuilderInterface;
 use Storeman\OperationListBuilder\StandardOperationListBuilder;
 use Storeman\StorageAdapter\LocalStorageAdapter;
 use Storeman\StorageAdapter\StorageAdapterInterface;
+use Storeman\Validation\Constraints\ExistingServiceValidator;
 
 /**
  * Dependency injection container for modularized parts.
+ * It is basically a facade for a PSR container implementation with some additional accessors for type safety.
  */
 final class Container implements ContainerInterface
 {
@@ -40,13 +42,12 @@ final class Container implements ContainerInterface
      *
      * Note: Be very careful with shared services as the container is used shared by all vaults of a storeman instance.
      */
-    public function __construct(Configuration $configuration = null)
+    public function __construct()
     {
         $this->delegate = new InspectableContainer();
 
         $this->delegate->add('vaults', new VaultContainer(), true);
-        $this->delegate->add('configuration', $configuration ?: new Configuration(), true);
-        $this->delegate->add('vaultConfiguration', function(Vault $vault) { return $vault->getVaultConfiguration(); })->withArgument('vault'); // just a shortcut
+        $this->delegate->add('vaultConfiguration', function(Vault $vault) { return $vault->getVaultConfiguration(); })->withArgument('vault');
 
         $this->registerVaultServiceFactory('conflictHandler');
         $this->addConflictHandler('panicking', PanickingConflictHandler::class, true);
@@ -65,9 +66,23 @@ final class Container implements ContainerInterface
 
         $this->registerVaultServiceFactory('storageAdapter', 'adapter');
         $this->addStorageAdapter('local', LocalStorageAdapter::class)->withArgument('vaultConfiguration');
+
+        $this->delegate->add(ExistingServiceValidator::class)->withArgument($this);
     }
 
-    public function registerStoreman(Storeman $storeman): void
+    public function injectConfiguration(Configuration $configuration): Container
+    {
+        if ($this->has('configuration'))
+        {
+            throw new \RuntimeException();
+        }
+
+        $this->delegate->add('configuration', $configuration, true);
+
+        return $this;
+    }
+
+    public function injectStoreman(Storeman $storeman): Container
     {
         if ($this->has('storeman'))
         {
@@ -75,6 +90,8 @@ final class Container implements ContainerInterface
         }
 
         $this->delegate->add('storeman', $storeman, true);
+
+        return $this;
     }
 
     /**

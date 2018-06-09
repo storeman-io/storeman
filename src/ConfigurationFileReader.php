@@ -4,12 +4,24 @@ namespace Storeman;
 
 use Storeman\Exception\ConfigurationException;
 use Storeman\Exception\Exception;
+use Storeman\Validation\ContainerConstraintValidatorFactory;
 use Symfony\Component\Validator\Validation;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ConfigurationFileReader
 {
     public const CONFIG_CLASS = Configuration::class;
 
+
+    /**
+     * @var Container
+     */
+    protected $container;
+
+    public function __construct(Container $container = null)
+    {
+        $this->container = $container ?: new Container();
+    }
 
     public function getConfiguration(string $configurationFilePath): Configuration
     {
@@ -53,11 +65,7 @@ class ConfigurationFileReader
 
 
         // validate configuration
-        $validator = Validation::createValidatorBuilder()
-            ->addMethodMapping('loadValidatorMetadata')
-            ->getValidator();
-
-        $constraintViolations = $validator->validate($configuration);
+        $constraintViolations = $this->getValidator()->validate($configuration);
         if ($constraintViolations->count())
         {
             $violation = $constraintViolations->get(0);
@@ -66,5 +74,13 @@ class ConfigurationFileReader
         }
 
         return $configuration;
+    }
+
+    protected function getValidator(): ValidatorInterface
+    {
+        return Validation::createValidatorBuilder()
+            ->setConstraintValidatorFactory(new ContainerConstraintValidatorFactory($this->container))
+            ->addMethodMapping('loadValidatorMetadata')
+            ->getValidator();
     }
 }

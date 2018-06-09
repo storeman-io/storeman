@@ -18,7 +18,7 @@ class Storeman
     public function __construct(Container $container = null)
     {
         $this->container = $container ?: new Container();
-        $this->container->registerStoreman($this);
+        $this->container->injectStoreman($this);
     }
 
     public function getConfiguration(): Configuration
