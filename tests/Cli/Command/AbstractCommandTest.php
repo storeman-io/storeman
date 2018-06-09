@@ -1,6 +1,6 @@
 <?php
 
-namespace Cli\Command;
+namespace Storeman\Test\Cli\Command;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;

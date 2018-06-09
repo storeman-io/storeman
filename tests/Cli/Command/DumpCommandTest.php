@@ -1,6 +1,6 @@
 <?php
 
-namespace Cli\Command;
+namespace Storeman\Test\Cli\Command;
 
 use Storeman\Cli\Command\DumpCommand;
 use Storeman\Cli\Command\SynchronizeCommand;
