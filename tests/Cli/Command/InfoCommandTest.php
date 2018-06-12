@@ -3,6 +3,7 @@
 namespace Storeman\Test\Cli\Command;
 
 use Storeman\Cli\Command\InfoCommand;
+use Storeman\Cli\Command\SynchronizeCommand;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 use Storeman\Test\TestVault;
 use Symfony\Component\Console\Command\Command;
@@ -12,7 +13,7 @@ class InfoCommandTest extends AbstractCommandTest
 {
     use TemporaryPathGeneratorProviderTrait;
 
-    public function testConfigurationDisplayment()
+    public function test()
     {
         $config = [
             'exclude' => [
@@ -34,9 +35,17 @@ class InfoCommandTest extends AbstractCommandTest
         $testVault = new TestVault();
         $testVault->fwrite('storeman.json', json_encode($config));
 
+        $absoluteConfigFilePath = $testVault->getBasePath() . 'storeman.json';
+
+        // ensure existing history
+        $tester = new CommandTester(new SynchronizeCommand());
+        $tester->execute([
+            '-c' => $absoluteConfigFilePath,
+        ]);
+
         $tester = new CommandTester(new InfoCommand());
         $returnCode = $tester->execute([
-            '-c' => $testVault->getBasePath() . 'storeman.json',
+            '-c' => $absoluteConfigFilePath,
         ]);
         $output = $tester->getDisplay(true);
 
