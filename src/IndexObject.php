@@ -164,7 +164,12 @@ class IndexObject
         $object->ctime = $stat['ctime'];
         $object->mode = $stat['mode'];
 
-        if (is_file($absolutePath))
+        if (is_link($absolutePath))
+        {
+            $object->type = static::TYPE_LINK;
+            $object->linkTarget = str_replace($basePath, '', readlink($absolutePath));
+        }
+        elseif (is_file($absolutePath))
         {
             $object->type = static::TYPE_FILE;
             $object->size = (int)$stat['size'];
@@ -172,11 +177,6 @@ class IndexObject
         elseif (is_dir($absolutePath))
         {
             $object->type = static::TYPE_DIR;
-        }
-        elseif (is_link($absolutePath))
-        {
-            $object->type = static::TYPE_LINK;
-            $object->linkTarget = str_replace($basePath, '', readlink($absolutePath));
         }
         else
         {

@@ -45,6 +45,26 @@ class IndexObjectTest extends TestCase
         $this->assertNull($fileIndexObject->getSize());
     }
 
+    public function testLinkFromPath()
+    {
+        $linkName = 'Some Link';
+        $targetName = 'My Target';
+
+        $testVault = new TestVault();
+        $testVault->touch($targetName);
+        $testVault->link($linkName, $targetName);
+
+        $absolutePath = $testVault->getBasePath() . $linkName;
+        $indexObject = IndexObject::fromPath($testVault->getBasePath(), $linkName);
+
+        $this->assertInstanceOf(IndexObject::class, $indexObject);
+        $this->assertTrue($indexObject->isLink());
+        $this->assertEquals($linkName, $indexObject->getRelativePath());
+        $this->assertEquals(filectime($absolutePath), $indexObject->getCtime());
+        $this->assertEquals(filemtime($absolutePath), $indexObject->getMtime());
+        $this->assertNull($indexObject->getSize());
+    }
+
     public function testFromNonExistentPath()
     {
         $this->expectException(\Exception::class);

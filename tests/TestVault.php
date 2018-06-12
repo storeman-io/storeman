@@ -62,6 +62,16 @@ class TestVault implements \IteratorAggregate
         return $this;
     }
 
+    public function link(string $relativePath, string $relativeTargetPath): TestVault
+    {
+        $this->filesystem->symlink(
+            $this->getAbsolutePath($relativeTargetPath),
+            $this->getAbsolutePath($relativePath)
+        );
+
+        return $this;
+    }
+
     public function remove(string $relativePath): TestVault
     {
         $this->filesystem->remove($this->getAbsolutePath($relativePath));
