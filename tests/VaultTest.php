@@ -173,12 +173,13 @@ class VaultTest extends TestCase
 
     private function getLocalVault(string $basePath, string $remotePath): Vault
     {
-        $vaultConfiguration = new VaultConfiguration('local');
+        $configuration = new Configuration();
+        $configuration->setPath($basePath);
+
+        $vaultConfiguration = new VaultConfiguration($configuration);
+        $vaultConfiguration->setAdapter('local');
         $vaultConfiguration->setLockAdapter('storage');
         $vaultConfiguration->setSetting('path', $remotePath);
-
-        $configuration = new Configuration($basePath);
-        $configuration->addVault($vaultConfiguration);
 
         $storeman = new Storeman((new Container())->injectConfiguration($configuration));
 

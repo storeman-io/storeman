@@ -51,7 +51,7 @@ class Storeman
 
         if (!$vaults->has($vaultTitle))
         {
-            $vaultConfiguration = $this->getConfiguration()->getVaultByTitle($vaultTitle);
+            $vaultConfiguration = $this->getConfiguration()->getVault($vaultTitle);
 
             $vaults->register(new Vault($this, $vaultConfiguration));
         }

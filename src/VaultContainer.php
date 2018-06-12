@@ -17,7 +17,7 @@ final class VaultContainer implements ContainerInterface
      */
     public function has($id)
     {
-        return array_key_exists($id, $this->vaults);
+        return $this->getVault($id) !== null;
     }
 
     /**
@@ -25,9 +25,9 @@ final class VaultContainer implements ContainerInterface
      */
     public function get($id)
     {
-        if (array_key_exists($id, $this->vaults))
+        if ($vault = $this->getVault($id))
         {
-            return $this->vaults[$id];
+            return $vault;
         }
 
         throw new NotFoundException();
@@ -43,5 +43,18 @@ final class VaultContainer implements ContainerInterface
         }
 
         $this->vaults[$title] = $vault;
+    }
+
+    protected function getVault(string $title): ?Vault
+    {
+        foreach ($this->vaults as $vault)
+        {
+            if ($vault->getVaultConfiguration()->getTitle() === $title)
+            {
+                return $vault;
+            }
+        }
+
+        return null;
     }
 }

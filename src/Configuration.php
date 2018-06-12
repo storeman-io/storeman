@@ -17,7 +17,7 @@ class Configuration implements ArraySerializableInterface
      *
      * @var string
      */
-    protected $path;
+    protected $path = './';
 
     /**
      * Set of excluded paths.
@@ -34,16 +34,11 @@ class Configuration implements ArraySerializableInterface
     protected $identity;
 
     /**
-     * Map of vault configurations by identifier.
+     * Array of vault configurations.
      *
      * @var VaultConfiguration[]
      */
     protected $vaults = [];
-
-    public function __construct(string $localPath = './')
-    {
-        $this->setPath($localPath);
-    }
 
     /**
      * @return string
@@ -136,7 +131,7 @@ class Configuration implements ArraySerializableInterface
      */
     public function hasVault(string $title): bool
     {
-        return isset($this->vaults[$title]);
+        return $this->getVaultConfiguration($title) !== null;
     }
 
     /**
@@ -144,17 +139,18 @@ class Configuration implements ArraySerializableInterface
      *
      * @return VaultConfiguration
      */
-    public function getVaultByTitle(string $title): VaultConfiguration
+    public function getVault(string $title): VaultConfiguration
     {
-        if (!isset($this->vaults[$title]))
+        if ($vaultConfiguration = $this->getVaultConfiguration($title))
         {
-            throw new \InvalidArgumentException("Unknown vault configuration requested: {$title}");
+            return $vaultConfiguration;
         }
 
-        return $this->vaults[$title];
+        throw new \InvalidArgumentException("Unknown vault configuration requested: {$title}");
     }
 
     /**
+     * @internal Use VaultConfiguration constructor
      * @param VaultConfiguration $configuration
      *
      * @return Configuration
@@ -162,12 +158,15 @@ class Configuration implements ArraySerializableInterface
      */
     public function addVault(VaultConfiguration $configuration): Configuration
     {
-        if (isset($this->vaults[$configuration->getTitle()]))
+        if (array_search($configuration, $this->vaults) === false)
         {
-            throw new Exception(sprintf('Trying to add vault with duplicate title %s.', $configuration->getTitle()));
-        }
+            if ($this->hasVault($configuration->getTitle()))
+            {
+                throw new Exception(sprintf('Trying to add vault with duplicate title %s.', $configuration->getTitle()));
+            }
 
-        $this->vaults[$configuration->getTitle()] = $configuration;
+            $this->vaults[] = $configuration;
+        }
 
         return $this;
     }
@@ -203,10 +202,8 @@ class Configuration implements ArraySerializableInterface
                     $className = static::VAULT_CONFIG_CLASS;
 
                     /** @var VaultConfiguration $vaultConfig */
-                    $vaultConfig = new $className();
+                    $vaultConfig = new $className($this);
                     $vaultConfig->exchangeArray($val);
-
-                    $this->addVault($vaultConfig);
                 }
             }
             else
@@ -230,6 +227,19 @@ class Configuration implements ArraySerializableInterface
         }, $this->vaults));
 
         return $return;
+    }
+
+    protected function getVaultConfiguration(string $title): ?VaultConfiguration
+    {
+        foreach ($this->vaults as $vaultConfiguration)
+        {
+            if ($vaultConfiguration->getTitle() === $title)
+            {
+                return $vaultConfiguration;
+            }
+        }
+
+        return null;
     }
 
     public static function loadValidatorMetadata(ClassMetadata $metadata)

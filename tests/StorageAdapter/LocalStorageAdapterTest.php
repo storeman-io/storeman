@@ -2,6 +2,7 @@
 
 namespace Storeman\Test\StorageAdapter;
 
+use Storeman\Configuration;
 use Storeman\Exception\Exception;
 use Storeman\StorageAdapter\LocalStorageAdapter;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
@@ -106,7 +107,7 @@ class LocalStorageAdapterTest extends TestCase
         $basePath = $this->getTemporaryPathGenerator()->getTemporaryDirectory();
         $fileName = uniqid() . '.ext';
         $fileContent = md5(mt_rand());
-        $vaultConfiguration = new VaultConfiguration();
+        $vaultConfiguration = new VaultConfiguration($this->createMock(Configuration::class));
         $vaultConfiguration->setSetting('path', $basePath);
 
         return [

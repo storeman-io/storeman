@@ -10,18 +10,23 @@ use Zend\Stdlib\ArraySerializableInterface;
 class VaultConfiguration implements ArraySerializableInterface
 {
     /**
+     * @var Configuration
+     */
+    protected $configuration;
+
+    /**
      * An arbitrary user-defined title that helps to identity a vault by some user-specific information.
      *
      * @var string
      */
-    protected $title;
+    protected $title = 'unknown';
 
     /**
      * Identifier for the vault adapter to use.
      *
      * @var string
      */
-    protected $adapter;
+    protected $adapter = 'unknown';
 
     /**
      * Identifier for the lock adapter to use.
@@ -58,10 +63,15 @@ class VaultConfiguration implements ArraySerializableInterface
      */
     protected $settings = [];
 
-    public function __construct(string $storageAdapter = 'unknown')
+    public function __construct(Configuration $configuration)
     {
-        $this->setAdapter($storageAdapter);
-        $this->setTitle($storageAdapter);
+        $this->configuration = $configuration;
+        $this->configuration->addVault($this);
+    }
+
+    public function getConfiguration(): Configuration
+    {
+        return $this->configuration;
     }
 
     public function getTitle(): string
@@ -182,7 +192,11 @@ class VaultConfiguration implements ArraySerializableInterface
      */
     public function getArrayCopy()
     {
-        return get_object_vars($this);
+        $array = get_object_vars($this);
+
+        unset($array['configuration']);
+
+        return $array;
     }
 
     public static function loadValidatorMetadata(ClassMetadata $metadata)

@@ -2,6 +2,7 @@
 
 namespace Storeman\Test\Operation;
 
+use Storeman\Configuration;
 use Storeman\StorageAdapter\FlysystemStorageAdapter;
 use Storeman\Operation\UploadOperation;
 use Storeman\StorageAdapter\LocalStorageAdapter;
@@ -61,7 +62,7 @@ class UploadOperationTest extends TestCase
 
     protected function getLocalStorageAdapter(string $path): LocalStorageAdapter
     {
-        $vaultConfig = new VaultConfiguration();
+        $vaultConfig = new VaultConfiguration($this->createMock(Configuration::class));
         $vaultConfig->setSetting('path', $path);
 
         return new LocalStorageAdapter($vaultConfig);

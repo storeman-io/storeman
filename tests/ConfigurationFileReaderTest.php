@@ -47,7 +47,7 @@ JSON
         $this->assertEquals(['to/be/excluded'], $config->getExclude());
         $this->assertEquals('some identity', $config->getIdentity());
 
-        $vaultConfig = $config->getVaultByTitle('Test');
+        $vaultConfig = $config->getVault('Test');
 
         $this->assertInstanceOf(VaultConfiguration::class, $vaultConfig);
         $this->assertEquals('local', $vaultConfig->getAdapter());

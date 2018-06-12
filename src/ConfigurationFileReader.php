@@ -60,7 +60,7 @@ class ConfigurationFileReader
         }
         catch (\InvalidArgumentException $exception)
         {
-            throw new ConfigurationException('', 0, $exception);
+            throw new ConfigurationException("In file {$configurationFilePath}", 0, $exception);
         }
 
 
@@ -70,7 +70,7 @@ class ConfigurationFileReader
         {
             $violation = $constraintViolations->get(0);
 
-            throw new ConfigurationException("{$violation->getPropertyPath()} - {$violation->getMessage()}");
+            throw new ConfigurationException("{$configurationFilePath}: {$violation->getPropertyPath()} - {$violation->getMessage()}");
         }
 
         return $configuration;

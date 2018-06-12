@@ -57,6 +57,6 @@ class ConfigurationFileWriter
     {
         $class = get_class($vaultConfiguration);
 
-        return new $class;
+        return new $class($this->getDefaultConfiguration($vaultConfiguration->getConfiguration()));
     }
 }

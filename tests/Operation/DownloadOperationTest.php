@@ -2,6 +2,7 @@
 
 namespace Storeman\Test\Operation;
 
+use Storeman\Configuration;
 use Storeman\Operation\DownloadOperation;
 use Storeman\StorageAdapter\LocalStorageAdapter;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
@@ -50,7 +51,7 @@ class DownloadOperationTest extends TestCase
 
     protected function getLocalStorageAdapter(string $path): LocalStorageAdapter
     {
-        $vaultConfig = new VaultConfiguration();
+        $vaultConfig = new VaultConfiguration($this->createMock(Configuration::class));
         $vaultConfig->setSetting('path', $path);
 
         return new LocalStorageAdapter($vaultConfig);

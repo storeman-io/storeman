@@ -44,14 +44,16 @@ class InitCommand extends AbstractCommand
 
         $container = $this->getContainer();
 
-        $configuration = new Configuration($input->getOption('path') ?: $this->consoleStyle->ask('Local path', '.'));
+        $configuration = new Configuration();
+        $configuration->setPath($input->getOption('path') ?: $this->consoleStyle->ask('Local path', '.'));
         $configuration->setIdentity($input->getOption('identity') ?: $this->consoleStyle->ask('Identity', get_current_user()));
         $configuration->setExclude($input->getOption('exclude') ?: $this->consoleStyle->askMultiple('Excluded path(s)'));
 
         // at least one storage driver has to be set up
         do
         {
-            $vaultConfig = new VaultConfiguration($this->consoleStyle->choice('Storage driver', $container->getStorageAdapterNames()));
+            $vaultConfig = new VaultConfiguration($configuration);
+            $vaultConfig->setAdapter($this->consoleStyle->choice('Storage driver', $container->getStorageAdapterNames()));
             $vaultConfig->setTitle($this->consoleStyle->ask('Title', $vaultConfig->getAdapter()));
             $vaultConfig->setLockAdapter($this->consoleStyle->choice('Lock adapter', $container->getLockAdapterNames(), $vaultConfig->getLockAdapter()));
             $vaultConfig->setIndexMerger($this->consoleStyle->choice('Index merger', $container->getIndexMergerNames(), $vaultConfig->getIndexMerger()));
@@ -65,8 +67,6 @@ class InitCommand extends AbstractCommand
                     $vaultConfig->setSetting($settingName, $settingValue);
                 }
             }
-
-            $configuration->addVault($vaultConfig);
         }
         while($this->consoleStyle->choice('Add another vault?', ['y', 'n'], 'n') === 'y');
 
