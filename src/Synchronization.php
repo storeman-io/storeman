@@ -29,7 +29,7 @@ class Synchronization
      */
     protected $blobId;
 
-    public function __construct(int $revision, string $blobId, \DateTime $time, string $identity = null)
+    public function __construct(int $revision, string $blobId, \DateTime $time, string $identity)
     {
         $this->revision = $revision;
         $this->blobId = $blobId;
@@ -56,7 +56,7 @@ class Synchronization
     /**
      * @return string
      */
-    public function getIdentity(): ?string
+    public function getIdentity(): string
     {
         return $this->identity;
     }
@@ -84,7 +84,7 @@ class Synchronization
         $revision = $row[0];
         $blobId = $row[1];
         $time = \DateTime::createFromFormat('U', $row[2]);
-        $identity = $row[3] ?: null;
+        $identity = $row[3];
 
         if (!($time instanceof \DateTime))
         {

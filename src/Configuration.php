@@ -31,7 +31,7 @@ class Configuration implements ArraySerializableInterface
      *
      * @var string
      */
-    protected $identity;
+    protected $identity = 'unknown';
 
     /**
      * Array of vault configurations.
@@ -100,7 +100,7 @@ class Configuration implements ArraySerializableInterface
     /**
      * @return string
      */
-    public function getIdentity(): ?string
+    public function getIdentity(): string
     {
         return $this->identity;
     }
