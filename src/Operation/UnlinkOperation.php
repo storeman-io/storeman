@@ -15,7 +15,18 @@ class UnlinkOperation implements OperationInterface
 
     public function execute(string $localBasePath, VaultLayoutInterface $vaultLayout): bool
     {
-        return unlink($localBasePath . $this->relativePath);
+        $absolutePath = $localBasePath . $this->relativePath;
+
+        if (is_file($absolutePath) || is_link($absolutePath))
+        {
+            return unlink($localBasePath . $this->relativePath);
+        }
+        elseif (is_dir($absolutePath))
+        {
+            return rmdir($absolutePath);
+        }
+
+        return false;
     }
 
     /**
