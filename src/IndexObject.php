@@ -120,22 +120,31 @@ class IndexObject
         return $this;
     }
 
-    public function getIndexRecord(): array
+    public function toScalarArray(): array
     {
-        return [$this->relativePath, $this->type, $this->mtime, $this->ctime, $this->mode, $this->size, $this->blobId, $this->linkTarget];
+        return [
+            $this->relativePath,
+            $this->type,
+            $this->mtime,
+            $this->ctime,
+            $this->mode,
+            $this->size,
+            $this->blobId,
+            $this->linkTarget,
+        ];
     }
 
-    public static function fromIndexRecord(array $row): IndexObject
+    public static function fromScalarArray(array $array): IndexObject
     {
         $object = new static;
-        $object->relativePath = $row[0];
-        $object->type = (int)$row[1];
-        $object->mtime = (int)$row[2];
-        $object->ctime = (int)$row[3];
-        $object->mode = (int)$row[4];
-        $object->size = (int)$row[5];
-        $object->blobId = $row[6];
-        $object->linkTarget = $row[7];
+        $object->relativePath = $array[0];
+        $object->type = (int)$array[1];
+        $object->mtime = (int)$array[2];
+        $object->ctime = (int)$array[3];
+        $object->mode = (int)$array[4];
+        $object->size = (int)$array[5];
+        $object->blobId = $array[6];
+        $object->linkTarget = $array[7];
 
         return $object;
     }

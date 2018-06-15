@@ -20,6 +20,7 @@ class ConfigurationFileWriterTest extends TestCase
 
         $vaultConfiguration = new VaultConfiguration($configuration);
         $vaultConfiguration->setTitle('Some Title');
+        $vaultConfiguration->setVaultLayout('myVaultLayout');
         $vaultConfiguration->setAdapter('myAdapter');
         $vaultConfiguration->setLockAdapter('myLockAdapter');
         $vaultConfiguration->setConflictHandler('myConflictHandler');
@@ -56,6 +57,7 @@ class ConfigurationFileWriterTest extends TestCase
 
         $vault = $array['vaults'][0];
         $this->assertEquals($vaultConfiguration->getTitle(), $vault['title']);
+        $this->assertEquals($vaultConfiguration->getVaultLayout(), $vault['vaultLayout']);
         $this->assertEquals($vaultConfiguration->getAdapter(), $vault['adapter']);
         $this->assertEquals($vaultConfiguration->getLockAdapter(), $vault['lockAdapter']);
         $this->assertEquals($vaultConfiguration->getConflictHandler(), $vault['conflictHandler']);

@@ -2,7 +2,7 @@
 
 namespace Storeman\Operation;
 
-use Storeman\StorageAdapter\StorageAdapterInterface;
+use Storeman\VaultLayout\VaultLayoutInterface;
 
 class SymlinkOperation implements OperationInterface
 {
@@ -28,7 +28,7 @@ class SymlinkOperation implements OperationInterface
         $this->mode = $mode;
     }
 
-    public function execute(string $localBasePath, StorageAdapterInterface $storageAdapter): bool
+    public function execute(string $localBasePath, VaultLayoutInterface $vaultLayout): bool
     {
         $absolutePath = $localBasePath . $this->relativePath;
         $absoluteLinkTarget = $localBasePath . $this->relativeLinkTarget;

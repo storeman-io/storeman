@@ -11,21 +11,12 @@ use Storeman\Operation\MkdirOperation;
 use Storeman\Operation\SymlinkOperation;
 use Storeman\Operation\TouchOperation;
 use Storeman\Operation\UnlinkOperation;
-use Storeman\Operation\UploadOperation;
 use Storeman\OperationList;
 
 class StandardOperationListBuilder implements OperationListBuilderInterface
 {
     public function buildOperationList(Index $mergedIndex, Index $localIndex, Index $remoteIndex = null): OperationList
     {
-        $uploadStreamFilters = [
-            'zlib.deflate' => []
-        ];
-        $downloadStreamFilters = [
-            'zlib.inflate' => []
-        ];
-
-
         $operationList = new OperationList();
 
         // mtimes to be set for directories are collected and applied afterwards as they get modified by synchronization operations as well
@@ -40,7 +31,6 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
             /** @var IndexObject $mergedIndexObject */
 
             $localObject = $localIndex->getObjectByPath($mergedIndexObject->getRelativePath());
-            $remoteObject = $remoteIndex ? $remoteIndex->getObjectByPath($mergedIndexObject->getRelativePath()) : null;
 
             // unlink to-be-overridden local path with different type
             if ($localObject !== null && $localObject->getType() !== $mergedIndexObject->getType())
@@ -80,23 +70,11 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
 
                 if ($doDownloadFile)
                 {
-                    $operationList->addOperation(new DownloadOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getBlobId(), $downloadStreamFilters));
+                    $operationList->addOperation(new DownloadOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getBlobId()));
                     $operationList->addOperation(new TouchOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getMtime()));
                     $operationList->addOperation(new ChmodOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getMode()));
 
                     $modifiedPaths[] = $mergedIndexObject->getRelativePath();
-                }
-
-                // local file got created or updated
-                elseif ($remoteObject === null || $mergedIndexObject->getBlobId() === null)
-                {
-                    // generate blob id
-                    // todo: we might want to have some mechanism to prevent overriding existing file in case of collision
-                    $newBlobId = $mergedIndex->generateNewBlobId();
-
-                    $mergedIndexObject->setBlobId($newBlobId);
-
-                    $operationList->addOperation(new UploadOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getBlobId(), $uploadStreamFilters));
                 }
             }
 

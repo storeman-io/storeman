@@ -24,6 +24,7 @@ class InitCommandTest extends AbstractCommandTest
             // vaults
             'local', // storage driver
             'My Title', // title
+            'amberjack', // vault layout
             'storage', // lock adapter
             'standard', // index merger
             'panicking', // conflict handler
@@ -56,6 +57,7 @@ class InitCommandTest extends AbstractCommandTest
 
         $this->assertEquals('My Title', $vault->getTitle());
         $this->assertEquals('local', $vault->getAdapter());
+        $this->assertEquals('amberjack', $vault->getVaultLayout());
         $this->assertEquals('storage', $vault->getLockAdapter());
         $this->assertEquals('standard', $vault->getIndexMerger());
         $this->assertEquals('panicking', $vault->getConflictHandler());

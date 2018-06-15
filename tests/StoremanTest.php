@@ -24,11 +24,16 @@ class StoremanTest extends TestCase
 
         $storeman = new Storeman((new Container())->injectConfiguration($config));
 
-        $this->assertCount(2, $storeman->buildOperationList());
+        $this->assertEmpty($storeman->buildSynchronizationHistory());
 
         $operationResultList = $storeman->synchronize();
 
         $this->assertCount(2, $operationResultList);
+
+        $history = $storeman->buildSynchronizationHistory();
+
+        $this->assertCount(1, $history);
+        $this->assertCount(2, reset($history));
     }
 
     protected function getTestVaultConfig(Configuration $configuration): VaultConfiguration

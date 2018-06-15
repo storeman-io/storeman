@@ -18,6 +18,8 @@ use Storeman\OperationListBuilder\StandardOperationListBuilder;
 use Storeman\StorageAdapter\LocalStorageAdapter;
 use Storeman\StorageAdapter\StorageAdapterInterface;
 use Storeman\Validation\Constraints\ExistingServiceValidator;
+use Storeman\VaultLayout\Amberjack\AmberjackVaultLayout;
+use Storeman\VaultLayout\VaultLayoutInterface;
 
 /**
  * Dependency injection container for modularized parts.
@@ -30,6 +32,7 @@ final class Container implements ContainerInterface
     protected const PREFIX_LOCK_ADAPTER = 'lockAdapter.';
     protected const PREFIX_OPERATION_LIST_BUILDER = 'operationListBuilder.';
     protected const PREFIX_STORAGE_ADAPTER = 'storageAdapter.';
+    protected const PREFIX_VAULT_LAYOUT = 'vaultLayout.';
 
 
     /**
@@ -66,6 +69,9 @@ final class Container implements ContainerInterface
 
         $this->registerVaultServiceFactory('storageAdapter', 'adapter');
         $this->addStorageAdapter('local', LocalStorageAdapter::class)->withArgument('vaultConfiguration');
+
+        $this->registerVaultServiceFactory('vaultLayout');
+        $this->addVaultLayout('amberjack', AmberjackVaultLayout::class)->withArguments(['storageAdapter', 'vaultConfiguration']);
 
         $this->delegate->add(ExistingServiceValidator::class)->withArgument($this);
     }
@@ -225,6 +231,22 @@ final class Container implements ContainerInterface
     }
 
 
+    public function getVaultLayout(string $name): VaultLayoutInterface
+    {
+        return $this->delegate->get($this->getVaultLayoutServiceName($name));
+    }
+
+    public function addVaultLayout(string $name, $concrete, bool $shared = false): DefinitionInterface
+    {
+        return $this->delegate->add($this->getVaultLayoutServiceName($name), $concrete, $shared);
+    }
+
+    public function getVaultLayoutNames(): array
+    {
+        return $this->getServiceNamesWithPrefix(static::PREFIX_VAULT_LAYOUT);
+    }
+
+
     protected function getConflictHandlerServiceName(string $name): string
     {
         return static::PREFIX_CONFLICT_HANDLER . $name;
@@ -248,6 +270,11 @@ final class Container implements ContainerInterface
     protected function getStorageAdapterServiceName(string $name): string
     {
         return static::PREFIX_STORAGE_ADAPTER . $name;
+    }
+
+    protected function getVaultLayoutServiceName(string $name): string
+    {
+        return static::PREFIX_VAULT_LAYOUT . $name;
     }
 
     /**

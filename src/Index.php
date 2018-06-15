@@ -3,7 +3,6 @@
 namespace Storeman;
 
 use Storeman\Exception\Exception;
-use Ramsey\Uuid\Uuid;
 
 /**
  * As the name suggests an index is a representation of the vault at some point in time.
@@ -73,22 +72,6 @@ class Index implements \Countable, \IteratorAggregate
         }
 
         return null;
-    }
-
-    /**
-     * Returns a new blob id not already present in this index.
-     *
-     * @return string
-     */
-    public function generateNewBlobId(): string
-    {
-        do
-        {
-            $blobId = Uuid::uuid4()->toString();
-        }
-        while ($this->getObjectByBlobId($blobId) !== null);
-
-        return $blobId;
     }
 
     /**

@@ -13,7 +13,7 @@ class IndexTest extends TestCase
         $testVault = new TestVault();
         $testVault->fwrite('file.ext', 'Hello World!');
 
-        $index = new Index();
+        $index = $this->getNewIndex();
         $index->addObject(IndexObject::fromPath($testVault->getBasePath(), 'file.ext'));
 
         $this->assertEquals(1, count($index));
@@ -27,15 +27,15 @@ class IndexTest extends TestCase
 
     public function testNullComparison()
     {
-        $index = new Index();
+        $index = $this->getNewIndex();
 
         $this->assertFalse($index->equals(null));
     }
 
     public function testIsSubset()
     {
-        $indexA = new Index();
-        $indexB = new Index();
+        $indexA = $this->getNewIndex();
+        $indexB = $this->getNewIndex();
 
         $this->assertTrue($this->areIndizesEqual($indexA, $indexB));
 
@@ -66,8 +66,8 @@ class IndexTest extends TestCase
 
     public function testComparison()
     {
-        $indexA = new Index();
-        $indexB = new Index();
+        $indexA = $this->getNewIndex();
+        $indexB = $this->getNewIndex();
 
         $this->assertTrue($this->areIndizesEqual($indexA, $indexA));
         $this->assertTrue($this->areIndizesEqual($indexA, $indexB));
@@ -99,5 +99,10 @@ class IndexTest extends TestCase
     protected function areIndizesEqual(Index $indexA, Index $indexB)
     {
         return $indexA->equals($indexB) && $indexB->equals($indexA);
+    }
+
+    protected function getNewIndex(): Index
+    {
+        return new Index();
     }
 }

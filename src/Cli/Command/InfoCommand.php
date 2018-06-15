@@ -27,7 +27,6 @@ class InfoCommand extends AbstractCommand
 
         $this->displayGeneralInfo($storeman, $output);
         $this->displaySynchronizationHistory($storeman, $output);
-        $this->displayOutstandingOperations($storeman, $output);
 
         return 0;
     }
@@ -52,10 +51,11 @@ class InfoCommand extends AbstractCommand
             $table->addRow([' ']); // blank line
             $table->addRow([
                 "Vault #{$index}",
-                "Title:\nAdapter:\nLock Adapter:\nSettings:\nCurrent lock:",
+                "Title:\nAdapter:\nLayout:\nLock Adapter:\nSettings:\nCurrent lock:",
                 implode("\n", [
                     "<info>{$vault->getVaultConfiguration()->getTitle()}</info>",
                     $vaultConfiguration->getAdapter(),
+                    $vaultConfiguration->getVaultLayout(),
                     $vaultConfiguration->getLockAdapter(),
                     implode(
                         ',',
@@ -112,23 +112,6 @@ class InfoCommand extends AbstractCommand
         else
         {
             $output->writeln('No synchronizations so far.');
-        }
-    }
-
-    protected function displayOutstandingOperations(Storeman $storeman, OutputInterface $output)
-    {
-        $output->writeln('');
-        $output->write('Current state: ');
-
-        $operationList = $storeman->buildOperationList();
-
-        if ($count = count($operationList))
-        {
-            $output->writeln(sprintf('<bold>%d outstanding operation(s).</bold>', $count));
-        }
-        else
-        {
-            $output->writeln('<info>Everything is up to date!</info>');
         }
     }
 }

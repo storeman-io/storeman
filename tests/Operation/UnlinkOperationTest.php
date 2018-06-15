@@ -3,9 +3,9 @@
 namespace Storeman\Test\Operation;
 
 use Storeman\Operation\UnlinkOperation;
-use Storeman\StorageAdapter\StorageAdapterInterface;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 use PHPUnit\Framework\TestCase;
+use Storeman\VaultLayout\VaultLayoutInterface;
 
 class UnlinkOperationTest extends TestCase
 {
@@ -18,7 +18,7 @@ class UnlinkOperationTest extends TestCase
         $this->assertTrue(is_file($tempFile));
 
         $operation = new UnlinkOperation(basename($tempFile));
-        $operation->execute(dirname($tempFile) . DIRECTORY_SEPARATOR, $this->createMock(StorageAdapterInterface::class));
+        $operation->execute(dirname($tempFile) . DIRECTORY_SEPARATOR, $this->createMock(VaultLayoutInterface::class));
 
         $this->assertFalse(is_file($tempFile));
     }

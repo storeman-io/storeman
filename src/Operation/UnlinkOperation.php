@@ -2,7 +2,7 @@
 
 namespace Storeman\Operation;
 
-use Storeman\StorageAdapter\StorageAdapterInterface;
+use Storeman\VaultLayout\VaultLayoutInterface;
 
 class UnlinkOperation implements OperationInterface
 {
@@ -13,7 +13,7 @@ class UnlinkOperation implements OperationInterface
         $this->relativePath = $relativePath;
     }
 
-    public function execute(string $localBasePath, StorageAdapterInterface $storageAdapter): bool
+    public function execute(string $localBasePath, VaultLayoutInterface $vaultLayout): bool
     {
         return unlink($localBasePath . $this->relativePath);
     }

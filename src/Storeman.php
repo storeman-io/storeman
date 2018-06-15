@@ -74,23 +74,6 @@ class Storeman
     }
 
     /**
-     * Builds and returns an OperationList instance containing all operations required to a full synchronization.
-     *
-     * @return OperationList
-     */
-    public function buildOperationList(): OperationList
-    {
-        $return = new OperationList();
-
-        foreach ($this->getVaults() as $vault)
-        {
-            $return->append($vault->getOperationList());
-        }
-
-        return $return;
-    }
-
-    /**
      * @todo: subdivide
      */
     public function synchronize(array $vaultTitles = [], SynchronizationProgressListenerInterface $progressListener = null): OperationResultList

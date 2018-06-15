@@ -3,6 +3,7 @@
 namespace Storeman;
 
 use Storeman\ConflictHandler\ConflictHandlerInterface;
+use Storeman\Operation\WriteSynchronizationOperation;
 use Storeman\StorageAdapter\StorageAdapterInterface;
 use Storeman\Exception\Exception;
 use Storeman\IndexMerger\IndexMergerInterface;
@@ -10,7 +11,7 @@ use Storeman\LockAdapter\LockAdapterInterface;
 use Storeman\OperationListBuilder\OperationListBuilderInterface;
 use Storeman\SynchronizationProgressListener\DummySynchronizationProgressListener;
 use Storeman\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
-use Ramsey\Uuid\Uuid;
+use Storeman\VaultLayout\VaultLayoutInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Storeman\Operation\OperationInterface;
@@ -18,7 +19,6 @@ use Storeman\Operation\OperationInterface;
 class Vault
 {
     const METADATA_DIRECTORY_NAME = '.storeman';
-    const SYNCHRONIZATION_LIST_FILE_NAME = 'index';
     const LOCK_SYNC = 'sync';
 
     /**
@@ -30,6 +30,11 @@ class Vault
      * @var VaultConfiguration
      */
     protected $vaultConfiguration;
+
+    /**
+     * @var VaultLayoutInterface
+     */
+    protected $vaultLayout;
 
     /**
      * @var StorageAdapterInterface
@@ -65,6 +70,11 @@ class Vault
     public function getVaultConfiguration(): VaultConfiguration
     {
         return $this->vaultConfiguration;
+    }
+
+    public function getVaultLayout(): VaultLayoutInterface
+    {
+        return $this->vaultLayout ?: ($this->vaultLayout = $this->getContainer()->get('vaultLayout'));
     }
 
     public function getStorageAdapter(): StorageAdapterInterface
@@ -117,7 +127,11 @@ class Vault
         {
             $stream = fopen($path, 'rb');
 
-            $index = $this->readIndexFromStream($stream);
+            $index = new Index();
+            while (($row = fgetcsv($stream)) !== false)
+            {
+                $index->addObject(IndexObject::fromScalarArray($row));
+            }
 
             fclose($stream);
         }
@@ -134,21 +148,11 @@ class Vault
      */
     public function loadRemoteIndex(int $revision = null): ?Index
     {
-        $list = null;
+        $synchronization = $revision ?
+            $this->getVaultLayout()->getSynchronization($revision) :
+            $this->getVaultLayout()->getLastSynchronization();
 
-        if ($revision === null)
-        {
-            $list = $this->loadSynchronizationList();
-
-            if (!$list->getLastSynchronization())
-            {
-                return null;
-            }
-
-            $revision = $list->getLastSynchronization()->getRevision();
-        }
-
-        return $this->doLoadRemoteIndex($revision, $list);
+        return $synchronization ? $synchronization->getIndex() : null;
     }
 
     /**
@@ -211,7 +215,7 @@ class Vault
         if ($lastSynchronization)
         {
             $newRevision = $newRevision ?: ($lastSynchronization->getRevision() + 1);
-            $remoteIndex = $this->doLoadRemoteIndex($lastSynchronization->getRevision(), $synchronizationList);
+            $remoteIndex = $lastSynchronization->getIndex();
         }
         else
         {
@@ -219,29 +223,26 @@ class Vault
             $remoteIndex = null;
         }
 
-        $synchronization = new Synchronization($newRevision, $this->generateNewBlobId(), new \DateTime(), $this->storeman->getConfiguration()->getIdentity());
-        $synchronizationList->addSynchronization($synchronization);
-
         // compute merged index
         $mergedIndex = $this->doBuildMergedIndex($localIndex, $lastLocalIndex, $remoteIndex);
 
+        $synchronization = new Synchronization($newRevision, new \DateTime(), $this->storeman->getConfiguration()->getIdentity(), $mergedIndex);
+
         $operationList = $this->getOperationListBuilder()->buildOperationList($mergedIndex, $localIndex, $remoteIndex);
+        $operationList->addOperation(new WriteSynchronizationOperation($synchronization));
 
         $operationResultList = new OperationResultList();
 
         // operation count +
-        // merged index write +
-        // copy merged index to vault +
         // save merged index as last local index +
-        // upload synchronization list +
         // release lock
-        $progressionListener->start(count($operationList) + 5);
+        $progressionListener->start(count($operationList) + 2);
 
         foreach ($operationList as $operation)
         {
             /** @var OperationInterface $operation */
 
-            $success = $operation->execute($this->storeman->getConfiguration()->getPath(), $this->getStorageAdapter());
+            $success = $operation->execute($this->storeman->getConfiguration()->getPath(), $this->getVaultLayout());
 
             $operationResult = new OperationResult($operation, $success);
             $operationResultList->addOperationResult($operationResult);
@@ -249,43 +250,17 @@ class Vault
             $progressionListener->advance();
         }
 
-        // dump new index
-        $mergedIndexFilePath = tempnam(sys_get_temp_dir(), 'index');
-        $this->writeIndexToFile($mergedIndex, $mergedIndexFilePath);
-
+        // save merged index locally
+        $this->writeLastLocalIndex($mergedIndex);
         $progressionListener->advance();
-
-        // upload new index
-        $readStream = fopen($mergedIndexFilePath, 'rb');
-        $compressionFilter = stream_filter_append($readStream, 'zlib.deflate');
-        $this->storageAdapter->writeStream($synchronization->getBlobId(), $readStream);
-        rewind($readStream);
-        stream_filter_remove($compressionFilter);
-
-        $progressionListener->advance();
-
-        // save new index locally
-        $writeStream = fopen($this->getLastLocalIndexFilePath(), 'wb');
-        stream_copy_to_stream($readStream, $writeStream);
-        fclose($writeStream);
-        fclose($readStream);
-
-        $progressionListener->advance();
-
-        // upload new synchronization list
-        $synchronizationListFilePath = $this->writeSynchronizationListToTemporaryFile($synchronizationList);
-        $readStream = fopen($synchronizationListFilePath, 'rb');
-        stream_filter_append($readStream, 'zlib.deflate');
-        $this->storageAdapter->writeStream(static::SYNCHRONIZATION_LIST_FILE_NAME, $readStream);
-        fclose($readStream);
 
         // release lock
         if (!$this->getLockAdapter()->releaseLock(static::LOCK_SYNC))
         {
             throw new Exception('Failed to release lock.');
         }
-
         $progressionListener->advance();
+
         $progressionListener->finish();
 
         return $operationResultList;
@@ -298,23 +273,7 @@ class Vault
      */
     public function loadSynchronizationList(): SynchronizationList
     {
-        $storageAdapter = $this->getStorageAdapter();
-        $list = null;
-
-        if ($storageAdapter->exists(static::SYNCHRONIZATION_LIST_FILE_NAME))
-        {
-            $stream = $storageAdapter->getReadStream(static::SYNCHRONIZATION_LIST_FILE_NAME);
-
-            stream_filter_append($stream, 'zlib.inflate');
-
-            $list = $this->readSynchronizationListFromStream($stream);
-
-            fclose($stream);
-
-            return $list;
-        }
-
-        return new SynchronizationList();
+        return $this->getVaultLayout()->getSynchronizations();
     }
 
     /**
@@ -372,36 +331,6 @@ class Vault
             /** @var SplFileInfo $fileInfo */
 
             $index->addObject(IndexObject::fromPath($this->storeman->getConfiguration()->getPath(), $fileInfo->getRelativePathname()));
-        }
-
-        return $index;
-    }
-
-    protected function doLoadRemoteIndex(int $revision, SynchronizationList $synchronizationList = null): ?Index
-    {
-        if ($synchronizationList === null)
-        {
-            $synchronizationList = $this->loadSynchronizationList();
-        }
-
-        $synchronization = $synchronizationList->getSynchronizationByRevision($revision);
-
-        if (!$synchronization)
-        {
-            return null;
-        }
-
-        $index = null;
-
-        if ($this->storageAdapter->exists($synchronization->getBlobId()))
-        {
-            $stream = $this->storageAdapter->getReadStream($synchronization->getBlobId());
-
-            stream_filter_append($stream, 'zlib.inflate');
-
-            $index = $this->readIndexFromStream($stream);
-
-            fclose($stream);
         }
 
         return $index;
@@ -469,7 +398,7 @@ class Vault
         {
             /** @var OperationInterface $operation */
 
-            $success = $operation->execute($targetPath, $this->getStorageAdapter());
+            $success = $operation->execute($targetPath, $this->getVaultLayout());
 
             $operationResult = new OperationResult($operation, $success);
             $operationResultList->addOperationResult($operationResult);
@@ -479,7 +408,7 @@ class Vault
 
         if (!$skipLastLocalIndexUpdate)
         {
-            $this->writeIndexToFile($remoteIndex, $this->getLastLocalIndexFilePath());
+            $this->writeLastLocalIndex($remoteIndex);
         }
 
         $progressionListener->advance();
@@ -495,86 +424,21 @@ class Vault
         return $operationResultList;
     }
 
-    protected function readIndexFromStream($stream): Index
+    protected function writeLastLocalIndex(Index $index): void
     {
-        if (!is_resource($stream))
-        {
-            throw new Exception();
-        }
-
-        $index = new Index();
-
-        while (($row = fgetcsv($stream)) !== false)
-        {
-            $index->addObject(IndexObject::fromIndexRecord($row));
-        }
-
-        return $index;
-    }
-
-    protected function writeIndexToFile(Index $index, string $path): void
-    {
-        $stream = fopen($path, 'wb');
+        $stream = fopen($this->getLastLocalIndexFilePath(), 'wb');
 
         foreach ($index as $object)
         {
             /** @var IndexObject $object */
 
-            if (fputcsv($stream, $object->getIndexRecord()) === false)
+            if (fputcsv($stream, $object->toScalarArray()) === false)
             {
                 throw new Exception();
             }
         }
 
         fclose($stream);
-    }
-
-    protected function readSynchronizationListFromStream($stream): SynchronizationList
-    {
-        if (!is_resource($stream))
-        {
-            throw new Exception();
-        }
-
-        $list = new SynchronizationList();
-
-        while (($row = fgetcsv($stream)) !== false)
-        {
-            $list->addSynchronization(Synchronization::fromRecord($row));
-        }
-
-        return $list;
-    }
-
-    protected function writeSynchronizationListToTemporaryFile(SynchronizationList $synchronizationList): string
-    {
-        $path = tempnam(sys_get_temp_dir(), 'synchronizationList');
-        $stream = fopen($path, 'wb');
-
-        foreach ($synchronizationList as $synchronization)
-        {
-            /** @var Synchronization $synchronization */
-
-            if (fputcsv($stream, $synchronization->getRecord()) === false)
-            {
-                throw new Exception();
-            }
-        }
-
-        fclose($stream);
-
-        return $path;
-    }
-
-    protected function generateNewBlobId(): string
-    {
-        do
-        {
-            $blobId = Uuid::uuid4()->toString();
-        }
-        while ($this->storageAdapter->exists($blobId));
-
-        return $blobId;
     }
 
     protected function initMetadataDirectory(): string

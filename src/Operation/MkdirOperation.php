@@ -2,7 +2,7 @@
 
 namespace Storeman\Operation;
 
-use Storeman\StorageAdapter\StorageAdapterInterface;
+use Storeman\VaultLayout\VaultLayoutInterface;
 
 class MkdirOperation implements OperationInterface
 {
@@ -22,7 +22,7 @@ class MkdirOperation implements OperationInterface
         $this->mode = $mode;
     }
 
-    public function execute(string $localBasePath, StorageAdapterInterface $storageAdapter): bool
+    public function execute(string $localBasePath, VaultLayoutInterface $vaultLayout): bool
     {
         $absolutePath = $localBasePath . $this->relativePath;
 

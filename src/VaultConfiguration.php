@@ -22,6 +22,13 @@ class VaultConfiguration implements ArraySerializableInterface
     protected $title = 'unknown';
 
     /**
+     * Identifier for the vault layout to use.
+     *
+     * @var string
+     */
+    protected $vaultLayout = 'amberjack';
+
+    /**
      * Identifier for the vault adapter to use.
      *
      * @var string
@@ -82,6 +89,18 @@ class VaultConfiguration implements ArraySerializableInterface
     public function setTitle(string $title): VaultConfiguration
     {
         $this->title = $title;
+
+        return $this;
+    }
+
+    public function getVaultLayout(): string
+    {
+        return $this->vaultLayout;
+    }
+
+    public function setVaultLayout(string $vaultLayout): VaultConfiguration
+    {
+        $this->vaultLayout = $vaultLayout;
 
         return $this;
     }

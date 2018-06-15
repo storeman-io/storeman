@@ -2,7 +2,7 @@
 
 namespace Storeman\Operation;
 
-use Storeman\StorageAdapter\StorageAdapterInterface;
+use Storeman\VaultLayout\VaultLayoutInterface;
 
 class DownloadOperation implements OperationInterface
 {
@@ -16,27 +16,16 @@ class DownloadOperation implements OperationInterface
      */
     protected $blobId;
 
-    /**
-     * @var array
-     */
-    protected $streamFilterConfigMap;
-
-    public function __construct(string $relativePath, string $blobId, array $streamFilterConfigMap = [])
+    public function __construct(string $relativePath, string $blobId)
     {
         $this->relativePath = $relativePath;
         $this->blobId = $blobId;
-        $this->streamFilterConfigMap = $streamFilterConfigMap;
     }
 
-    public function execute(string $localBasePath, StorageAdapterInterface $storageAdapter): bool
+    public function execute(string $localBasePath, VaultLayoutInterface $vaultLayout): bool
     {
         $localStream = fopen($localBasePath . $this->relativePath, 'wb');
-        $remoteStream = $storageAdapter->getReadStream($this->blobId);
-
-        foreach ($this->streamFilterConfigMap as $filterName => $filterParams)
-        {
-            stream_filter_append($remoteStream, $filterName, STREAM_FILTER_READ, $filterParams);
-        }
+        $remoteStream = $vaultLayout->readBlob($this->blobId);
 
         $bytesCopied = stream_copy_to_stream($remoteStream, $localStream);
 
@@ -51,8 +40,6 @@ class DownloadOperation implements OperationInterface
      */
     public function __toString(): string
     {
-        $filterNames = implode(',', array_keys($this->streamFilterConfigMap)) ?: '-';
-
-        return sprintf('Download %s (blobId %s, filters: %s)', $this->relativePath, $this->blobId, $filterNames);
+        return sprintf('Download %s (blobId %s)', $this->relativePath, $this->blobId);
     }
 }

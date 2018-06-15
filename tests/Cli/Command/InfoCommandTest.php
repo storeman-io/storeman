@@ -25,6 +25,7 @@ class InfoCommandTest extends AbstractCommandTest
                 [
                     'title' => 'Some Vault Title',
                     'adapter' => 'local',
+                    'vaultLayout' => 'amberjack',
                     'settings' => [
                         'path' => $this->getTemporaryPathGenerator()->getTemporaryDirectory()
                     ],
@@ -61,6 +62,7 @@ class InfoCommandTest extends AbstractCommandTest
         foreach ($config['vaults'] as $vaultConfig)
         {
             $this->assertContains($vaultConfig['title'], $output);
+            $this->assertContains($vaultConfig['vaultLayout'], $output);
 
             foreach ($vaultConfig['settings'] as $key => $value)
             {

@@ -2,8 +2,6 @@
 
 namespace Storeman;
 
-use Storeman\Exception\Exception;
-
 /**
  * As the name suggests this class represents the synchronization for a specific revision.
  */
@@ -25,72 +23,65 @@ class Synchronization
     protected $identity;
 
     /**
-     * @var string
+     * @var Index
      */
-    protected $blobId;
+    protected $index;
 
-    public function __construct(int $revision, string $blobId, \DateTime $time, string $identity)
+    public function __construct(int $revision, \DateTime $time, string $identity, Index $index = null)
     {
         $this->revision = $revision;
-        $this->blobId = $blobId;
         $this->time = $time;
         $this->identity = $identity;
+        $this->index = $index;
     }
 
-    /**
-     * @return int
-     */
     public function getRevision(): int
     {
         return $this->revision;
     }
 
-    /**
-     * @return \DateTime
-     */
     public function getTime(): \DateTime
     {
         return $this->time;
     }
 
-    /**
-     * @return string
-     */
     public function getIdentity(): string
     {
         return $this->identity;
     }
 
-    /**
-     * @return string
-     */
-    public function getBlobId(): string
+    public function getIndex(): ?Index
     {
-        return $this->blobId;
+        return $this->index;
     }
 
-    public function getRecord(): array
+    public function setIndex(Index $index): Synchronization
+    {
+        assert($this->index === null);
+
+        $this->index = $index;
+
+        return $this;
+    }
+
+    public function toScalarArray(): array
     {
         return [
             $this->revision,
-            $this->blobId,
             $this->time->getTimestamp(),
             $this->identity
         ];
     }
 
-    public static function fromRecord(array $row): Synchronization
+    public static function fromScalarArray(array $array, Index $index = null): Synchronization
     {
-        $revision = $row[0];
-        $blobId = $row[1];
-        $time = \DateTime::createFromFormat('U', $row[2]);
-        $identity = $row[3];
+        $instance = new static(
+            $array[0],
+            \DateTime::createFromFormat('U', $array[1]),
+            $array[2],
+            $index
+        );
 
-        if (!($time instanceof \DateTime))
-        {
-            throw new Exception();
-        }
-
-        return new static($revision, $blobId, $time, $identity);
+        return $instance;
     }
 }

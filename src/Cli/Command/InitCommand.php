@@ -55,6 +55,7 @@ class InitCommand extends AbstractCommand
             $vaultConfig = new VaultConfiguration($configuration);
             $vaultConfig->setAdapter($this->consoleStyle->choice('Storage driver', $container->getStorageAdapterNames()));
             $vaultConfig->setTitle($this->consoleStyle->ask('Title', $vaultConfig->getAdapter()));
+            $vaultConfig->setVaultLayout($this->consoleStyle->choice('Vault layout', $container->getVaultLayoutNames(), $vaultConfig->getVaultLayout()));
             $vaultConfig->setLockAdapter($this->consoleStyle->choice('Lock adapter', $container->getLockAdapterNames(), $vaultConfig->getLockAdapter()));
             $vaultConfig->setIndexMerger($this->consoleStyle->choice('Index merger', $container->getIndexMergerNames(), $vaultConfig->getIndexMerger()));
             $vaultConfig->setConflictHandler($this->consoleStyle->choice('Conflict handler', $container->getConflictHandlerNames(), $vaultConfig->getConflictHandler()));
