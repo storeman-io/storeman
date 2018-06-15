@@ -39,11 +39,11 @@ abstract class PathUtils
 
         foreach ($pathParts as $part)
         {
-            if ('.' == $part)
+            if ('.' === $part)
             {
                 continue;
             }
-            if ('..' == $part)
+            if ('..' === $part)
             {
                 array_pop($absolutePathParts);
             }
