@@ -28,7 +28,6 @@ class SynchronizationList implements \Countable, \IteratorAggregate
      * @param Synchronization $synchronization
      *
      * @return SynchronizationList
-     * @throws Exception
      */
     public function addSynchronization(Synchronization $synchronization): SynchronizationList
     {
@@ -62,7 +61,7 @@ class SynchronizationList implements \Countable, \IteratorAggregate
      *
      * @return Synchronization
      */
-    public function getSynchronizationByRevision(int $revision): ?Synchronization
+    public function getSynchronization(int $revision): ?Synchronization
     {
         return isset($this->synchronizations[$revision]) ? $this->synchronizations[$revision] : null;
     }

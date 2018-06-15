@@ -77,7 +77,7 @@ class AmberjackVaultLayout implements VaultLayoutInterface
      */
     public function getSynchronization(int $revision): Synchronization
     {
-        return $this->getSynchronizations()->getSynchronizationByRevision($revision);
+        return $this->getSynchronizations()->getSynchronization($revision);
     }
 
     /**
