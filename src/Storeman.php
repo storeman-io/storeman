@@ -122,13 +122,8 @@ class Storeman
     public function restore(int $toRevision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
         $vault = $fromVault ? $this->getVault($fromVault) : $this->getAnyVault();
-        $lockAdapter = $vault->getLockAdapter();
-
-        $lockAdapter->acquireLock(Vault::LOCK_SYNC);
 
         $operationResultList = $vault->restore($toRevision, $progressListener);
-
-        $lockAdapter->releaseLock(Vault::LOCK_SYNC);
 
         return $operationResultList;
     }
@@ -136,13 +131,8 @@ class Storeman
     public function dump(string $targetPath, int $revision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
         $vault = $fromVault ? $this->getVault($fromVault) : $this->getAnyVault();
-        $lockAdapter = $vault->getLockAdapter();
-
-        $lockAdapter->acquireLock(Vault::LOCK_SYNC);
 
         $operationResultList = $vault->dump($targetPath, $revision, $progressListener);
-
-        $lockAdapter->releaseLock(Vault::LOCK_SYNC);
 
         return $operationResultList;
     }
