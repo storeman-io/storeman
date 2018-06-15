@@ -23,7 +23,7 @@ class SynchronizeCommand extends AbstractCommand
 
     protected function executeConfigured(InputInterface $input, OutputInterface $output, Storeman $storeman): int
     {
-        $vaultTitles = $input->getOption('vaults') ? explode(',', $input->getOption('vaults')) : [];
+        $vaultTitles = $input->getOption('vaults') ? explode(',', $input->getOption('vaults')) : null;
         $preferLocal = $input->getOption('prefer-local');
         $preferRemote = $input->getOption('prefer-remote');
 

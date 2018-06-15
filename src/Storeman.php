@@ -74,6 +74,20 @@ class Storeman
     }
 
     /**
+     * Returns a subset of the configured vaults identified by the given set of titles.
+     *
+     * @param array $titles
+     * @return Vault[]
+     */
+    public function getVaultsByTitle(array $titles): array
+    {
+        return array_filter($this->getVaults(), function(Vault $vault) use ($titles) {
+
+            return in_array($vault->getVaultConfiguration()->getTitle(), $titles);
+        });
+    }
+
+    /**
      * Returns all those vaults that have a given revision.
      *
      * @param int $revision
@@ -87,48 +101,21 @@ class Storeman
         });
     }
 
-    /**
-     * @todo: subdivide
-     */
-    public function synchronize(array $vaultTitles = [], SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
+    public function synchronize(array $vaultTitles = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
-        $lastRevision = 0;
+        $vaults = ($vaultTitles === null) ? $this->getVaults() : $this->getVaultsByTitle($vaultTitles);
 
-        // fallback to all vaults
-        $vaultTitles = $vaultTitles ?: array_map(function(Vault $vault) { return $vault->getVaultConfiguration()->getTitle(); }, $this->getVaults());
+        $this->acquireLocks($vaults, Vault::LOCK_SYNC);
 
-        // acquire all locks and retrieve highest existing revision
-        foreach ($this->getVaults() as $vault)
-        {
-            // lock is only required for vaults that we want to synchronize with
-            if (in_array($vault->getVaultConfiguration()->getTitle(), $vaultTitles))
-            {
-                $vault->getLockAdapter()->acquireLock(Vault::LOCK_SYNC);
-            }
+        $newRevision = ($this->getLastRevision() ?: 0) + 1;
 
-            // highest revision should be build across all vaults
-            $synchronizationList = $vault->loadSynchronizationList();
-            if ($synchronizationList->getLastSynchronization())
-            {
-                $lastRevision = max($lastRevision, $synchronizationList->getLastSynchronization()->getRevision());
-            }
-        }
-
-        // new revision is one plus the highest existing revision across all vaults
-        $newRevision = $lastRevision + 1;
-
-        // actual synchronization
         $return = new OperationResultList();
-        foreach ($vaultTitles as $vaultTitle)
+        foreach ($vaults as $vault)
         {
-            $return->append($this->getVault($vaultTitle)->synchronize($newRevision, $progressListener));
+            $return->append($vault->synchronize($newRevision, $progressListener));
         }
 
-        // release lock at the last moment to further reduce change of deadlocks
-        foreach ($vaultTitles as $vaultTitle)
-        {
-            $this->getVault($vaultTitle)->getLockAdapter()->releaseLock(Vault::LOCK_SYNC);
-        }
+        $this->releaseLocks($vaults, Vault::LOCK_SYNC);
 
         return $return;
     }
@@ -208,7 +195,37 @@ class Storeman
         return $return;
     }
 
-    protected function getVaultForDownload(?int $revision, ?string $vaultTitle): Vault
+    /**
+     * @param Vault[] $vaults
+     * @param string $lockName
+     */
+    protected function acquireLocks(array $vaults, string $lockName)
+    {
+        foreach ($vaults as $vault)
+        {
+            if (!$vault->getLockAdapter()->acquireLock($lockName))
+            {
+                throw new Exception("Failed to acquire lock for vault {$vault->getVaultConfiguration()->getTitle()}");
+            }
+        }
+    }
+
+    /**
+     * @param Vault[] $vaults
+     * @param string $lockName
+     */
+    protected function releaseLocks(array $vaults, string $lockName)
+    {
+        foreach ($vaults as $vault)
+        {
+            if (!$vault->getLockAdapter()->releaseLock($lockName))
+            {
+                throw new Exception("Failed to release lock for vault {$vault->getVaultConfiguration()->getTitle()}");
+            }
+        }
+    }
+
+    protected function getVaultForDownload(?int $revision, ?string $vaultTitle): ?Vault
     {
         $revision = $revision ?: $this->getLastRevision();
         if ($revision === null)

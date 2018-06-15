@@ -40,6 +40,7 @@ class RestoreCommandTest extends AbstractCommandTest
         $this->assertEquals(0, $returnCode);
 
         $testVault->fwrite('test.ext', 'Replaced');
+        $testVault->mkdir('test.dir');
 
         $tester = new CommandTester(new RestoreCommand());
         $returnCode = $tester->execute([]);
@@ -47,6 +48,7 @@ class RestoreCommandTest extends AbstractCommandTest
         $this->assertEquals(0, $returnCode);
 
         $this->assertEquals($originalContent, file_get_contents($testVault->getBasePath() . 'test.ext'));
+        $this->assertFalse(is_dir($testVault->getBasePath() . 'test.dir'));
     }
 
     protected function getCommand(): Command
