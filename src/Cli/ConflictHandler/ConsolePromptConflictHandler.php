@@ -32,14 +32,21 @@ TXT;
 
         $this->consoleStyle->writeln($text);
 
-        $choice = $this->consoleStyle->choice('Would you like to use the local (l) or the remote (r) version?', ['l', 'r']);
-
-        switch ($choice)
+        $return = null;
+        do
         {
-            case 'l': return ConflictHandlerInterface::USE_LOCAL;
-            case 'r': return ConflictHandlerInterface::USE_REMOTE;
+            $choice = $this->consoleStyle->choice('Would you like to use the local (l) or the remote (r) version?', ['l', 'r']);
 
-            default: throw new \RuntimeException("Invalid choice returned: {$choice}");
+            switch ($choice)
+            {
+                case 'l': $return = ConflictHandlerInterface::USE_LOCAL; break 2;
+                case 'r': $return = ConflictHandlerInterface::USE_REMOTE; break 2;
+            }
+
+            $this->consoleStyle->warning("Invalid choice");
         }
+        while(true);
+
+        return $return;
     }
 }
