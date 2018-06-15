@@ -64,7 +64,14 @@ class VaultConfiguration implements ArraySerializableInterface
     protected $operationListBuilder = 'standard';
 
     /**
-     * Map with additional storageAdapter- or lockAdapter-specific settings.
+     * The vault priority is used for cases where some data has to be read from a vault and a decision has to be made which vault to use.
+     *
+     * @var float
+     */
+    protected $priority = 0;
+
+    /**
+     * Map with additional component-specific settings.
      *
      * @var array
      */
@@ -161,6 +168,18 @@ class VaultConfiguration implements ArraySerializableInterface
     public function setOperationListBuilder(string $operationListBuilder): VaultConfiguration
     {
         $this->operationListBuilder = $operationListBuilder;
+
+        return $this;
+    }
+
+    public function getPriority(): int
+    {
+        return $this->priority;
+    }
+
+    public function setPriority(int $priority): VaultConfiguration
+    {
+        $this->priority = $priority;
 
         return $this;
     }

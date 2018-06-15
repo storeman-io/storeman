@@ -101,6 +101,30 @@ class Storeman
         });
     }
 
+    /**
+     * Returns the vault with the highest priority.
+     *
+     * @param Vault[] $vaults Vaults to consider. Defaults to all configured vaults.
+     * @return Vault
+     */
+    public function getPrioritizedVault(array $vaults = null): ?Vault
+    {
+        $vaults = ($vaults === null) ? $this->getVaults() : $vaults;
+
+        /** @var Vault $return */
+        $return = null;
+
+        foreach ($vaults as $vault)
+        {
+            if ($return === null || $return->getVaultConfiguration()->getPriority() < $vault->getVaultConfiguration()->getPriority())
+            {
+                $return = $vault;
+            }
+        }
+
+        return $return;
+    }
+
     public function synchronize(array $vaultTitles = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
         $vaults = ($vaultTitles === null) ? $this->getVaults() : $this->getVaultsByTitle($vaultTitles);
@@ -240,7 +264,7 @@ class Storeman
         else
         {
             $vaults = $this->getVaultsHavingRevision($revision);
-            $vault = reset($vaults) ?: null;
+            $vault = $this->getPrioritizedVault($vaults);
         }
 
         if ($vault === null)

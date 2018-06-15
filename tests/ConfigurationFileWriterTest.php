@@ -26,6 +26,7 @@ class ConfigurationFileWriterTest extends TestCase
         $vaultConfiguration->setConflictHandler('myConflictHandler');
         $vaultConfiguration->setIndexMerger('myIndexMerger');
         $vaultConfiguration->setOperationListBuilder('myOperationListBuilder');
+        $vaultConfiguration->setPriority(4231);
         $vaultConfiguration->setSettings([
             'foo' => 'bar',
             'x' => 123
@@ -64,5 +65,6 @@ class ConfigurationFileWriterTest extends TestCase
         $this->assertEquals($vaultConfiguration->getIndexMerger(), $vault['indexMerger']);
         $this->assertEquals($vaultConfiguration->getOperationListBuilder(), $vault['operationListBuilder']);
         $this->assertEquals($vaultConfiguration->getSettings(), $vault['settings']);
+        $this->assertEquals($vaultConfiguration->getPriority(), $vault['priority']);
     }
 }
