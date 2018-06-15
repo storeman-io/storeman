@@ -8,6 +8,7 @@ use Storeman\Cli\ConsoleStyle;
 use Storeman\Configuration;
 use Storeman\Container;
 use Storeman\Storeman;
+use Storeman\Vault;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -41,7 +42,9 @@ abstract class AbstractCommand extends Command
     {
         parent::configure();
 
-        $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Path to configuration file. Defaults to "./storeman.json".', './storeman.json');
+        $defaultConfigFilePath = sprintf('./%s', Vault::CONFIG_FILE_NAME);
+
+        $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, "Path to configuration file. Defaults to \"{$defaultConfigFilePath}\".", $defaultConfigFilePath);
     }
 
     /**

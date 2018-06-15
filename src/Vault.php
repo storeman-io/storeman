@@ -18,6 +18,7 @@ use Storeman\Operation\OperationInterface;
 
 class Vault
 {
+    public const CONFIG_FILE_NAME = 'storeman.json';
     public const METADATA_DIRECTORY_NAME = '.storeman';
     public const LOCK_SYNC = 'sync';
 
@@ -313,7 +314,7 @@ class Vault
         $finder->ignoreDotFiles(false);
         $finder->ignoreVCS(true);
         $finder->exclude(static::METADATA_DIRECTORY_NAME);
-        $finder->notPath('storeman.json');
+        $finder->notPath(static::CONFIG_FILE_NAME);
 
         foreach ($this->storeman->getConfiguration()->getExclude() as $path)
         {
