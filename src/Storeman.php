@@ -2,7 +2,7 @@
 
 namespace Storeman;
 
-use Storeman\Exception\ConfigurationException;
+use Storeman\Exception\Exception;
 use Storeman\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 
 /**
@@ -74,6 +74,20 @@ class Storeman
     }
 
     /**
+     * Returns all those vaults that have a given revision.
+     *
+     * @param int $revision
+     * @return Vault[]
+     */
+    public function getVaultsHavingRevision(int $revision): array
+    {
+        return array_filter($this->getVaults(), function(Vault $vault) use ($revision) {
+
+            return $vault->getVaultLayout()->getSynchronizations()->getSynchronization($revision) !== null;
+        });
+    }
+
+    /**
      * @todo: subdivide
      */
     public function synchronize(array $vaultTitles = [], SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
@@ -121,7 +135,12 @@ class Storeman
 
     public function restore(int $toRevision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
-        $vault = $fromVault ? $this->getVault($fromVault) : $this->getAnyVault();
+        $vault = $this->getVaultForDownload($toRevision, $fromVault);
+
+        if ($vault === null)
+        {
+            return new OperationResultList();
+        }
 
         $operationResultList = $vault->restore($toRevision, $progressListener);
 
@@ -130,11 +149,36 @@ class Storeman
 
     public function dump(string $targetPath, int $revision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
-        $vault = $fromVault ? $this->getVault($fromVault) : $this->getAnyVault();
+        $vault = $this->getVaultForDownload($revision, $fromVault);
+
+        if ($vault === null)
+        {
+            return new OperationResultList();
+        }
 
         $operationResultList = $vault->dump($targetPath, $revision, $progressListener);
 
         return $operationResultList;
+    }
+
+    /**
+     * Returns the highest revision number across all vaults.
+     *
+     * @return int
+     */
+    public function getLastRevision(): ?int
+    {
+        $max = 0;
+
+        foreach ($this->getVaults() as $vault)
+        {
+            if ($lastSynchronization = $vault->getVaultLayout()->getLastSynchronization())
+            {
+                $max = max($max, $lastSynchronization->getRevision());
+            }
+        }
+
+        return $max ?: null;
     }
 
     /**
@@ -164,18 +208,29 @@ class Storeman
         return $return;
     }
 
-    /**
-     * @todo: any vault might be false as we need to use the vault with the highest revision
-     */
-    protected function getAnyVault(): Vault
+    protected function getVaultForDownload(?int $revision, ?string $vaultTitle): Vault
     {
-        $vaults = array_values($this->getVaults());
-
-        if (empty($vaults))
+        $revision = $revision ?: $this->getLastRevision();
+        if ($revision === null)
         {
-            throw new ConfigurationException('No vaults defined.');
+            return null;
         }
 
-        return $vaults[0];
+        if ($vaultTitle)
+        {
+            $vault = $this->getVault($vaultTitle);
+        }
+        else
+        {
+            $vaults = $this->getVaultsHavingRevision($revision);
+            $vault = reset($vaults) ?: null;
+        }
+
+        if ($vault === null)
+        {
+            throw new Exception("Cannot find requested revision #{$revision} in any configured vault.");
+        }
+
+        return $vault;
     }
 }
