@@ -21,6 +21,7 @@ class InitCommandTest extends AbstractCommandTest
             '', // local path
             get_current_user(), // identity
             'exclud.ed', '', // excluded paths
+            'standard', // index builder
 
             // vaults
             'local', // storage driver
@@ -49,6 +50,7 @@ class InitCommandTest extends AbstractCommandTest
 
         $this->assertEquals(get_current_user(), $config->getIdentity());
         $this->assertEquals(['exclud.ed'], $config->getExclude());
+        $this->assertEquals('standard', $config->getIndexBuilder());
 
         $this->assertCount(1, $config->getVaults());
 

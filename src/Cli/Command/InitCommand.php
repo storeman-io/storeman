@@ -21,6 +21,7 @@ class InitCommand extends AbstractCommand
         $this->addOption('path', null, InputOption::VALUE_REQUIRED, 'Path to use as local path for the archive.');
         $this->addOption('identity', 'i', InputOption::VALUE_REQUIRED, 'Identity to be used.');
         $this->addOption('exclude', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Relative path exclusion(s).');
+        $this->addOption('indexBuilder', null, InputOption::VALUE_REQUIRED, 'Identifier for the indexBuilder to use.');
         $this->addOption('writeDefaults', null, InputOption::VALUE_NONE, 'Forces writing of default values which are omitted as a default.');
     }
 
@@ -48,6 +49,7 @@ class InitCommand extends AbstractCommand
         $configuration->setPath($input->getOption('path') ?: $this->consoleStyle->ask('Local path', '.'));
         $configuration->setIdentity($input->getOption('identity') ?: $this->consoleStyle->ask('Identity', get_current_user()));
         $configuration->setExclude($input->getOption('exclude') ?: $this->consoleStyle->askMultiple('Excluded path(s)'));
+        $configuration->setIndexBuilder($input->getOption('indexBuilder') ?: $this->consoleStyle->choice('Index builder', $container->getIndexBuilderNames(), $configuration->getIndexBuilder()));
 
         // at least one storage driver has to be set up
         do
