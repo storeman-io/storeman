@@ -165,7 +165,7 @@ class IndexObject
 
         if (!($stat = @lstat($absolutePath)))
         {
-            throw new Exception();
+            throw new Exception("lstat() failed for {$absolutePath}");
         }
 
         $object = new static;
