@@ -121,6 +121,50 @@ class IndexObject
         return $this;
     }
 
+    /**
+     * Equality check with all attributes.
+     *
+     * @param IndexObject $other
+     * @return bool
+     */
+    public function equals(?IndexObject $other): bool
+    {
+        if (!$this->equalsOnDisk($other))
+        {
+            return false;
+        }
+
+        $equals = true;
+        $equals = $equals && ($this->blobId === $other->blobId);
+
+        return $equals;
+    }
+
+    /**
+     * Comparison without blobId.
+     *
+     * @param IndexObject $other
+     * @return bool
+     */
+    public function equalsOnDisk(?IndexObject $other): bool
+    {
+        if ($other === null)
+        {
+            return false;
+        }
+
+        $equal = true;
+        $equal = $equal && ($this->relativePath === $other->relativePath);
+        $equal = $equal && ($this->type === $other->type);
+        $equal = $equal && ($this->mtime === $other->mtime);
+        $equal = $equal && ($this->ctime === $other->ctime);
+        $equal = $equal && ($this->mode === $other->mode);
+        $equal = $equal && ($this->size === $other->size);
+        $equal = $equal && ($this->linkTarget === $other->linkTarget);
+
+        return $equal;
+    }
+
     public function toScalarArray(): array
     {
         return [
