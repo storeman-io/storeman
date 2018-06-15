@@ -8,6 +8,8 @@ use Storeman\ConflictHandler\ConflictHandlerInterface;
 use Storeman\ConflictHandler\PanickingConflictHandler;
 use Storeman\ConflictHandler\PreferLocalConflictHandler;
 use Storeman\ConflictHandler\PreferRemoteConflictHandler;
+use Storeman\IndexBuilder\IndexBuilderInterface;
+use Storeman\IndexBuilder\StandardIndexBuilder;
 use Storeman\IndexMerger\IndexMergerInterface;
 use Storeman\IndexMerger\StandardIndexMerger;
 use Storeman\LockAdapter\DummyLockAdapter;
@@ -28,6 +30,7 @@ use Storeman\VaultLayout\VaultLayoutInterface;
 final class Container implements ContainerInterface
 {
     protected const PREFIX_CONFLICT_HANDLER = 'conflictHandler.';
+    protected const PREFIX_INDEX_BUILDER = 'indexBuilder.';
     protected const PREFIX_INDEX_MERGER = 'indexMerger.';
     protected const PREFIX_LOCK_ADAPTER = 'lockAdapter.';
     protected const PREFIX_OPERATION_LIST_BUILDER = 'operationListBuilder.';
@@ -51,6 +54,9 @@ final class Container implements ContainerInterface
 
         $this->delegate->add('vaults', new VaultContainer(), true);
         $this->delegate->add('vaultConfiguration', function(Vault $vault) { return $vault->getVaultConfiguration(); })->withArgument('vault');
+
+        $this->registerServiceFactory('indexBuilder');
+        $this->addIndexBuilder('standard', StandardIndexBuilder::class, true);
 
         $this->registerVaultServiceFactory('conflictHandler');
         $this->addConflictHandler('panicking', PanickingConflictHandler::class, true);
@@ -183,6 +189,22 @@ final class Container implements ContainerInterface
     }
 
 
+    public function getIndexBuilder(string $name): IndexBuilderInterface
+    {
+        return $this->delegate->get($this->getIndexBuilderServiceName($name));
+    }
+
+    public function addIndexBuilder(string $name, $concrete, bool $shared = false): DefinitionInterface
+    {
+        return $this->delegate->add($this->getIndexBuilderServiceName($name), $concrete, $shared);
+    }
+
+    public function getIndexBuilderNames(): array
+    {
+        return $this->getServiceNamesWithPrefix(static::PREFIX_INDEX_BUILDER);
+    }
+
+
     public function getLockAdapter(string $name): LockAdapterInterface
     {
         return $this->delegate->get($this->getLockAdapterServiceName($name));
@@ -252,6 +274,11 @@ final class Container implements ContainerInterface
         return static::PREFIX_CONFLICT_HANDLER . $name;
     }
 
+    protected function getIndexBuilderServiceName(string $name): string
+    {
+        return static::PREFIX_INDEX_BUILDER . $name;
+    }
+
     protected function getIndexMergerServiceName(string $name): string
     {
         return static::PREFIX_INDEX_MERGER . $name;
@@ -275,6 +302,29 @@ final class Container implements ContainerInterface
     protected function getVaultLayoutServiceName(string $name): string
     {
         return static::PREFIX_VAULT_LAYOUT . $name;
+    }
+
+    /**
+     * Registers a factory for a type of service.
+     *
+     * @param string $type
+     * @param string $configurationKey
+     */
+    protected function registerServiceFactory(string $type, string $configurationKey = null): void
+    {
+        $this->delegate->add($type, function(Configuration $configuration) use ($configurationKey, $type) {
+
+            $array = $configuration->getArrayCopy();
+            $configurationKey = $configurationKey ?: $type;
+
+            if (!array_key_exists($configurationKey, $array))
+            {
+                throw new \LogicException("Unknown config key: {$configuration}");
+            }
+
+            return $this->delegate->get("{$type}.{$array[$configurationKey]}");
+
+        })->withArgument('configuration');
     }
 
     /**

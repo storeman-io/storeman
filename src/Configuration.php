@@ -34,6 +34,13 @@ class Configuration implements ArraySerializableInterface
     protected $identity = 'unknown';
 
     /**
+     * Identifier of the index builder to use.
+     *
+     * @var string
+     */
+    protected $indexBuilder = 'standard';
+
+    /**
      * Array of vault configurations.
      *
      * @var VaultConfiguration[]
@@ -113,6 +120,25 @@ class Configuration implements ArraySerializableInterface
     public function setIdentity(string $identity): Configuration
     {
         $this->identity = $identity;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIndexBuilder(): string
+    {
+        return $this->indexBuilder;
+    }
+
+    /**
+     * @param string $indexBuilder
+     * @return $this
+     */
+    public function setIndexBuilder(string $indexBuilder): Configuration
+    {
+        $this->indexBuilder = $indexBuilder;
 
         return $this;
     }

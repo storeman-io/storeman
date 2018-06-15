@@ -3,6 +3,7 @@
 namespace Storeman;
 
 use Storeman\ConflictHandler\ConflictHandlerInterface;
+use Storeman\IndexBuilder\IndexBuilderInterface;
 use Storeman\Operation\WriteSynchronizationOperation;
 use Storeman\StorageAdapter\StorageAdapterInterface;
 use Storeman\Exception\Exception;
@@ -12,8 +13,6 @@ use Storeman\OperationListBuilder\OperationListBuilderInterface;
 use Storeman\SynchronizationProgressListener\DummySynchronizationProgressListener;
 use Storeman\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 use Storeman\VaultLayout\VaultLayoutInterface;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
 use Storeman\Operation\OperationInterface;
 
 class Vault
@@ -47,6 +46,11 @@ class Vault
      * @var LockAdapterInterface
      */
     protected $lockAdapter;
+
+    /**
+     * @var IndexBuilderInterface
+     */
+    protected $indexBuilder;
 
     /**
      * @var IndexMergerInterface
@@ -89,6 +93,11 @@ class Vault
         return $this->lockAdapter ?: ($this->lockAdapter = $this->getContainer()->get('lockAdapter'));
     }
 
+    public function getIndexBuilder(): IndexBuilderInterface
+    {
+        return $this->indexBuilder ?: ($this->indexBuilder = $this->getContainer()->get('indexBuilder'));
+    }
+
     public function getIndexMerger(): IndexMergerInterface
     {
         return $this->indexMerger ?: ($this->indexMerger = $this->getContainer()->get('indexMerger'));
@@ -111,7 +120,10 @@ class Vault
      */
     public function buildLocalIndex(): Index
     {
-        return $this->doBuildLocalIndex();
+        return $this->getIndexBuilder()->buildIndexFromPath(
+            $this->vaultConfiguration->getConfiguration()->getPath(),
+            $this->getLocalIndexExclusionPatterns()
+        );
     }
 
     /**
@@ -305,43 +317,6 @@ class Vault
         return $this->doRestore($revision, $progressListener, true, $targetPath);
     }
 
-    protected function doBuildLocalIndex(string $path = null): Index
-    {
-        // todo: prevent rebuilding on every vault within storeman instance
-
-        $finder = new Finder();
-        $finder->in($path ?: $this->storeman->getConfiguration()->getPath());
-        $finder->ignoreDotFiles(false);
-        $finder->ignoreVCS(true);
-        $finder->exclude(static::METADATA_DIRECTORY_NAME);
-        $finder->notPath(static::CONFIG_FILE_NAME);
-
-        foreach ($this->storeman->getConfiguration()->getExclude() as $path)
-        {
-            $finder->notPath($path);
-        }
-
-        $index = new Index();
-
-        foreach ($finder->directories() as $fileInfo)
-        {
-            /** @var SplFileInfo $fileInfo */
-
-            $index->addObject(IndexObject::fromPath($this->storeman->getConfiguration()->getPath(), $fileInfo->getRelativePathname()));
-        }
-
-        foreach ($finder->files() as $fileInfo)
-        {
-            /** @var SplFileInfo $fileInfo */
-
-            $index->addObject(IndexObject::fromPath($this->storeman->getConfiguration()->getPath(), $fileInfo->getRelativePathname()));
-        }
-
-        // todo: add symlinks
-
-        return $index;
-    }
-
     protected function doBuildMergedIndex(Index $localIndex = null, Index $lastLocalIndex = null, Index $remoteIndex = null): Index
     {
         $localIndex = $localIndex ?: $this->buildLocalIndex();
@@ -390,7 +365,7 @@ class Vault
 
         $targetPath = $targetPath ?: $this->storeman->getConfiguration()->getPath();
 
-        $localIndex = $this->doBuildLocalIndex($targetPath);
+        $localIndex = $this->getIndexBuilder()->buildIndexFromPath($targetPath, $this->getLocalIndexExclusionPatterns());
 
         $operationList = $this->getOperationListBuilder()->buildOperationList($remoteIndex, $localIndex, $remoteIndex);
 
@@ -467,6 +442,17 @@ class Vault
     {
         // todo: use other vault identifier
         return $this->initMetadataDirectory() . sprintf('lastLocalIndex-%s', $this->vaultConfiguration->getTitle());
+    }
+
+    /**
+     * @return string[]
+     */
+    protected function getLocalIndexExclusionPatterns()
+    {
+        return array_merge($this->vaultConfiguration->getConfiguration()->getExclude(), [
+            static::CONFIG_FILE_NAME,
+            static::METADATA_DIRECTORY_NAME,
+        ]);
     }
 
     /**
