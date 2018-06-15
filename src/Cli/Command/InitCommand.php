@@ -17,7 +17,7 @@ class InitCommand extends AbstractCommand
         parent::configure();
 
         $this->setName('init');
-        $this->setDescription('Sets up a local archive copy.');
+        $this->setDescription('Sets up an archive.');
         $this->addOption('path', null, InputOption::VALUE_REQUIRED, 'Path to use as local path for the archive.');
         $this->addOption('identity', 'i', InputOption::VALUE_REQUIRED, 'Identity to be used.');
         $this->addOption('exclude', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Relative path exclusion(s).');
