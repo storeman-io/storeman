@@ -305,6 +305,8 @@ class Vault
 
     protected function doBuildLocalIndex(string $path = null): Index
     {
+        // todo: prevent rebuilding on every vault within storeman instance
+
         $finder = new Finder();
         $finder->in($path ?: $this->storeman->getConfiguration()->getPath());
         $finder->ignoreDotFiles(false);
@@ -332,6 +334,8 @@ class Vault
 
             $index->addObject(IndexObject::fromPath($this->storeman->getConfiguration()->getPath(), $fileInfo->getRelativePathname()));
         }
+
+        // todo: add symlinks
 
         return $index;
     }
@@ -458,6 +462,7 @@ class Vault
 
     protected function getLastLocalIndexFilePath(): string
     {
+        // todo: use other vault identifier
         return $this->initMetadataDirectory() . sprintf('lastLocalIndex-%s', $this->vaultConfiguration->getTitle());
     }
 

@@ -35,6 +35,7 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
             // unlink to-be-overridden local path with different type
             if ($localObject !== null && $localObject->getType() !== $mergedIndexObject->getType())
             {
+                // todo: might fail with non-empty directories
                 $operationList->addOperation(new UnlinkOperation($mergedIndexObject->getRelativePath()));
 
                 $modifiedPaths[] = $mergedIndexObject->getRelativePath();
@@ -127,6 +128,7 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
         }
 
         // set directory mtimes after all other modifications have been performed
+        // todo: test ksort for directory name characters above/below ascii value for "/"
         krsort($directoryMtimes);
         foreach ($directoryMtimes as $relativePath => $mtime)
         {

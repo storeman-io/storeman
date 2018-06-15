@@ -2,6 +2,7 @@
 # Todo
 
 - (Potential) bugs
+    - Replace usage of DIRECTORY_SEPARATOR with normalized "/"
     - Deadlock prevention
         - Ensure same locking order of vaults
         - Same lockAdapter across multiple vaults?
@@ -26,6 +27,9 @@
     - GUI
         - WebApp?
     - Inotify watcher
+    - Add version string during phar build
+    - Check php (module) dependencies on runtime and offer installation help
+    - Synchronization dry-run
 - Encryption
     - https://cryptomator.org/architecture/
     - Encryption/decryption as stream filter
@@ -39,4 +43,8 @@
     - Selective compression
         - Most media files are already compressed
 - Code quality
-    - Versionable (across archivr versions) Local/Remote index format
+    - Test (recursive) symlink support
+    - Offer plugin/module integration
+    - Versionable (across storeman versions) Local/Remote index format
+    - Final classes
+    - Tests for phar compiler
