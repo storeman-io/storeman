@@ -4,7 +4,7 @@ namespace Storeman\Cli;
 
 class Application extends \Symfony\Component\Console\Application
 {
-    const LOGO =  <<<TXT
+    public const LOGO =  <<<TXT
    ___           __   _      ___ 
   / _ | ________/ /  (_)  __/ _ \
  / __ |/ __/ __/ _ \/ / |/ / , _/
@@ -12,6 +12,7 @@ class Application extends \Symfony\Component\Console\Application
 
 
 TXT;
+
 
     public function getHelp()
     {

@@ -18,8 +18,9 @@ use Storeman\Operation\OperationInterface;
 
 class Vault
 {
-    const METADATA_DIRECTORY_NAME = '.storeman';
-    const LOCK_SYNC = 'sync';
+    public const METADATA_DIRECTORY_NAME = '.storeman';
+    public const LOCK_SYNC = 'sync';
+
 
     /**
      * @var Storeman

@@ -9,9 +9,10 @@ use Storeman\Exception\Exception;
  */
 class IndexObject
 {
-    const TYPE_DIR = 1;
-    const TYPE_FILE = 2;
-    const TYPE_LINK = 3;
+    public const TYPE_DIR = 1;
+    public const TYPE_FILE = 2;
+    public const TYPE_LINK = 3;
+
 
     /**
      * @var string

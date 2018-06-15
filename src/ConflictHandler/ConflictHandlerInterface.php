@@ -6,8 +6,9 @@ use Storeman\IndexObject;
 
 interface ConflictHandlerInterface
 {
-    const USE_LOCAL = 1;
-    const USE_REMOTE = 2;
+    public const USE_LOCAL = 1;
+    public const USE_REMOTE = 2;
+
 
     /**
      * Is called by the index merger if a conflict is occurred.
