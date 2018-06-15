@@ -366,16 +366,17 @@ class Vault
             throw new Exception('Failed to acquire lock.');
         }
 
+        // fall back to last revision
         if ($revision === null)
         {
-            $synchronizationList = $this->loadSynchronizationList();
+            $lastSynchronization = $this->getVaultLayout()->getLastSynchronization();
 
-            if (!$synchronizationList->getLastSynchronization())
+            if (!$lastSynchronization)
             {
                 throw new Exception('No revision to restore from.');
             }
 
-            $revision = $synchronizationList->getLastSynchronization()->getRevision();
+            $revision = $lastSynchronization->getRevision();
         }
 
         $remoteIndex = $this->loadRemoteIndex($revision);
