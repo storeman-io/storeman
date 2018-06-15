@@ -416,7 +416,7 @@ class Vault
 
             if (fputcsv($stream, $object->toScalarArray()) === false)
             {
-                throw new Exception();
+                throw new Exception("Writing to {$this->getLastLocalIndexFilePath()} failed");
             }
         }
 
@@ -431,7 +431,7 @@ class Vault
         {
             if (!mkdir($path))
             {
-                throw new Exception();
+                throw new Exception("mkdir() failed for {$path}");
             }
         }
 
