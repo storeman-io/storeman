@@ -22,6 +22,7 @@ class InfoCommandTest extends AbstractCommandTest
                 'a/deep/path'
             ],
             'identity' => 'My Identity',
+            'indexBuilder' => 'standard',
             'vaults' => [
                 [
                     'title' => 'Some Vault Title',
@@ -54,6 +55,7 @@ class InfoCommandTest extends AbstractCommandTest
         $this->assertEquals(0, $returnCode);
         $this->assertContains(rtrim($testVault->getBasePath(), DIRECTORY_SEPARATOR), $output);
         $this->assertContains($config['identity'], $output);
+        $this->assertContains($config['indexBuilder'], $output);
 
         foreach ($config['exclude'] as $excludedPath)
         {

@@ -40,6 +40,7 @@ class InfoCommand extends AbstractCommand
         $table->addRow(['Base path:', sprintf('<info>%s</info>', $config->getPath())]);
         $table->addRow(['Excluded:', implode(',', $config->getExclude()) ?: '-']);
         $table->addRow(['Identity:', $config->getIdentity()]);
+        $table->addRow(['Index builder:', $config->getIndexBuilder()]);
 
         foreach (array_values($config->getVaults()) as $index => $vaultConfiguration)
         {
