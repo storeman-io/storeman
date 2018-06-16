@@ -48,7 +48,7 @@ class SynchronizationList implements \Countable, \IteratorAggregate
      */
     public function getLastSynchronization(): ?Synchronization
     {
-        if ($this->synchronizations)
+        if (!empty($this->synchronizations))
         {
             return $this->synchronizations[max(array_keys($this->synchronizations))];
         }

@@ -66,7 +66,7 @@ class VaultConfiguration implements ArraySerializableInterface
     /**
      * The vault priority is used for cases where some data has to be read from a vault and a decision has to be made which vault to use.
      *
-     * @var float
+     * @var int
      */
     protected $priority = 0;
 
