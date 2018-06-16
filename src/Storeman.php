@@ -21,11 +21,6 @@ class Storeman
         $this->container->injectStoreman($this);
     }
 
-    public function getConfiguration(): Configuration
-    {
-        return $this->container->get('configuration');
-    }
-
     /**
      * Returns the DI container of this storeman instance.
      * Some service names resolve to different implementations depending on the current vault which can be set as a context.
@@ -40,94 +35,29 @@ class Storeman
     }
 
     /**
-     * Returns a specific vault by title.
+     * Returns the configuration.
      *
-     * @param string $vaultTitle
-     * @return Vault
+     * @return Configuration
      */
-    public function getVault(string $vaultTitle): Vault
+    public function getConfiguration(): Configuration
     {
-        $vaults = $this->container->getVaults();
-
-        if (!$vaults->has($vaultTitle))
-        {
-            $vaultConfiguration = $this->getConfiguration()->getVault($vaultTitle);
-
-            $vaults->register(new Vault($this, $vaultConfiguration));
-        }
-
-        return $vaults->get($vaultTitle);
+        return $this->container->get('configuration');
     }
 
     /**
-     * Returns all configured vaults.
+     * Returns a container of the configured vaults.
      *
-     * @return Vault[]
+     * @return VaultContainer
      */
-    public function getVaults(): array
+    public function getVaultContainer(): VaultContainer
     {
-        return array_values(array_map(function(VaultConfiguration $vaultConfiguration) {
-
-            return $this->getVault($vaultConfiguration->getTitle());
-
-        }, $this->getConfiguration()->getVaults()));
-    }
-
-    /**
-     * Returns a subset of the configured vaults identified by the given set of titles.
-     *
-     * @param array $titles
-     * @return Vault[]
-     */
-    public function getVaultsByTitle(array $titles): array
-    {
-        return array_filter($this->getVaults(), function(Vault $vault) use ($titles) {
-
-            return in_array($vault->getVaultConfiguration()->getTitle(), $titles);
-        });
-    }
-
-    /**
-     * Returns all those vaults that have a given revision.
-     *
-     * @param int $revision
-     * @return Vault[]
-     */
-    public function getVaultsHavingRevision(int $revision): array
-    {
-        return array_filter($this->getVaults(), function(Vault $vault) use ($revision) {
-
-            return $vault->getVaultLayout()->getSynchronizations()->getSynchronization($revision) !== null;
-        });
-    }
-
-    /**
-     * Returns the vault with the highest priority.
-     *
-     * @param Vault[] $vaults Vaults to consider. Defaults to all configured vaults.
-     * @return Vault
-     */
-    public function getPrioritizedVault(array $vaults = null): ?Vault
-    {
-        $vaults = ($vaults === null) ? $this->getVaults() : $vaults;
-
-        /** @var Vault $return */
-        $return = null;
-
-        foreach ($vaults as $vault)
-        {
-            if ($return === null || $return->getVaultConfiguration()->getPriority() < $vault->getVaultConfiguration()->getPriority())
-            {
-                $return = $vault;
-            }
-        }
-
-        return $return;
+        return $this->container->getVaultContainer();
     }
 
     public function synchronize(array $vaultTitles = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
-        $vaults = ($vaultTitles === null) ? $this->getVaults() : $this->getVaultsByTitle($vaultTitles);
+        /** @var Vault[] $vaults */
+        $vaults = ($vaultTitles === null) ? $this->getVaultContainer() : $this->getVaultContainer()->getVaultsByTitles($vaultTitles);
 
         $this->acquireLocks($vaults, Vault::LOCK_SYNC);
 
@@ -181,8 +111,10 @@ class Storeman
     {
         $max = 0;
 
-        foreach ($this->getVaults() as $vault)
+        foreach ($this->getVaultContainer() as $vault)
         {
+            /** @var Vault $vault */
+
             if ($lastSynchronization = $vault->getVaultLayout()->getLastSynchronization())
             {
                 $max = max($max, $lastSynchronization->getRevision());
@@ -201,8 +133,10 @@ class Storeman
     {
         $return = [];
 
-        foreach ($this->getVaults() as $vault)
+        foreach ($this->getVaultContainer() as $vault)
         {
+            /** @var Vault $vault */
+
             $vaultConfig = $vault->getVaultConfiguration();
             $list = $vault->loadSynchronizationList();
 
@@ -223,7 +157,7 @@ class Storeman
      * @param Vault[] $vaults
      * @param string $lockName
      */
-    protected function acquireLocks(array $vaults, string $lockName)
+    protected function acquireLocks(\Traversable $vaults, string $lockName)
     {
         foreach ($vaults as $vault)
         {
@@ -238,7 +172,7 @@ class Storeman
      * @param Vault[] $vaults
      * @param string $lockName
      */
-    protected function releaseLocks(array $vaults, string $lockName)
+    protected function releaseLocks(\Traversable $vaults, string $lockName)
     {
         foreach ($vaults as $vault)
         {
@@ -257,14 +191,16 @@ class Storeman
             return null;
         }
 
+        $vaultContainer = $this->getVaultContainer();
+
         if ($vaultTitle)
         {
-            $vault = $this->getVault($vaultTitle);
+            $vault = $vaultContainer->getVaultByTitle($vaultTitle);
         }
         else
         {
-            $vaults = $this->getVaultsHavingRevision($revision);
-            $vault = $this->getPrioritizedVault($vaults);
+            $vaults = $vaultContainer->getVaultsHavingRevision($revision);
+            $vault = $vaultContainer->getPrioritizedVault($vaults);
         }
 
         if ($vault === null)

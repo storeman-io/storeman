@@ -24,8 +24,8 @@ class StoremanTest extends TestCase
 
         $storeman = new Storeman((new Container())->injectConfiguration($config));
 
-        $this->assertCount(2, $storeman->getVaults());
-        $this->assertCount(2, $storeman->getVaultsByTitle(['First', 'Second']));
+        $this->assertCount(2, $storeman->getVaultContainer());
+        $this->assertCount(2, $storeman->getVaultContainer()->getVaultsByTitles(['First', 'Second']));
         $this->assertEmpty($storeman->buildSynchronizationHistory());
 
         $operationResultList = $storeman->synchronize();

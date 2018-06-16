@@ -42,11 +42,12 @@ class InfoCommand extends AbstractCommand
         $table->addRow(['Identity:', $config->getIdentity()]);
         $table->addRow(['Index builder:', $config->getIndexBuilder()]);
 
-        foreach (array_values($config->getVaults()) as $index => $vaultConfiguration)
+        foreach ($storeman->getVaultContainer() as $index => $vault)
         {
-            /** @var VaultConfiguration $vaultConfiguration */
+            /** @var Vault $vault */
 
-            $vault = $storeman->getVault($vaultConfiguration->getTitle());
+            $vaultConfiguration = $vault->getVaultConfiguration();
+
             $currentLock = $vault->getLockAdapter()->getLock(Vault::LOCK_SYNC);
 
             $table->addRow([' ']); // blank line

@@ -52,7 +52,7 @@ final class Container implements ContainerInterface
     {
         $this->delegate = new InspectableContainer();
 
-        $this->delegate->add('vaults', new VaultContainer(), true);
+        $this->delegate->add('vaults', VaultContainer::class, true)->withArguments(['configuration', 'storeman']);
         $this->delegate->add('vaultConfiguration', function(Vault $vault) { return $vault->getVaultConfiguration(); })->withArgument('vault');
 
         $this->registerServiceFactory('indexBuilder');
@@ -146,7 +146,7 @@ final class Container implements ContainerInterface
         return $this->get('configuration');
     }
 
-    public function getVaults(): VaultContainer
+    public function getVaultContainer(): VaultContainer
     {
         return $this->get('vaults');
     }
