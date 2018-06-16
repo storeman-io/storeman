@@ -4,6 +4,7 @@ namespace Storeman;
 
 use League\Container\Exception\NotFoundException;
 use Psr\Container\ContainerInterface;
+use Storeman\Exception\ConfigurationException;
 
 final class VaultContainer implements ContainerInterface, \Countable, \IteratorAggregate
 {
@@ -16,10 +17,21 @@ final class VaultContainer implements ContainerInterface, \Countable, \IteratorA
     {
         foreach ($configuration->getVaults() as $vaultConfiguration)
         {
-            $this->register(new Vault($storeman, $vaultConfiguration));
+            if (array_key_exists($vaultConfiguration->getTitle(), $this->vaults))
+            {
+                throw new ConfigurationException("Duplicate vault title: {$vaultConfiguration->getTitle()}");
+            }
+
+            $this->vaults[$vaultConfiguration->getTitle()] = new Vault($storeman, $vaultConfiguration);
         }
     }
 
+    /**
+     * Returns a vault by its title.
+     *
+     * @param string $title
+     * @return Vault
+     */
     public function getVaultByTitle(string $title): ?Vault
     {
         return array_key_exists($title, $this->vaults) ? $this->vaults[$title] : null;
@@ -83,7 +95,7 @@ final class VaultContainer implements ContainerInterface, \Countable, \IteratorA
      */
     public function has($id)
     {
-        return $this->getVault($id) !== null;
+        return $this->getVaultByTitle($id) !== null;
     }
 
     /**
@@ -91,7 +103,7 @@ final class VaultContainer implements ContainerInterface, \Countable, \IteratorA
      */
     public function get($id)
     {
-        if ($vault = $this->getVault($id))
+        if ($vault = $this->getVaultByTitle($id))
         {
             return $vault;
         }
@@ -113,30 +125,5 @@ final class VaultContainer implements ContainerInterface, \Countable, \IteratorA
     public function getIterator()
     {
         return new \ArrayIterator(array_values($this->vaults));
-    }
-
-    public function register(Vault $vault): void
-    {
-        $title = $vault->getVaultConfiguration()->getTitle();
-
-        if ($this->has($title))
-        {
-            throw new \RuntimeException("There is already a vault named {$title} registered.");
-        }
-
-        $this->vaults[$title] = $vault;
-    }
-
-    protected function getVault(string $title): ?Vault
-    {
-        foreach ($this->vaults as $vault)
-        {
-            if ($vault->getVaultConfiguration()->getTitle() === $title)
-            {
-                return $vault;
-            }
-        }
-
-        return null;
     }
 }
