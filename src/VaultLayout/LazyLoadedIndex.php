@@ -7,8 +7,6 @@ use Storeman\IndexObject;
 
 class LazyLoadedIndex extends Index
 {
-    protected $pathMap = null;
-
     /**
      * @var callable
      */
@@ -16,6 +14,9 @@ class LazyLoadedIndex extends Index
 
     public function __construct(callable $indexLoader)
     {
+        parent::__construct();
+
+        $this->rootNode = null;
         $this->indexLoader = $indexLoader;
     }
 
@@ -74,7 +75,7 @@ class LazyLoadedIndex extends Index
      */
     protected function loadIndex()
     {
-        if ($this->pathMap === null)
+        if ($this->rootNode === null)
         {
             $index = call_user_func($this->indexLoader);
 
@@ -83,7 +84,7 @@ class LazyLoadedIndex extends Index
                 throw new \LogicException();
             }
 
-            $this->pathMap = $index->pathMap;
+            $this->rootNode = $index->rootNode;
         }
     }
 }

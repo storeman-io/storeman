@@ -6,14 +6,19 @@ use Storeman\Exception\Exception;
 
 /**
  * As the name suggests an index is a representation of the vault at some point in time.
- * It is implemented as a map from relative paths to object details.
+ * On iteration the objects are returned sorted by topological order.
  */
 class Index implements \Countable, \IteratorAggregate
 {
     /**
-     * @var IndexObject[]
+     * @var IndexNode
      */
-    protected $pathMap = [];
+    protected $rootNode;
+
+    public function __construct()
+    {
+        $this->rootNode = new IndexNode();
+    }
 
     /**
      * Adds the given object to the index.
@@ -24,22 +29,24 @@ class Index implements \Countable, \IteratorAggregate
      */
     public function addObject(IndexObject $indexObject): Index
     {
-        // ensure existence of containing directory
-        if (substr_count($indexObject->getRelativePath(), DIRECTORY_SEPARATOR))
-        {
-            $parent = $this->getObjectByPath(dirname($indexObject->getRelativePath()));
+        $parentNode = $this->rootNode;
 
-            if ($parent === null)
+        // ensure existence of containing directory
+        if (substr_count($indexObject->getRelativePath(), DIRECTORY_SEPARATOR) > 0)
+        {
+            $parentNode = $this->rootNode->getNodeByPath(dirname($indexObject->getRelativePath()));
+
+            if ($parentNode === null)
             {
-                throw new Exception();
+                throw new Exception("Trying to add object {$indexObject->getRelativePath()} without existing parent node");
             }
-            elseif (!$parent->isDirectory())
+            elseif (!$parentNode->getIndexObject()->isDirectory())
             {
-                throw new Exception();
+                throw new Exception("Trying to add object {$indexObject->getRelativePath()} under parent node which is not a directory");
             }
         }
 
-        $this->pathMap[$indexObject->getRelativePath()] = $indexObject;
+        $parentNode->addChild(new IndexNode($indexObject, $parentNode));
 
         return $this;
     }
@@ -52,7 +59,9 @@ class Index implements \Countable, \IteratorAggregate
      */
     public function getObjectByPath(string $path): ?IndexObject
     {
-        return isset($this->pathMap[$path]) ? $this->pathMap[$path] : null;
+        $node = $this->rootNode->getNodeByPath($path);
+
+        return $node ? $node->getIndexObject() : null;
     }
 
     /**
@@ -63,8 +72,10 @@ class Index implements \Countable, \IteratorAggregate
      */
     public function getObjectByBlobId(string $blobId): ?IndexObject
     {
-        foreach ($this->pathMap as $object)
+        foreach ($this as $object)
         {
+            /** @var IndexObject $object */
+
             if ($object->getBlobId() === $blobId)
             {
                 return $object;
@@ -102,8 +113,7 @@ class Index implements \Countable, \IteratorAggregate
         {
             /** @var IndexObject $indexObject */
 
-            // we explicitly want to use equality instead of identity
-            if ($other->getObjectByPath($indexObject->getRelativePath()) != $indexObject)
+            if (!$indexObject->equals($other->getObjectByPath($indexObject->getRelativePath())))
             {
                 return false;
             }
@@ -113,11 +123,64 @@ class Index implements \Countable, \IteratorAggregate
     }
 
     /**
+     * Returns the difference between this and the given index.
+     * The resulting difference contains objects from this index that are not present in or different to the
+     * corresponding object in the given index and objects from the given index that do not have a correspondence in
+     * this index.
+     *
+     * @param Index $other
+     * @return IndexDifference
+     */
+    public function getDifference(Index $other): IndexDifference
+    {
+        $diff = new IndexDifference();
+
+        $this->addDiffTo($other, $diff);
+        $other->addDiffTo($this, $diff);
+
+        return $diff;
+    }
+
+    /**
+     * Merges the given index into this index instance.
+     * Eventually existing objects with the same path are overridden.
+     * The contents of directories under the same path are merged together.
+     *
+     * @param Index $other
+     * @return Index
+     */
+    public function merge(Index $other): Index
+    {
+        foreach ($other as $object)
+        {
+            /** @var IndexObject $object */
+
+            $existingObject = $this->getObjectByPath($object->getRelativePath());
+
+            // merge directory contents
+            if ($existingObject && $existingObject->isDirectory() && $object->isDirectory())
+            {
+                $existingNode = $this->rootNode->getNodeByPath($object->getRelativePath());
+                $existingNode->setIndexObject($object);
+                $existingNode->addChildren($other->rootNode->getNodeByPath($object->getRelativePath())->getChildren());
+            }
+
+            // add object or override existing
+            else
+            {
+                $this->addObject($object);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function count(): int
     {
-        return count($this->pathMap);
+        return $this->rootNode->recursiveCount();
     }
 
     /**
@@ -125,6 +188,30 @@ class Index implements \Countable, \IteratorAggregate
      */
     public function getIterator(): \Traversable
     {
-        return new \ArrayIterator($this->pathMap);
+        return new IndexIterator(new RecursiveIndexIterator($this->rootNode));
+    }
+
+    /**
+     * Returns all those objects in this index that are not existent or are different in the given index.
+     *
+     * @param Index $other
+     * @param IndexDifference $indexDifference
+     * @return IndexDifference
+     */
+    protected function addDiffTo(Index $other, IndexDifference $indexDifference): IndexDifference
+    {
+        foreach ($this as $object)
+        {
+            /** @var IndexObject $object */
+
+            $otherObject = $other->getObjectByPath($object->getRelativePath());
+
+            if (!$object->equals($otherObject) && !$indexDifference->hasDifference($object->getRelativePath()))
+            {
+                $indexDifference->addDifference(new IndexObjectDifference($object, $otherObject));
+            }
+        }
+
+        return $indexDifference;
     }
 }
