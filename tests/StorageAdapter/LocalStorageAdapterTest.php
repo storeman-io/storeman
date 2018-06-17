@@ -3,7 +3,7 @@
 namespace Storeman\Test\StorageAdapter;
 
 use Storeman\Config\Configuration;
-use Storeman\Exception\Exception;
+use Storeman\Exception;
 use Storeman\StorageAdapter\LocalStorageAdapter;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 use Storeman\Config\VaultConfiguration;

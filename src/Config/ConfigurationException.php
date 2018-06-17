@@ -1,6 +1,8 @@
 <?php
 
-namespace Storeman\Exception;
+namespace Storeman\Config;
+
+use Storeman\Exception;
 
 class ConfigurationException extends Exception
 {

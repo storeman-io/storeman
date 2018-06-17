@@ -2,7 +2,7 @@
 
 namespace Storeman\Config;
 
-use Storeman\Exception\Exception;
+use Storeman\Exception;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Zend\Stdlib\ArraySerializableInterface;
 use Symfony\Component\Validator\Constraints as Assert;

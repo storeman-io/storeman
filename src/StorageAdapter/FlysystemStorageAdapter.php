@@ -2,7 +2,7 @@
 
 namespace Storeman\StorageAdapter;
 
-use Storeman\Exception\Exception;
+use Storeman\Exception;
 use League\Flysystem\Filesystem;
 
 abstract class FlysystemStorageAdapter implements StorageAdapterInterface

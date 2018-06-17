@@ -2,7 +2,7 @@
 
 namespace Storeman\Index;
 
-use Storeman\Exception\Exception;
+use Storeman\Exception;
 
 /**
  * An index object is the representation of one of this filesystem primitives contained in the index.

@@ -4,9 +4,9 @@ namespace Storeman\Test;
 
 use Storeman\Config\Configuration;
 use Storeman\Config\ConfigurationFileReader;
-use Storeman\Exception\ConfigurationException;
+use Storeman\Config\ConfigurationException;
 use Storeman\Config\VaultConfiguration;
-use Storeman\Exception\Exception;
+use Storeman\Exception;
 use PHPUnit\Framework\TestCase;
 
 class ConfigurationFileReaderTest extends TestCase

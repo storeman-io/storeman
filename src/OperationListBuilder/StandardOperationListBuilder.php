@@ -2,7 +2,7 @@
 
 namespace Storeman\OperationListBuilder;
 
-use Storeman\Exception\Exception;
+use Storeman\Exception;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
 use Storeman\Operation\ChmodOperation;

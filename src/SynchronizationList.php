@@ -2,7 +2,7 @@
 
 namespace Storeman;
 
-use Storeman\Exception\Exception;
+use Storeman\Exception;
 
 class SynchronizationList implements \Countable, \IteratorAggregate
 {
