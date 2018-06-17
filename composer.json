@@ -33,7 +33,7 @@
     },
     "scripts": {
         "build": "@php -d phar.readonly=0 bin/build",
-        "test": "phpunit --colors=always --verbose"
+        "test": "@php -d zend.assertions=1 vendor/bin/phpunit --colors=always --verbose"
     },
     "bin": [
         "bin/storeman"
