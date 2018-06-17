@@ -64,6 +64,13 @@ class IndexObject
         return $this->relativePath;
     }
 
+    public function getBasename(): string
+    {
+        $pos = strrpos($this->relativePath, DIRECTORY_SEPARATOR);
+
+        return ($pos === false) ? $this->relativePath : substr($this->relativePath, $pos + 1);
+    }
+
     public function getType(): int
     {
         return $this->type;

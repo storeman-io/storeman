@@ -9,17 +9,21 @@ class IndexObjectTest extends TestCase
 {
     public function testFileFromPath()
     {
-        $fileName = 'Some File.ext';
+        $relativePath = 'dir/Some File.ext';
 
         $testVault = new TestVault();
-        $testVault->fwrite($fileName, random_bytes(random_int(0, 1024)));
+        $testVault->mkdir('dir');
+        $testVault->fwrite($relativePath, random_bytes(random_int(0, 1024)));
 
-        $filePath = $testVault->getBasePath() . $fileName;
-        $fileIndexObject = IndexObject::fromPath($testVault->getBasePath(), $fileName);
+        $filePath = $testVault->getBasePath() . $relativePath;
+        $fileIndexObject = IndexObject::fromPath($testVault->getBasePath(), $relativePath);
 
         $this->assertInstanceOf(IndexObject::class, $fileIndexObject);
         $this->assertTrue($fileIndexObject->isFile());
-        $this->assertEquals($fileName, $fileIndexObject->getRelativePath());
+        $this->assertFalse($fileIndexObject->isDirectory());
+        $this->assertFalse($fileIndexObject->isLink());
+        $this->assertEquals($relativePath, $fileIndexObject->getRelativePath());
+        $this->assertEquals(basename($relativePath), $fileIndexObject->getBasename());
         $this->assertEquals(filectime($filePath), $fileIndexObject->getCtime());
         $this->assertEquals(filemtime($filePath), $fileIndexObject->getMtime());
         $this->assertEquals(fileperms($filePath), $fileIndexObject->getMode());
@@ -82,7 +86,7 @@ class IndexObjectTest extends TestCase
         $indexObjectA2 = IndexObject::fromPath($testVaultA->getBasePath(), 'test.ext');
         $indexObjectB = IndexObject::fromPath($testVaultA->getBasePath(), 'another.ext');
 
-        $this->assertTrue($indexObjectA1 == $indexObjectA2);
-        $this->assertFalse($indexObjectA1 == $indexObjectB);
+        $this->assertTrue($indexObjectA1->equals($indexObjectA2));
+        $this->assertFalse($indexObjectA1->equals($indexObjectB));
     }
 }
