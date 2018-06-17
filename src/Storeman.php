@@ -3,7 +3,6 @@
 namespace Storeman;
 
 use Storeman\Config\Configuration;
-use Storeman\Exception;
 use Storeman\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 
 /**
@@ -123,35 +122,6 @@ class Storeman
         }
 
         return $max ?: null;
-    }
-
-    /**
-     * Builds and returns a history of all synchronizations on record for this archive.
-     *
-     * @return Synchronization[][]
-     */
-    public function buildSynchronizationHistory(): array
-    {
-        $return = [];
-
-        foreach ($this->getVaultContainer() as $vault)
-        {
-            /** @var Vault $vault */
-
-            $vaultConfig = $vault->getVaultConfiguration();
-            $list = $vault->loadSynchronizationList();
-
-            foreach ($list as $synchronization)
-            {
-                /** @var Synchronization $synchronization */
-
-                $return[$synchronization->getRevision()][$vaultConfig->getTitle()] = $synchronization;
-            }
-        }
-
-        ksort($return);
-
-        return $return;
     }
 
     /**

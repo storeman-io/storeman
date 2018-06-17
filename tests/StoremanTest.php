@@ -23,19 +23,19 @@ class StoremanTest extends TestCase
         $this->getTestVaultConfig($config)->setTitle('Second');
 
         $storeman = new Storeman((new Container())->injectConfiguration($config));
+        $vaultContainer = $storeman->getVaultContainer();
 
-        $this->assertCount(2, $storeman->getVaultContainer());
-        $this->assertCount(2, $storeman->getVaultContainer()->getVaultsByTitles(['First', 'Second']));
-        $this->assertEmpty($storeman->buildSynchronizationHistory());
+        $this->assertCount(2, $vaultContainer);
+        $this->assertCount(2, $vaultContainer->getVaultsByTitles(['First', 'Second']));
+        $this->assertCount(0, $vaultContainer->get('First')->getVaultLayout()->getSynchronizations());
+        $this->assertCount(0, $vaultContainer->get('Second')->getVaultLayout()->getSynchronizations());
 
         $operationResultList = $storeman->synchronize();
 
         $this->assertCount(2, $operationResultList);
 
-        $history = $storeman->buildSynchronizationHistory();
-
-        $this->assertCount(1, $history);
-        $this->assertCount(2, reset($history));
+        $this->assertCount(1, $vaultContainer->get('First')->getVaultLayout()->getSynchronizations());
+        $this->assertCount(1, $vaultContainer->get('Second')->getVaultLayout()->getSynchronizations());
     }
 
     protected function getTestVaultConfig(Configuration $configuration): VaultConfiguration

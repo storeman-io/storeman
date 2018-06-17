@@ -78,7 +78,7 @@ class InfoCommand extends AbstractCommand
     {
         $output->writeln('');
 
-        $history = array_reverse($storeman->buildSynchronizationHistory(), true);
+        $history = array_reverse($this->buildSynchronizationHistory($storeman), true);
 
         if (count($history))
         {
@@ -114,5 +114,35 @@ class InfoCommand extends AbstractCommand
         {
             $output->writeln('No synchronizations so far.');
         }
+    }
+
+    /**
+     * Builds and returns a history of all synchronizations on record for this archive.
+     *
+     * @param Storeman $storeman
+     * @return Synchronization[][]
+     */
+    protected function buildSynchronizationHistory(Storeman $storeman): array
+    {
+        $return = [];
+
+        foreach ($storeman->getVaultContainer() as $vault)
+        {
+            /** @var Vault $vault */
+
+            $vaultConfig = $vault->getVaultConfiguration();
+            $list = $vault->loadSynchronizationList();
+
+            foreach ($list as $synchronization)
+            {
+                /** @var Synchronization $synchronization */
+
+                $return[$synchronization->getRevision()][$vaultConfig->getTitle()] = $synchronization;
+            }
+        }
+
+        ksort($return);
+
+        return $return;
     }
 }
