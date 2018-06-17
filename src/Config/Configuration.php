@@ -1,6 +1,6 @@
 <?php
 
-namespace Storeman;
+namespace Storeman\Config;
 
 use Storeman\Exception\Exception;
 use Symfony\Component\Validator\Mapping\ClassMetadata;

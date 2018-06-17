@@ -2,10 +2,10 @@
 
 namespace Storeman\Test;
 
-use Storeman\Configuration;
-use Storeman\ConfigurationFileReader;
+use Storeman\Config\Configuration;
+use Storeman\Config\ConfigurationFileReader;
 use Storeman\Exception\ConfigurationException;
-use Storeman\VaultConfiguration;
+use Storeman\Config\VaultConfiguration;
 use Storeman\Exception\Exception;
 use PHPUnit\Framework\TestCase;
 

@@ -2,11 +2,11 @@
 
 namespace Storeman\Test\StorageAdapter;
 
-use Storeman\Configuration;
+use Storeman\Config\Configuration;
 use Storeman\Exception\Exception;
 use Storeman\StorageAdapter\LocalStorageAdapter;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
-use Storeman\VaultConfiguration;
+use Storeman\Config\VaultConfiguration;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 

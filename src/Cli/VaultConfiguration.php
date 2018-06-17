@@ -2,7 +2,7 @@
 
 namespace Storeman\Cli;
 
-class VaultConfiguration extends \Storeman\VaultConfiguration
+class VaultConfiguration extends \Storeman\Config\VaultConfiguration
 {
     /**
      * {@inheritdoc}

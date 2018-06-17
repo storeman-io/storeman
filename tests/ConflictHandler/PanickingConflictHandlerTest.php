@@ -3,7 +3,7 @@
 namespace Storeman\Test\ConflictHandler;
 
 use Storeman\ConflictHandler\PanickingConflictHandler;
-use Storeman\Exception\ConflictException;
+use Storeman\ConflictHandler\ConflictException;
 use Storeman\Index\IndexObject;
 use Storeman\Test\TemporaryPathGenerator;
 use PHPUnit\Framework\TestCase;

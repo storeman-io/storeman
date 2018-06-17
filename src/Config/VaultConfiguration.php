@@ -1,6 +1,6 @@
 <?php
 
-namespace Storeman;
+namespace Storeman\Config;
 
 use Storeman\Validation\Constraints as StoremanAssert;
 use Symfony\Component\Validator\Constraints as Assert;

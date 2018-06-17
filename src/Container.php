@@ -4,6 +4,7 @@ namespace Storeman;
 
 use League\Container\Definition\DefinitionInterface;
 use Psr\Container\ContainerInterface;
+use Storeman\Config\Configuration;
 use Storeman\ConflictHandler\ConflictHandlerInterface;
 use Storeman\ConflictHandler\PanickingConflictHandler;
 use Storeman\ConflictHandler\PreferLocalConflictHandler;

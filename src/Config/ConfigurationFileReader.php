@@ -1,9 +1,12 @@
 <?php
 
-namespace Storeman;
+namespace Storeman\Config;
 
+use Storeman\ArrayUtils;
+use Storeman\Container;
 use Storeman\Exception\ConfigurationException;
 use Storeman\Exception\Exception;
+use Storeman\PathUtils;
 use Storeman\Validation\ContainerConstraintValidatorFactory;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;

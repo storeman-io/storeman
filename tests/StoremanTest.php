@@ -4,8 +4,8 @@ namespace Storeman\Test;
 
 use Storeman\Container;
 use Storeman\Storeman;
-use Storeman\Configuration;
-use Storeman\VaultConfiguration;
+use Storeman\Config\Configuration;
+use Storeman\Config\VaultConfiguration;
 use PHPUnit\Framework\TestCase;
 
 class StoremanTest extends TestCase

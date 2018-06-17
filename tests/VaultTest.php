@@ -4,12 +4,12 @@ namespace Storeman\Test;
 
 use Storeman\Container;
 use Storeman\Storeman;
-use Storeman\Configuration;
+use Storeman\Config\Configuration;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
 use Storeman\OperationResultList;
 use Storeman\Vault;
-use Storeman\VaultConfiguration;
+use Storeman\Config\VaultConfiguration;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\SplFileInfo;
 

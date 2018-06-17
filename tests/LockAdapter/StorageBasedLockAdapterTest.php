@@ -2,12 +2,12 @@
 
 namespace LockAdapter\Test\LockAdapter;
 
-use Storeman\Configuration;
+use Storeman\Config\Configuration;
 use Storeman\LockAdapter\StorageBasedLockAdapter;
 use Storeman\LockAdapter\LockAdapterInterface;
 use Storeman\StorageAdapter\LocalStorageAdapter;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
-use Storeman\VaultConfiguration;
+use Storeman\Config\VaultConfiguration;
 use LockAdapter\AbstractLockAdapterTest;
 
 class StorageBasedLockAdapterTest extends AbstractLockAdapterTest

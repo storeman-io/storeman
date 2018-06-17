@@ -2,6 +2,7 @@
 
 namespace Storeman;
 
+use Storeman\Config\Configuration;
 use Storeman\Exception\Exception;
 use Storeman\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 

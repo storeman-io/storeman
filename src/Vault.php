@@ -2,6 +2,7 @@
 
 namespace Storeman;
 
+use Storeman\Config\VaultConfiguration;
 use Storeman\ConflictHandler\ConflictHandlerInterface;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;

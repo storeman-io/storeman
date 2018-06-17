@@ -8,7 +8,7 @@ use Storeman\Index\IndexObject;
 use Storeman\StorageAdapter\StorageAdapterInterface;
 use Storeman\Synchronization;
 use Storeman\SynchronizationList;
-use Storeman\VaultConfiguration;
+use Storeman\Config\VaultConfiguration;
 use Storeman\VaultLayout\LazyLoadedIndex;
 use Storeman\VaultLayout\VaultLayoutInterface;
 

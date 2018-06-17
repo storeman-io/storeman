@@ -4,6 +4,7 @@ namespace Storeman;
 
 use League\Container\Exception\NotFoundException;
 use Psr\Container\ContainerInterface;
+use Storeman\Config\Configuration;
 use Storeman\Exception\ConfigurationException;
 
 final class VaultContainer implements ContainerInterface, \Countable, \IteratorAggregate

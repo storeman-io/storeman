@@ -5,7 +5,7 @@ namespace Storeman\Cli\Command;
 use Storeman\Cli\ConfigurationFileReader;
 use Storeman\Cli\ConflictHandler\ConsolePromptConflictHandler;
 use Storeman\Cli\ConsoleStyle;
-use Storeman\Configuration;
+use Storeman\Config\Configuration;
 use Storeman\Container;
 use Storeman\Storeman;
 use Storeman\Vault;

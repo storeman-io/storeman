@@ -4,7 +4,7 @@ namespace Storeman\StorageAdapter;
 
 use Storeman\Exception\ConfigurationException;
 use Storeman\PathUtils;
-use Storeman\VaultConfiguration;
+use Storeman\Config\VaultConfiguration;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 

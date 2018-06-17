@@ -1,6 +1,8 @@
 <?php
 
-namespace Storeman;
+namespace Storeman\Config;
+
+use Storeman\ArrayUtils;
 
 class ConfigurationFileWriter
 {

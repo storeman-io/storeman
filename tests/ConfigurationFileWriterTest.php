@@ -3,9 +3,9 @@
 namespace Storeman\Test;
 
 use PHPUnit\Framework\TestCase;
-use Storeman\Configuration;
-use Storeman\ConfigurationFileWriter;
-use Storeman\VaultConfiguration;
+use Storeman\Config\Configuration;
+use Storeman\Config\ConfigurationFileWriter;
+use Storeman\Config\VaultConfiguration;
 
 class ConfigurationFileWriterTest extends TestCase
 {

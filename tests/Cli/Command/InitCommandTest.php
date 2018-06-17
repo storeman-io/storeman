@@ -6,7 +6,7 @@ use Storeman\Cli\Command\InitCommand;
 use Storeman\Cli\ConfigurationFileReader;
 use Storeman\Test\TestVault;
 use Storeman\Vault;
-use Storeman\VaultConfiguration;
+use Storeman\Config\VaultConfiguration;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
