@@ -2,59 +2,42 @@
 
 namespace Storeman\StorageAdapter;
 
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Storeman\Exception;
 use League\Flysystem\Filesystem;
 
-abstract class FlysystemStorageAdapter implements StorageAdapterInterface
+abstract class FlysystemStorageAdapter implements LoggerAwareInterface, StorageAdapterInterface
 {
     /**
      * @var Filesystem
      */
     protected $filesystem;
 
+    /**
+     * @var LoggerInterface
+     */
+    protected $logger;
+
     public function __construct(Filesystem $filesystem)
     {
         $this->filesystem = $filesystem;
+        $this->logger = new NullLogger();
     }
 
-    public function read(string $relativePath): string
+    /**
+     * {@inheritdoc}
+     */
+    public function setLogger(LoggerInterface $logger): void
     {
-        try
-        {
-            $content = $this->filesystem->read($relativePath);
-
-            if (!is_string($content))
-            {
-                throw new Exception(sprintf('read() failed for %s.', $relativePath));
-            }
-        }
-        catch (\Exception $exception)
-        {
-            throw new Exception($exception->getMessage(), 0, $exception);
-        }
-
-        return $content;
-    }
-
-    public function write(string $relativePath, string $content)
-    {
-        try
-        {
-            $success = $this->filesystem->put($relativePath, $content);
-
-            if (!$success)
-            {
-                throw new Exception(sprintf('write() failed for %s.', $relativePath));
-            }
-        }
-        catch (\Exception $exception)
-        {
-            throw new Exception($exception->getMessage(), 0, $exception);
-        }
+        $this->logger = $logger;
     }
 
     public function writeStream(string $relativePath, $stream)
     {
+        $this->logger->debug("Writing stream to {$relativePath}...");
+
         try
         {
             $success = $this->filesystem->putStream($relativePath, $stream);
@@ -84,6 +67,8 @@ abstract class FlysystemStorageAdapter implements StorageAdapterInterface
 
     public function unlink(string $relativePath)
     {
+        $this->logger->debug("Deleting {$relativePath}...");
+
         try
         {
             $success = $this->filesystem->delete($relativePath);
@@ -101,6 +86,8 @@ abstract class FlysystemStorageAdapter implements StorageAdapterInterface
 
     public function getReadStream(string $relativePath)
     {
+        $this->logger->debug("Getting read stream for {$relativePath}...");
+
         try
         {
             $stream = $this->filesystem->readStream($relativePath);
