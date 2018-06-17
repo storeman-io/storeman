@@ -52,12 +52,23 @@ class InfoCommand extends AbstractCommand
             $table->addRow([' ']); // blank line
             $table->addRow([
                 "Vault #{$index}",
-                "Title:\nAdapter:\nLayout:\nLock Adapter:\nSettings:\nCurrent lock:",
+                implode("\n", [
+                    'Title:',
+                    'Storage adapter:',
+                    'Vault layout:',
+                    'Lock adapter:',
+                    'Index merger:',
+                    'Operation list builder:',
+                    'Settings:',
+                    'Current lock:',
+                ]),
                 implode("\n", [
                     "<info>{$vault->getVaultConfiguration()->getTitle()}</info>",
                     $vaultConfiguration->getAdapter(),
                     $vaultConfiguration->getVaultLayout(),
                     $vaultConfiguration->getLockAdapter(),
+                    $vaultConfiguration->getIndexMerger(),
+                    $vaultConfiguration->getOperationListBuilder(),
                     implode(
                         ',',
                         array_map(
