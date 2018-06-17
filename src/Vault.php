@@ -9,7 +9,6 @@ use Storeman\Index\IndexObject;
 use Storeman\IndexBuilder\IndexBuilderInterface;
 use Storeman\Operation\WriteSynchronizationOperation;
 use Storeman\StorageAdapter\StorageAdapterInterface;
-use Storeman\Exception;
 use Storeman\IndexMerger\IndexMergerInterface;
 use Storeman\LockAdapter\LockAdapterInterface;
 use Storeman\OperationListBuilder\OperationListBuilderInterface;
