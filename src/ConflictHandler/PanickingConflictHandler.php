@@ -3,7 +3,7 @@
 namespace Storeman\ConflictHandler;
 
 use Storeman\Exception\ConflictException;
-use Storeman\IndexObject;
+use Storeman\Index\IndexObject;
 
 class PanickingConflictHandler implements ConflictHandlerInterface
 {

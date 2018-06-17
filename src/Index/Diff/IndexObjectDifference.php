@@ -1,6 +1,8 @@
 <?php
 
-namespace Storeman;
+namespace Storeman\Index\Diff;
+
+use Storeman\Index\IndexObject;
 
 /**
  * Represents the difference between two index objects.

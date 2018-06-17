@@ -2,7 +2,7 @@
 
 namespace Storeman\ConflictHandler;
 
-use Storeman\IndexObject;
+use Storeman\Index\IndexObject;
 
 /**
  * This conflict handler always prefers the local change.

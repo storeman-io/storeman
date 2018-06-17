@@ -1,6 +1,6 @@
 <?php
 
-namespace Storeman;
+namespace Storeman\Index;
 
 class RecursiveIndexIterator extends \ArrayIterator implements \RecursiveIterator
 {

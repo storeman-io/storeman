@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Storeman\Cli\ConflictHandler\ConsolePromptConflictHandler;
 use Storeman\Cli\ConsoleStyle;
 use Storeman\ConflictHandler\ConflictHandlerInterface;
-use Storeman\IndexObject;
+use Storeman\Index\IndexObject;
 
 class ConsolePromptConflictHandlerTest extends TestCase
 {

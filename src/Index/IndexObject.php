@@ -1,6 +1,6 @@
 <?php
 
-namespace Storeman;
+namespace Storeman\Index;
 
 use Storeman\Exception\Exception;
 

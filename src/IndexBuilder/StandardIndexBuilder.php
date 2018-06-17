@@ -2,8 +2,8 @@
 
 namespace Storeman\IndexBuilder;
 
-use Storeman\Index;
-use Storeman\IndexObject;
+use Storeman\Index\Index;
+use Storeman\Index\IndexObject;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 

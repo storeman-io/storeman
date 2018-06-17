@@ -5,7 +5,7 @@ namespace Storeman\Test\ConflictHandler;
 use PHPUnit\Framework\TestCase;
 use Storeman\ConflictHandler\ConflictHandlerInterface;
 use Storeman\ConflictHandler\PreferRemoteConflictHandler;
-use Storeman\IndexObject;
+use Storeman\Index\IndexObject;
 use Storeman\Test\TemporaryPathGenerator;
 
 class PreferRemoteConflictHandlerTest extends TestCase

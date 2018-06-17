@@ -2,7 +2,7 @@
 
 namespace Storeman\OperationListBuilder;
 
-use Storeman\Index;
+use Storeman\Index\Index;
 use Storeman\OperationList;
 
 interface OperationListBuilderInterface

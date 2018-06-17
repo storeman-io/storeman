@@ -2,6 +2,8 @@
 
 namespace Storeman;
 
+use Storeman\Index\Index;
+
 /**
  * As the name suggests this class represents the synchronization for a specific revision.
  */

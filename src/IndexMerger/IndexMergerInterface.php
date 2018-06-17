@@ -3,7 +3,7 @@
 namespace Storeman\IndexMerger;
 
 use Storeman\ConflictHandler\ConflictHandlerInterface;
-use Storeman\Index;
+use Storeman\Index\Index;
 
 interface IndexMergerInterface
 {

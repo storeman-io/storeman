@@ -4,7 +4,7 @@ namespace Storeman\Cli\ConflictHandler;
 
 use Storeman\Cli\ConsoleStyle;
 use Storeman\ConflictHandler\ConflictHandlerInterface;
-use Storeman\IndexObject;
+use Storeman\Index\IndexObject;
 
 /**
  * This implementation of a conflict handler asks the user to resolve it manually.

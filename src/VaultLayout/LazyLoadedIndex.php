@@ -2,8 +2,8 @@
 
 namespace Storeman\VaultLayout;
 
-use Storeman\Index;
-use Storeman\IndexObject;
+use Storeman\Index\Index;
+use Storeman\Index\IndexObject;
 
 class LazyLoadedIndex extends Index
 {

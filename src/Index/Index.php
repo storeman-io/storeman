@@ -1,8 +1,10 @@
 <?php
 
-namespace Storeman;
+namespace Storeman\Index;
 
 use Storeman\Exception\Exception;
+use Storeman\Index\Diff\IndexDifference;
+use Storeman\Index\Diff\IndexObjectDifference;
 
 /**
  * As the name suggests an index is a representation of the vault at some point in time.

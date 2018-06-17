@@ -3,8 +3,8 @@
 namespace Storeman\IndexMerger;
 
 use Storeman\ConflictHandler\ConflictHandlerInterface;
-use Storeman\Index;
-use Storeman\IndexObject;
+use Storeman\Index\Index;
+use Storeman\Index\IndexObject;
 
 class StandardIndexMerger implements IndexMergerInterface
 {

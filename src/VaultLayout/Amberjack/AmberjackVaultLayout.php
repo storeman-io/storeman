@@ -3,8 +3,8 @@
 namespace Storeman\VaultLayout\Amberjack;
 
 use Ramsey\Uuid\Uuid;
-use Storeman\Index;
-use Storeman\IndexObject;
+use Storeman\Index\Index;
+use Storeman\Index\IndexObject;
 use Storeman\StorageAdapter\StorageAdapterInterface;
 use Storeman\Synchronization;
 use Storeman\SynchronizationList;

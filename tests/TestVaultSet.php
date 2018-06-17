@@ -2,7 +2,7 @@
 
 namespace Storeman\Test;
 
-use Storeman\Index;
+use Storeman\Index\Index;
 
 class TestVaultSet
 {

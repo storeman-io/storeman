@@ -3,8 +3,8 @@
 namespace Storeman\OperationListBuilder;
 
 use Storeman\Exception\Exception;
-use Storeman\Index;
-use Storeman\IndexObject;
+use Storeman\Index\Index;
+use Storeman\Index\IndexObject;
 use Storeman\Operation\ChmodOperation;
 use Storeman\Operation\DownloadOperation;
 use Storeman\Operation\MkdirOperation;

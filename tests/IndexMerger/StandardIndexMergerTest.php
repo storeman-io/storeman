@@ -3,7 +3,7 @@
 namespace Storeman\Test\IndexMerger;
 
 use Storeman\ConflictHandler\ConflictHandlerInterface;
-use Storeman\Index;
+use Storeman\Index\Index;
 use Storeman\IndexMerger\StandardIndexMerger;
 use Storeman\Test\TestVault;
 use Storeman\Test\TestVaultSet;

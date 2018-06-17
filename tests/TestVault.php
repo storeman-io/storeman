@@ -2,8 +2,8 @@
 
 namespace Storeman\Test;
 
-use Storeman\Index;
-use Storeman\IndexObject;
+use Storeman\Index\Index;
+use Storeman\Index\IndexObject;
 use Storeman\Vault;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;

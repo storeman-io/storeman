@@ -1,11 +1,12 @@
 <?php
 
-namespace Storeman\Test;
+namespace Storeman\Test\Index;
 
 use Storeman\Exception\Exception;
-use Storeman\Index;
-use Storeman\IndexObject;
+use Storeman\Index\Index;
+use Storeman\Index\IndexObject;
 use PHPUnit\Framework\TestCase;
+use Storeman\Test\TestVault;
 
 class IndexTest extends TestCase
 {

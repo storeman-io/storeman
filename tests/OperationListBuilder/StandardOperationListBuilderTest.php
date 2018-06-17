@@ -2,8 +2,8 @@
 
 namespace Storeman\Test\OperationListBuilder;
 
-use Storeman\Index;
-use Storeman\IndexObject;
+use Storeman\Index\Index;
+use Storeman\Index\IndexObject;
 use Storeman\Operation\OperationInterface;
 use Storeman\Operation\TouchOperation;
 use Storeman\OperationListBuilder\StandardOperationListBuilder;

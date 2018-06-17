@@ -3,6 +3,8 @@
 namespace Storeman;
 
 use Storeman\ConflictHandler\ConflictHandlerInterface;
+use Storeman\Index\Index;
+use Storeman\Index\IndexObject;
 use Storeman\IndexBuilder\IndexBuilderInterface;
 use Storeman\Operation\WriteSynchronizationOperation;
 use Storeman\StorageAdapter\StorageAdapterInterface;

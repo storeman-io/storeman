@@ -2,7 +2,7 @@
 
 namespace Storeman\ConflictHandler;
 
-use Storeman\IndexObject;
+use Storeman\Index\IndexObject;
 
 interface ConflictHandlerInterface
 {

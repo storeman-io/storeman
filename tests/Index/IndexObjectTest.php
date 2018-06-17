@@ -1,9 +1,10 @@
 <?php
 
-namespace Storeman\Test;
+namespace Storeman\Test\Index;
 
-use Storeman\IndexObject;
+use Storeman\Index\IndexObject;
 use PHPUnit\Framework\TestCase;
+use Storeman\Test\TestVault;
 
 class IndexObjectTest extends TestCase
 {

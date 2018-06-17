@@ -2,7 +2,7 @@
 
 namespace Storeman\IndexBuilder;
 
-use Storeman\Index;
+use Storeman\Index\Index;
 
 interface IndexBuilderInterface
 {

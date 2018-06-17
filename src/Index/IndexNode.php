@@ -1,6 +1,6 @@
 <?php
 
-namespace Storeman;
+namespace Storeman\Index;
 
 /**
  * A node within the object index tree.

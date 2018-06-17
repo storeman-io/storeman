@@ -1,6 +1,6 @@
 <?php
 
-namespace Storeman;
+namespace Storeman\Index\Diff;
 
 class IndexDifference implements \Countable, \IteratorAggregate
 {
