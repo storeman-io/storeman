@@ -32,6 +32,13 @@ class InitCommand extends AbstractCommand
     {
         $this->setUpIO($input, $output);
 
+        if ($config = $this->getConfiguration($this->getContainer($output), $input))
+        {
+            $output->writeln("This directory is already configured as an archive.");
+
+            return 1;
+        }
+
         $configFilePath = PathUtils::getAbsolutePath($input->getOption('config'));
         $configFileDir = dirname($configFilePath);
 
@@ -43,7 +50,7 @@ class InitCommand extends AbstractCommand
         }
 
 
-        $container = $this->getContainer();
+        $container = $this->getContainer($output);
 
         $configuration = new Configuration();
         $configuration->setPath($input->getOption('path') ?: $this->consoleStyle->ask('Local path', '.'));
