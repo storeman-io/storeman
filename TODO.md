@@ -6,6 +6,7 @@
     - Deadlock prevention
         - Ensure same locking order of vaults
         - Same lockAdapter across multiple vaults?
+    - Nested archives
 - Features
     - Use merkle tree for integrity validation
     - Use full available mtime/ctime resolution
@@ -30,6 +31,7 @@
     - Add version string during phar build
     - Check php (module) dependencies on runtime and offer installation help
     - Synchronization dry-run
+    - Sanity-Check
 - Encryption
     - https://cryptomator.org/architecture/
     - Encryption/decryption as stream filter
