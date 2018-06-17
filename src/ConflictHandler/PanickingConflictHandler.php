@@ -2,7 +2,6 @@
 
 namespace Storeman\ConflictHandler;
 
-use Storeman\Exception\ConflictException;
 use Storeman\Index\IndexObject;
 
 class PanickingConflictHandler implements ConflictHandlerInterface
