@@ -4,6 +4,7 @@ namespace Storeman\Cli\Command;
 
 use Storeman\Cli\ConfigurationFileReader;
 use Storeman\Cli\ConflictHandler\ConsolePromptConflictHandler;
+use Storeman\Cli\ConsoleLogger;
 use Storeman\Cli\ConsoleStyle;
 use Storeman\Config\Configuration;
 use Storeman\Container;
@@ -54,7 +55,7 @@ abstract class AbstractCommand extends Command
     {
         $this->setUpIO($input, $output);
 
-        $container = $this->getContainer();
+        $container = $this->getContainer($output);
         $config = $this->getConfiguration($container, $input);
 
         if ($config === null)
@@ -84,12 +85,14 @@ abstract class AbstractCommand extends Command
     /**
      * Builds and returns container to be used in a CLI context.
      *
+     * @param OutputInterface $output
      * @return Container
      */
-    protected function getContainer(): Container
+    protected function getContainer(OutputInterface $output): Container
     {
         $container = new Container();
 
+        $container->setLogger(new ConsoleLogger($output));
         $container->addConflictHandler('consolePrompt', ConsolePromptConflictHandler::class)->withArgument($this->consoleStyle);
 
         return $container;

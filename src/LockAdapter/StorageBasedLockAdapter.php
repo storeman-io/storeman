@@ -13,6 +13,8 @@ class StorageBasedLockAdapter extends AbstractLockAdapter
 
     public function __construct(StorageAdapterInterface $storageAdapter)
     {
+        parent::__construct();
+
         $this->storageAdapter = $storageAdapter;
     }
 
@@ -37,6 +39,8 @@ class StorageBasedLockAdapter extends AbstractLockAdapter
         {
             if (!$this->storageAdapter->exists($lockFileName))
             {
+                $this->logger->debug("Writing lock file {$lockFileName}...");
+
                 $this->storageAdapter->write($lockFileName, $payload);
 
                 return true;
@@ -45,6 +49,8 @@ class StorageBasedLockAdapter extends AbstractLockAdapter
             // timeout not reached: sleep another round and try againg
             if ($timeout === null || ($started + $timeout) < time())
             {
+                $this->logger->debug('Sleeping...');
+
                 sleep(3);
             }
 
@@ -60,6 +66,8 @@ class StorageBasedLockAdapter extends AbstractLockAdapter
 
     protected function doReleaseLock(string $name): void
     {
+        $this->logger->debug("Removing lock file {$this->getLockFileName($name)}...");
+
         $this->storageAdapter->unlink($this->getLockFileName($name));
     }
 

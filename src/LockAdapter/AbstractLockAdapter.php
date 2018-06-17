@@ -2,7 +2,11 @@
 
 namespace Storeman\LockAdapter;
 
-abstract class AbstractLockAdapter implements LockAdapterInterface
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+
+abstract class AbstractLockAdapter implements LockAdapterInterface, LoggerAwareInterface
 {
     /**
      * @var int[]
@@ -14,6 +18,24 @@ abstract class AbstractLockAdapter implements LockAdapterInterface
      */
     protected $identity;
 
+    /**
+     * @var LoggerInterface
+     */
+    protected $logger;
+
+    public function __construct()
+    {
+        $this->logger = new NullLogger();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+    }
+
     public function isLocked(string $name): bool
     {
         return $this->hasLock($name) || $this->doGetLock($name) !== null;
@@ -21,7 +43,7 @@ abstract class AbstractLockAdapter implements LockAdapterInterface
 
     public function hasLock(string $name): bool
     {
-        return isset($this->lockDepthMap[$name]);
+        return array_key_exists($name, $this->lockDepthMap);
     }
 
     public function getLock(string $name): ?Lock
@@ -31,33 +53,53 @@ abstract class AbstractLockAdapter implements LockAdapterInterface
 
     public function acquireLock(string $name, int $timeout = null): bool
     {
-        if (!isset($this->lockDepthMap[$name]))
+        $this->logger->info(sprintf(
+            "Lock '{$name}' with %s timeout requested. Current lock depth: %s",
+            is_int($timeout) ? "{$timeout}s" : 'indefinite',
+            array_key_exists($name, $this->lockDepthMap) ? $this->lockDepthMap[$name] : '0'
+        ));
+
+        if (!array_key_exists($name, $this->lockDepthMap))
         {
             $success = $this->doAcquireLock($name, $timeout);
 
             if (!$success)
             {
+                $this->logger->notice("Failed to acquire lock '{$name}'");
+
                 return false;
             }
+
+            $this->logger->notice("Successfully acquired lock '{$name}'");
 
             $this->lockDepthMap[$name] = 0;
         }
 
         $this->lockDepthMap[$name]++;
 
+        $this->logger->info("Lock depth for '{$name}' changed to {$this->lockDepthMap[$name]}");
+
         return true;
     }
 
     public function releaseLock(string $name): bool
     {
-        if (isset($this->lockDepthMap[$name]))
+        if (array_key_exists($name, $this->lockDepthMap))
         {
+            $this->logger->info("Lock release for '{$name}' requested. Current lock depth: {$this->lockDepthMap[$name]}");
+
             if (--$this->lockDepthMap[$name] === 0)
             {
+                $this->logger->notice("Releasing lock '{$name}'...");
+
                 $this->doReleaseLock($name);
 
                 unset($this->lockDepthMap[$name]);
             }
+        }
+        else
+        {
+            $this->logger->info("Requested lock release for non-hold lock '{$name}'. Doing nothing.");
         }
 
         return true;
@@ -82,6 +124,8 @@ abstract class AbstractLockAdapter implements LockAdapterInterface
 
     protected function releaseAcquiredLocks()
     {
+        $this->logger->info("Releasing all acquired locks: " . ($this->lockDepthMap ? implode(',', array_keys($this->lockDepthMap)) : '-'));
+
         foreach (array_keys($this->lockDepthMap) as $lockName)
         {
             $this->doReleaseLock($lockName);

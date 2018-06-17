@@ -4,6 +4,9 @@ namespace Storeman;
 
 use League\Container\Definition\DefinitionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Storeman\Config\Configuration;
 use Storeman\ConflictHandler\ConflictHandlerInterface;
 use Storeman\ConflictHandler\PanickingConflictHandler;
@@ -53,6 +56,9 @@ final class Container implements ContainerInterface
     {
         $this->delegate = new InspectableContainer();
 
+        $this->delegate->inflector(LoggerAwareInterface::class)->invokeMethod('setLogger', ['logger']);
+
+        $this->delegate->add('logger', NullLogger::class);
         $this->delegate->add('vaults', VaultContainer::class, true)->withArguments(['configuration', 'storeman']);
         $this->delegate->add('vaultConfiguration', function(Vault $vault) { return $vault->getVaultConfiguration(); })->withArgument('vault');
 
@@ -69,7 +75,7 @@ final class Container implements ContainerInterface
 
         $this->registerVaultServiceFactory('lockAdapter');
         $this->addLockAdapter('dummy', DummyLockAdapter::class);
-        $this->addLockAdapter('storage', StorageBasedLockAdapter::class)->withArgument('storageAdapter');
+        $this->addLockAdapter('storage', StorageBasedLockAdapter::class)->withArguments(['storageAdapter']);
 
         $this->registerVaultServiceFactory('operationListBuilder');
         $this->addOperationListBuilder('standard', StandardOperationListBuilder::class, true);
@@ -155,6 +161,19 @@ final class Container implements ContainerInterface
     public function getSelectedVault(): ?Vault
     {
         return $this->get('vault');
+    }
+
+
+    public function getLogger(): LoggerInterface
+    {
+        return $this->get('logger');
+    }
+
+    public function setLogger(LoggerInterface $logger): Container
+    {
+        $this->delegate->add('logger', $logger);
+
+        return $this;
     }
 
 
