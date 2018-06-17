@@ -25,13 +25,23 @@ class StorageBasedLockAdapter extends AbstractLockAdapter
             return null;
         }
 
-        return Lock::fromPayload($this->storageAdapter->read($this->getLockFileName($name)));
+        $stream = $this->storageAdapter->getReadStream($this->getLockFileName($name));
+
+        $lock = Lock::fromPayload(stream_get_contents($stream));
+
+        fclose($stream);
+
+        return $lock;
     }
 
     protected function doAcquireLock(string $name, int $timeout = null): bool
     {
         $lockFileName = $this->getLockFileName($name);
         $payload = $this->getNewLockPayload($name);
+
+        $payloadStream = fopen('php://temp', 'r+');
+        fwrite($payloadStream, $payload);
+        rewind($payloadStream);
 
         $started = time();
 
@@ -41,7 +51,7 @@ class StorageBasedLockAdapter extends AbstractLockAdapter
             {
                 $this->logger->debug("Writing lock file {$lockFileName}...");
 
-                $this->storageAdapter->write($lockFileName, $payload);
+                $this->storageAdapter->writeStream($lockFileName, $payloadStream);
 
                 return true;
             }

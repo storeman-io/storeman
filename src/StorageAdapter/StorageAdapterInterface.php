@@ -5,23 +5,6 @@ namespace Storeman\StorageAdapter;
 interface StorageAdapterInterface
 {
     /**
-     * Reads and returns the content of a remote stored object.
-     *
-     * @param string $relativePath
-     *
-     * @return string
-     */
-    public function read(string $relativePath): string;
-
-    /**
-     * Writes the content of a remote stored object.
-     *
-     * @param string $relativePath
-     * @param string $content
-     */
-    public function write(string $relativePath, string $content);
-
-    /**
      * Writes the contents of a given stream to a remote object.
      *
      * @param string $relativePath
