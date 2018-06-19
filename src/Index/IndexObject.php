@@ -35,6 +35,9 @@ class IndexObject
     protected $ctime;
 
     /**
+     * Full file mode.
+     * May include additional modes like setuid, guid, etc.
+     *
      * @var int
      */
     protected $mode;
