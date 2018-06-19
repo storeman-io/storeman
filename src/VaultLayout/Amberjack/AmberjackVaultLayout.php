@@ -135,8 +135,7 @@ class AmberjackVaultLayout implements VaultLayoutInterface
     protected function writeIndex(Synchronization $synchronization)
     {
         // write to local temp file
-        $tempPath = tempnam(sys_get_temp_dir(), 'index');
-        $stream = fopen($tempPath, 'w+b');
+        $stream = tmpfile();
         foreach ($synchronization->getIndex() as $object)
         {
             /** @var IndexObject $object */
@@ -170,8 +169,7 @@ class AmberjackVaultLayout implements VaultLayoutInterface
     protected function writeSynchronizationList(SynchronizationList $synchronizationList)
     {
         // write to local temp file
-        $tempPath = tempnam(sys_get_temp_dir(), 'synchronizationList');
-        $stream = fopen($tempPath, 'w+b');
+        $stream = tmpfile();
         foreach ($synchronizationList as $synchronization)
         {
             /** @var Synchronization $synchronization */
