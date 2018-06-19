@@ -17,18 +17,18 @@ class IndexObjectTest extends TestCase
         $testVault->fwrite($relativePath, random_bytes(random_int(0, 1024)));
 
         $filePath = $testVault->getBasePath() . $relativePath;
-        $fileIndexObject = IndexObject::fromPath($testVault->getBasePath(), $relativePath);
+        $indexObject = IndexObject::fromPath($testVault->getBasePath(), $relativePath);
 
-        $this->assertInstanceOf(IndexObject::class, $fileIndexObject);
-        $this->assertTrue($fileIndexObject->isFile());
-        $this->assertFalse($fileIndexObject->isDirectory());
-        $this->assertFalse($fileIndexObject->isLink());
-        $this->assertEquals($relativePath, $fileIndexObject->getRelativePath());
-        $this->assertEquals(basename($relativePath), $fileIndexObject->getBasename());
-        $this->assertEquals(filectime($filePath), $fileIndexObject->getCtime());
-        $this->assertEquals(filemtime($filePath), $fileIndexObject->getMtime());
-        $this->assertEquals(fileperms($filePath), $fileIndexObject->getMode());
-        $this->assertEquals(filesize($filePath), $fileIndexObject->getSize());
+        $this->assertInstanceOf(IndexObject::class, $indexObject);
+        $this->assertTrue($indexObject->isFile());
+        $this->assertFalse($indexObject->isDirectory());
+        $this->assertFalse($indexObject->isLink());
+        $this->assertEquals($relativePath, $indexObject->getRelativePath());
+        $this->assertEquals(basename($relativePath), $indexObject->getBasename());
+        $this->assertEquals(filectime($filePath), $indexObject->getCtime());
+        $this->assertEquals(filemtime($filePath), $indexObject->getMtime());
+        $this->assertEquals(fileperms($filePath), $indexObject->getMode());
+        $this->assertEquals(filesize($filePath), $indexObject->getSize());
     }
 
     public function testDirectoryFromPath()
@@ -39,15 +39,15 @@ class IndexObjectTest extends TestCase
         $testVault->mkdir($dirName);
 
         $dirPath = $testVault->getBasePath() . $dirName;
-        $fileIndexObject = IndexObject::fromPath($testVault->getBasePath(), $dirName);
+        $indexObject = IndexObject::fromPath($testVault->getBasePath(), $dirName);
 
-        $this->assertInstanceOf(IndexObject::class, $fileIndexObject);
-        $this->assertTrue($fileIndexObject->isDirectory());
-        $this->assertEquals($dirName, $fileIndexObject->getRelativePath());
-        $this->assertEquals(filectime($dirPath), $fileIndexObject->getCtime());
-        $this->assertEquals(filemtime($dirPath), $fileIndexObject->getMtime());
-        $this->assertEquals(fileperms($dirPath), $fileIndexObject->getMode());
-        $this->assertNull($fileIndexObject->getSize());
+        $this->assertInstanceOf(IndexObject::class, $indexObject);
+        $this->assertTrue($indexObject->isDirectory());
+        $this->assertEquals($dirName, $indexObject->getRelativePath());
+        $this->assertEquals(filectime($dirPath), $indexObject->getCtime());
+        $this->assertEquals(filemtime($dirPath), $indexObject->getMtime());
+        $this->assertEquals(fileperms($dirPath), $indexObject->getMode());
+        $this->assertNull($indexObject->getSize());
     }
 
     public function testLinkFromPath()
