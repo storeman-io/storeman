@@ -1,6 +1,6 @@
 <?php
 
-namespace Storeman\Test;
+namespace Storeman\Test\Config;
 
 use Storeman\Config\Configuration;
 use Storeman\Config\ConfigurationFileReader;
@@ -8,6 +8,7 @@ use Storeman\Config\ConfigurationException;
 use Storeman\Config\VaultConfiguration;
 use Storeman\Exception;
 use PHPUnit\Framework\TestCase;
+use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 
 class ConfigurationFileReaderTest extends TestCase
 {

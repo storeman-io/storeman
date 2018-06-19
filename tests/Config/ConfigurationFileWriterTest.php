@@ -1,11 +1,12 @@
 <?php
 
-namespace Storeman\Test;
+namespace Storeman\Test\Config;
 
 use PHPUnit\Framework\TestCase;
 use Storeman\Config\Configuration;
 use Storeman\Config\ConfigurationFileWriter;
 use Storeman\Config\VaultConfiguration;
+use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 
 class ConfigurationFileWriterTest extends TestCase
 {
