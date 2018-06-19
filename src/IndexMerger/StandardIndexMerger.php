@@ -8,16 +8,22 @@ use Storeman\Index\IndexObject;
 
 class StandardIndexMerger implements IndexMergerInterface
 {
-    public function merge(ConflictHandlerInterface $conflictHandler, Index $remoteIndex, Index $localIndex, Index $lastLocalIndex = null): Index
+    /**
+     * {@inheritdoc}
+     */
+    public function merge(ConflictHandlerInterface $conflictHandler, Index $remoteIndex, Index $localIndex, ?Index $lastLocalIndex): Index
     {
         $mergedIndex = new Index();
+        $lastLocalIndex = $lastLocalIndex ?: new Index();
 
-        if ($lastLocalIndex === null)
-        {
-            // lets make our life easier
-            $lastLocalIndex = new Index();
-        }
+        $this->inspectLocalIndex($mergedIndex, $conflictHandler, $remoteIndex, $localIndex, $lastLocalIndex);
+        $this->inspectRemoteIndex($mergedIndex, $conflictHandler, $remoteIndex, $localIndex, $lastLocalIndex);
 
+        return $mergedIndex;
+    }
+
+    protected function inspectLocalIndex(Index $mergedIndex, ConflictHandlerInterface $conflictHandler, Index $remoteIndex, Index $localIndex, Index $lastLocalIndex): void
+    {
         foreach ($localIndex as $localObject)
         {
             /** @var IndexObject $localObject */
@@ -29,16 +35,8 @@ class StandardIndexMerger implements IndexMergerInterface
             // compare existing to known object
             if ($lastLocalObject)
             {
-                $localObjectModified = false;
-                $localObjectModified = $localObjectModified || ($localObject->getType() !== $lastLocalObject->getType());
-                $localObjectModified = $localObjectModified || ($localObject->getMtime() !== $lastLocalObject->getMtime());
-                $localObjectModified = $localObjectModified || ($localObject->getCtime() !== $lastLocalObject->getCtime());
-                $localObjectModified = $localObjectModified || ($localObject->getMode() !== $lastLocalObject->getMode());
-                $localObjectModified = $localObjectModified || ($localObject->getSize() !== $lastLocalObject->getSize());
-                $localObjectModified = $localObjectModified || ($localObject->getLinkTarget() !== $lastLocalObject->getLinkTarget());
-
-                // remote object has been modified if it does not equal the object on its last synchronization
-                $remoteObjectModified = !$lastLocalObject->equals($remoteObject);
+                $localObjectModified = $this->isLocalObjectModified($localObject, $lastLocalObject);
+                $remoteObjectModified = $this->isRemoteObjectModified($remoteObject, $lastLocalObject);
             }
 
             // object has been created
@@ -69,55 +67,80 @@ class StandardIndexMerger implements IndexMergerInterface
                 $mergedIndex->addObject($localObject);
             }
         }
+    }
 
+    protected function inspectRemoteIndex(Index $mergedIndex, ConflictHandlerInterface $conflictHandler, Index $remoteIndex, Index $localIndex, Index $lastLocalIndex): void
+    {
         foreach ($remoteIndex as $remoteObject)
         {
             /** @var IndexObject $remoteObject */
 
-            $localObject = $localIndex->getObjectByPath($remoteObject->getRelativePath());
+            // only consider objects not existing locally as those are already considered
+            if ($localIndex->getObjectByPath($remoteObject->getRelativePath()))
+            {
+                continue;
+            }
+
+
             $lastLocalObject = $lastLocalIndex->getObjectByPath($remoteObject->getRelativePath());
 
-            // only consider objects not existing locally as those are already considered by the first loop
-            if (!$localObject)
+            // local object has been deleted
+            if ($lastLocalObject)
             {
-                if ($lastLocalObject)
-                {
-                    // local object has been deleted
-                    $localObjectModified = true;
+                $localObjectModified = true;
 
-                    // compare remote object to object state at last sync
-                    $remoteObjectModified = !$lastLocalObject->equals($remoteObject);
-                }
+                // compare remote object to object state at last sync
+                $remoteObjectModified = $this->isRemoteObjectModified($remoteObject, $lastLocalObject);
+            }
 
-                else
-                {
-                    // object already didn't exist locally at the last sync
-                    $localObjectModified = false;
+            // another client added the remote object
+            else
+            {
+                $remoteObjectModified = true;
 
-                    // another client added the remote object
-                    $remoteObjectModified = true;
-                }
+                // object already didn't exist locally
+                $localObjectModified = false;
+            }
 
 
-                // conflict if both the local and the remote object has been changed
-                if ($localObjectModified && $remoteObjectModified)
-                {
-                    $this->conflict($conflictHandler, $mergedIndex, $remoteObject, $localObject, $lastLocalObject);
-                }
+            // conflict if both the local and the remote object has been changed
+            if ($localObjectModified && $remoteObjectModified)
+            {
+                $this->conflict($conflictHandler, $mergedIndex, $remoteObject, null, $lastLocalObject);
+            }
 
-                // another client added the remote object
-                elseif (!$lastLocalObject)
-                {
-                    $mergedIndex->addObject($remoteObject);
-                }
+            // another client added the remote object
+            elseif (!$lastLocalObject)
+            {
+                $mergedIndex->addObject($remoteObject);
             }
         }
+    }
 
-        return $mergedIndex;
+    protected function isLocalObjectModified(IndexObject $localObject, IndexObject $lastLocalObject): bool
+    {
+        $localObjectModified = false;
+        $localObjectModified = $localObjectModified || ($localObject->getType() !== $lastLocalObject->getType());
+        $localObjectModified = $localObjectModified || ($localObject->getMtime() !== $lastLocalObject->getMtime());
+        $localObjectModified = $localObjectModified || ($localObject->getCtime() !== $lastLocalObject->getCtime());
+        $localObjectModified = $localObjectModified || ($localObject->getMode() !== $lastLocalObject->getMode());
+        $localObjectModified = $localObjectModified || ($localObject->getSize() !== $lastLocalObject->getSize());
+        $localObjectModified = $localObjectModified || ($localObject->getLinkTarget() !== $lastLocalObject->getLinkTarget());
+
+        return $localObjectModified;
+    }
+
+    protected function isRemoteObjectModified(IndexObject $remoteObject, IndexObject $lastLocalObject): bool
+    {
+        // remote object has been modified if it does not equal the object on its last synchronization
+        return !$lastLocalObject->equals($remoteObject);
     }
 
     protected function conflict(ConflictHandlerInterface $conflictHandler, Index $mergedIndex, IndexObject $remoteObject, IndexObject $localObject = null, IndexObject $lastLocalObject = null): void
     {
+        assert($localObject->getRelativePath() === $remoteObject->getRelativePath());
+        assert($localObject->getRelativePath() === $lastLocalObject->getRelativePath());
+
         $solution = $conflictHandler->handleConflict($remoteObject, $localObject, $lastLocalObject);
 
         switch ($solution)

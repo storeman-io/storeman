@@ -21,7 +21,7 @@ class StandardIndexMergerTest extends TestCase
 
         $firstState = $testVault->getIndex();
 
-        $mergedIndex = $merger->merge($this->getConflictHandlerMock(), new Index(), $firstState);
+        $mergedIndex = $merger->merge($this->getConflictHandlerMock(), new Index(), $firstState, null);
 
         $this->assertTrue($firstState->equals($mergedIndex));
 
@@ -40,10 +40,10 @@ class StandardIndexMergerTest extends TestCase
         $testVault1->touch('file');
 
         $merger = new StandardIndexMerger();
-        $mergedIndex = $merger->merge($this->getConflictHandlerMock(), new Index(), $testVault1->getIndex());
+        $mergedIndex = $merger->merge($this->getConflictHandlerMock(), new Index(), $testVault1->getIndex(), null);
 
         $this->assertEquals(1, $mergedIndex->count());
-        $this->assertTrue($testVault1->getIndex()->getObjectByPath('file') == $mergedIndex->getObjectByPath('file'));
+        $this->assertTrue($testVault1->getIndex()->getObjectByPath('file')->equals($mergedIndex->getObjectByPath('file')));
     }
 
     public function testTrivialMerge()
@@ -53,11 +53,11 @@ class StandardIndexMergerTest extends TestCase
         $testVaultSet->getTestVault(1)->touch('fileB');
 
         $merger = new StandardIndexMerger();
-        $mergedIndex = $merger->merge($this->getConflictHandlerMock(), $testVaultSet->getIndex(0), $testVaultSet->getIndex(1));
+        $mergedIndex = $merger->merge($this->getConflictHandlerMock(), $testVaultSet->getIndex(0), $testVaultSet->getIndex(1), null);
 
         $this->assertEquals(2, $mergedIndex->count());
-        $this->assertTrue($mergedIndex->getObjectByPath('fileA') == $testVaultSet->getIndex(0)->getObjectByPath('fileA'));
-        $this->assertTrue($mergedIndex->getObjectByPath('fileB') == $testVaultSet->getIndex(1)->getObjectByPath('fileB'));
+        $this->assertTrue($testVaultSet->getIndex(0)->getObjectByPath('fileA')->equals($mergedIndex->getObjectByPath('fileA')));
+        $this->assertTrue($testVaultSet->getIndex(1)->getObjectByPath('fileB')->equals($mergedIndex->getObjectByPath('fileB')));
     }
 
     public function testLocalChangeMerging()
@@ -73,7 +73,7 @@ class StandardIndexMergerTest extends TestCase
 
         $mergedIndex = $merger->merge($this->getConflictHandlerMock(), $remoteIndex, $localIndex, $remoteIndex);
 
-        $this->assertTrue($mergedIndex->getObjectByPath('file') == $localIndex->getObjectByPath('file'));
+        $this->assertTrue($mergedIndex->getObjectByPath('file')->equals($localIndex->getObjectByPath('file')));
     }
 
     public function testRemoteChangeMerging()
@@ -89,7 +89,7 @@ class StandardIndexMergerTest extends TestCase
 
         $mergedIndex = $merger->merge($this->getConflictHandlerMock(), $remoteIndex, $localIndex, $localIndex);
 
-        $this->assertTrue($mergedIndex->getObjectByPath('file') == $remoteIndex->getObjectByPath('file'));
+        $this->assertTrue($mergedIndex->getObjectByPath('file')->equals($remoteIndex->getObjectByPath('file')));
     }
 
     public function testConflictHandlingLocalUsage()
@@ -117,7 +117,7 @@ class StandardIndexMergerTest extends TestCase
 
         $mergedIndex = $merger->merge($conflictHandler, $remoteIndex, $localIndex, $lastLocalIndex);
 
-        $this->assertTrue($mergedIndex->getObjectByPath('file') == $localIndex->getObjectByPath('file'));
+        $this->assertTrue($mergedIndex->getObjectByPath('file')->equals($localIndex->getObjectByPath('file')));
     }
 
     public function testConflictHandlingRemoteUsage()
@@ -145,11 +145,14 @@ class StandardIndexMergerTest extends TestCase
 
         $mergedIndex = $merger->merge($conflictHandler, $remoteIndex, $localIndex, $lastLocalIndex);
 
-        $this->assertTrue($mergedIndex->getObjectByPath('file') == $remoteIndex->getObjectByPath('file'));
+        $this->assertTrue($mergedIndex->getObjectByPath('file')->equals($remoteIndex->getObjectByPath('file')));
     }
 
     protected function getConflictHandlerMock(): ConflictHandlerInterface
     {
-        return $this->createMock(ConflictHandlerInterface::class);
+        /** @var ConflictHandlerInterface $conflictHandler */
+        $conflictHandler = $this->createMock(ConflictHandlerInterface::class);
+
+        return $conflictHandler;
     }
 }

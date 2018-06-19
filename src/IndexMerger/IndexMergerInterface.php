@@ -18,5 +18,5 @@ interface IndexMergerInterface
      *
      * @return Index
      */
-    public function merge(ConflictHandlerInterface $conflictHandler, Index $remoteIndex, Index $localIndex, Index $lastLocalIndex = null): Index;
+    public function merge(ConflictHandlerInterface $conflictHandler, Index $remoteIndex, Index $localIndex, ?Index $lastLocalIndex): Index;
 }
