@@ -136,6 +136,7 @@ class AmberjackVaultLayout implements VaultLayoutInterface
     {
         // write to local temp file
         $stream = tmpfile();
+        $filterHandle = stream_filter_append($stream, 'zlib.deflate', STREAM_FILTER_WRITE);
         foreach ($synchronization->getIndex() as $object)
         {
             /** @var IndexObject $object */
@@ -145,10 +146,10 @@ class AmberjackVaultLayout implements VaultLayoutInterface
                 throw new \RuntimeException();
             }
         }
+        stream_filter_remove($filterHandle);
         rewind($stream);
 
         // upload local file to vault
-        stream_filter_append($stream, 'zlib.deflate');
         $this->storageAdapter->writeStream($this->getIndexFileName($synchronization), $stream);
 
         fclose($stream);
@@ -170,6 +171,7 @@ class AmberjackVaultLayout implements VaultLayoutInterface
     {
         // write to local temp file
         $stream = tmpfile();
+        $filterHandle = stream_filter_append($stream, 'zlib.deflate', STREAM_FILTER_WRITE);
         foreach ($synchronizationList as $synchronization)
         {
             /** @var Synchronization $synchronization */
@@ -179,10 +181,11 @@ class AmberjackVaultLayout implements VaultLayoutInterface
                 throw new \RuntimeException();
             }
         }
+        stream_filter_remove($filterHandle);
         rewind($stream);
 
+
         // upload local file to vault
-        stream_filter_append($stream, 'zlib.deflate');
         $this->storageAdapter->writeStream(static::SYNCHRONIZATION_LIST_FILE_NAME, $stream);
 
         fclose($stream);
