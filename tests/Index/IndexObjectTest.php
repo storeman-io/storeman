@@ -88,13 +88,10 @@ class IndexObjectTest extends TestCase
         $indexObjectB = IndexObject::fromPath($testVaultA->getBasePath(), 'another.ext');
 
         $this->assertTrue($indexObjectA1->equals($indexObjectA2));
-        $this->assertTrue($indexObjectA1->equalsOnDisk($indexObjectA2));
         $this->assertFalse($indexObjectA1->equals($indexObjectB));
-        $this->assertFalse($indexObjectA1->equalsOnDisk($indexObjectB));
 
         $indexObjectA1->setBlobId('xxx');
 
         $this->assertFalse($indexObjectA1->equals($indexObjectA2));
-        $this->assertTrue($indexObjectA1->equalsOnDisk($indexObjectA2));
     }
 }

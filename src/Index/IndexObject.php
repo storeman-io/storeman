@@ -139,40 +139,22 @@ class IndexObject
      */
     public function equals(?IndexObject $other): bool
     {
-        if (!$this->equalsOnDisk($other))
-        {
-            return false;
-        }
-
-        $equals = true;
-        $equals = $equals && ($this->blobId === $other->blobId);
-
-        return $equals;
-    }
-
-    /**
-     * Comparison without blobId.
-     *
-     * @param IndexObject $other
-     * @return bool
-     */
-    public function equalsOnDisk(?IndexObject $other): bool
-    {
         if ($other === null)
         {
             return false;
         }
 
-        $equal = true;
-        $equal = $equal && ($this->relativePath === $other->relativePath);
-        $equal = $equal && ($this->type === $other->type);
-        $equal = $equal && ($this->mtime === $other->mtime);
-        $equal = $equal && ($this->ctime === $other->ctime);
-        $equal = $equal && ($this->mode === $other->mode);
-        $equal = $equal && ($this->size === $other->size);
-        $equal = $equal && ($this->linkTarget === $other->linkTarget);
+        $equals = true;
+        $equals = $equals && ($this->relativePath === $other->relativePath);
+        $equals = $equals && ($this->type === $other->type);
+        $equals = $equals && ($this->mtime === $other->mtime);
+        $equals = $equals && ($this->ctime === $other->ctime);
+        $equals = $equals && ($this->mode === $other->mode);
+        $equals = $equals && ($this->size === $other->size);
+        $equals = $equals && ($this->linkTarget === $other->linkTarget);
+        $equals = $equals && ($this->blobId === $other->blobId);
 
-        return $equal;
+        return $equals;
     }
 
     public function toScalarArray(): array
