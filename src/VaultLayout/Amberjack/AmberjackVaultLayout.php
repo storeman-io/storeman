@@ -3,6 +3,7 @@
 namespace Storeman\VaultLayout\Amberjack;
 
 use Ramsey\Uuid\Uuid;
+use Storeman\Exception;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
 use Storeman\StorageAdapter\StorageAdapterInterface;
@@ -45,7 +46,7 @@ class AmberjackVaultLayout implements VaultLayoutInterface
 
             $list = new SynchronizationList();
 
-            while (($row = fgetcsv($stream)) !== false)
+            while (is_array($row = fgetcsv($stream)))
             {
                 $synchronization = Synchronization::fromScalarArray($row);
                 $synchronization->setIndex(new LazyLoadedIndex(function() use ($synchronization) {
@@ -54,6 +55,11 @@ class AmberjackVaultLayout implements VaultLayoutInterface
                 }));
 
                 $list->addSynchronization($synchronization);
+            }
+
+            if (!feof($stream))
+            {
+                throw new Exception("Corrupt synchronization list detected");
             }
 
             fclose($stream);
