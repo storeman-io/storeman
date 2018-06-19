@@ -51,6 +51,17 @@ class TemporaryPathGenerator
         return $path;
     }
 
+    public function getNonExistingPath(): string
+    {
+        do
+        {
+            $path = sys_get_temp_dir() . uniqid('non-existing');
+        }
+        while(file_exists($path));
+
+        return $path;
+    }
+
     protected function getTemporaryPath(string $prefix): string
     {
         do

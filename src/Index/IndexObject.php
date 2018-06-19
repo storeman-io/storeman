@@ -228,7 +228,7 @@ class IndexObject
         if (is_link($absolutePath))
         {
             $object->type = static::TYPE_LINK;
-            $object->linkTarget = str_replace($basePath, '', readlink($absolutePath));
+            $object->linkTarget = str_replace("{$basePath}/", '', readlink($absolutePath));
         }
         elseif (is_file($absolutePath))
         {

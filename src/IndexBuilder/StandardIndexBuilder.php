@@ -14,9 +14,17 @@ class StandardIndexBuilder implements IndexBuilderInterface
      */
     public function buildIndexFromPath(string $path, array $excludedPathsRegexp = []): Index
     {
-        if (!is_dir($path) || !is_readable($path))
+        if (!file_exists($path))
         {
-            throw new \InvalidArgumentException("Given path {$path} does not exist or is not readable.");
+            throw new \InvalidArgumentException("Given path '{$path}' does not exist.");
+        }
+        elseif (!is_dir($path))
+        {
+            throw new \InvalidArgumentException("Given path '{$path}' is not a directory.");
+        }
+        elseif (!is_readable($path))
+        {
+            throw new \InvalidArgumentException("Given directory '{$path}' is not readable.'");
         }
 
         $finder = new Finder();
@@ -43,8 +51,6 @@ class StandardIndexBuilder implements IndexBuilderInterface
 
             $index->addObject(IndexObject::fromPath($path, $fileInfo->getRelativePathname()));
         }
-
-        // todo: add symlinks
 
         return $index;
     }
