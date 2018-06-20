@@ -2,6 +2,7 @@
 
 namespace Storeman\Operation;
 
+use Storeman\FileReader;
 use Storeman\VaultLayout\VaultLayoutInterface;
 
 class UnlinkOperation implements OperationInterface
@@ -13,7 +14,7 @@ class UnlinkOperation implements OperationInterface
         $this->relativePath = $relativePath;
     }
 
-    public function execute(string $localBasePath, VaultLayoutInterface $vaultLayout): bool
+    public function execute(string $localBasePath, FileReader $fileReader, VaultLayoutInterface $vaultLayout): bool
     {
         $absolutePath = $localBasePath . $this->relativePath;
 

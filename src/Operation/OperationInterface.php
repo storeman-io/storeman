@@ -2,6 +2,7 @@
 
 namespace Storeman\Operation;
 
+use Storeman\FileReader;
 use Storeman\VaultLayout\VaultLayoutInterface;
 
 /**
@@ -13,10 +14,11 @@ interface OperationInterface
      * Executes the operation and returns whether or not it has been successful.
      *
      * @param string $localBasePath
+     * @param FileReader $fileReader
      * @param VaultLayoutInterface $vaultLayout
      * @return bool
      */
-    public function execute(string $localBasePath, VaultLayoutInterface $vaultLayout): bool;
+    public function execute(string $localBasePath, FileReader $fileReader, VaultLayoutInterface $vaultLayout): bool;
 
     /**
      * Returns a string representation of the operation that is suitable to be used e.g. within cli interfaces.

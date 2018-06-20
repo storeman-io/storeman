@@ -4,10 +4,8 @@ namespace Storeman\Test\Operation;
 
 use Storeman\Operation\TouchOperation;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
-use PHPUnit\Framework\TestCase;
-use Storeman\VaultLayout\VaultLayoutInterface;
 
-class TouchOperationTest extends TestCase
+class TouchOperationTest extends AbstractOperationTest
 {
     use TemporaryPathGeneratorProviderTrait;
 
@@ -22,7 +20,7 @@ class TouchOperationTest extends TestCase
         $this->assertEquals($originalMTime, filemtime($tempFile));
 
         $operation = new TouchOperation(basename($tempFile), $newMTime);
-        $operation->execute(dirname($tempFile) . DIRECTORY_SEPARATOR, $this->createMock(VaultLayoutInterface::class));
+        $operation->execute(dirname($tempFile) . DIRECTORY_SEPARATOR, $this->getFileReaderMock(), $this->getVaultLayoutMock());
 
         clearstatcache(null, $tempFile);
 

@@ -2,6 +2,7 @@
 
 namespace Storeman\VaultLayout;
 
+use Storeman\FileReader;
 use Storeman\Synchronization;
 use Storeman\SynchronizationList;
 
@@ -44,6 +45,7 @@ interface VaultLayoutInterface
      * Writes a new synchronization into the vault.
      *
      * @param Synchronization $synchronization
+     * @param FileReader $fileReader
      */
-    public function writeSynchronization(Synchronization $synchronization);
+    public function writeSynchronization(Synchronization $synchronization, FileReader $fileReader);
 }

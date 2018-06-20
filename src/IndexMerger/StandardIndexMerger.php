@@ -2,12 +2,30 @@
 
 namespace Storeman\IndexMerger;
 
+use Storeman\Config\Configuration;
 use Storeman\ConflictHandler\ConflictHandlerInterface;
+use Storeman\Hash\HashProvider;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
 
 class StandardIndexMerger implements IndexMergerInterface
 {
+    /**
+     * @var Configuration
+     */
+    protected $configuration;
+
+    /**
+     * @var HashProvider
+     */
+    protected $hashProvider;
+
+    public function __construct(Configuration $configuration, HashProvider $hashProvider)
+    {
+        $this->configuration = $configuration;
+        $this->hashProvider = $hashProvider;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -126,6 +144,25 @@ class StandardIndexMerger implements IndexMergerInterface
         $localObjectModified = $localObjectModified || ($localObject->getMode() !== $lastLocalObject->getMode());
         $localObjectModified = $localObjectModified || ($localObject->getSize() !== $lastLocalObject->getSize());
         $localObjectModified = $localObjectModified || ($localObject->getLinkTarget() !== $lastLocalObject->getLinkTarget());
+
+        if (!$localObjectModified && $localObject->isFile())
+        {
+            $existingHashes = iterator_to_array($lastLocalObject->getHashes());
+            $configuredAlgorithms = $this->configuration->getFileChecksums();
+
+            if (!empty($comparableAlgorithms = array_intersect($configuredAlgorithms, array_keys($existingHashes))))
+            {
+                $this->hashProvider->loadHashes($localObject, $comparableAlgorithms);
+
+                foreach ($comparableAlgorithms as $algorithm)
+                {
+                    if ($this->hashProvider->getHash($localObject, $algorithm) !== $existingHashes[$algorithm])
+                    {
+                        $localObjectModified = false;
+                    }
+                }
+            }
+        }
 
         return $localObjectModified;
     }

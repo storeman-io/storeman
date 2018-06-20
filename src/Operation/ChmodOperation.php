@@ -2,6 +2,7 @@
 
 namespace Storeman\Operation;
 
+use Storeman\FileReader;
 use Storeman\VaultLayout\VaultLayoutInterface;
 
 class ChmodOperation implements OperationInterface
@@ -22,7 +23,7 @@ class ChmodOperation implements OperationInterface
         $this->mode = $mode;
     }
 
-    public function execute(string $localBasePath, VaultLayoutInterface $vaultLayout): bool
+    public function execute(string $localBasePath, FileReader $fileReader, VaultLayoutInterface $vaultLayout): bool
     {
         $absolutePath = $localBasePath . $this->relativePath;
 

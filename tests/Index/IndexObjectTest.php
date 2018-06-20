@@ -2,6 +2,7 @@
 
 namespace Storeman\Test\Index;
 
+use Storeman\Hash\HashContainer;
 use Storeman\Index\IndexObject;
 use PHPUnit\Framework\TestCase;
 use Storeman\Test\TestVault;
@@ -29,6 +30,7 @@ class IndexObjectTest extends TestCase
         $this->assertEquals(filemtime($filePath), $indexObject->getMtime());
         $this->assertEquals(fileperms($filePath), $indexObject->getMode());
         $this->assertEquals(filesize($filePath), $indexObject->getSize());
+        $this->assertInstanceOf(HashContainer::class, $indexObject->getHashes());
     }
 
     public function testDirectoryFromPath()
@@ -48,6 +50,7 @@ class IndexObjectTest extends TestCase
         $this->assertEquals(filemtime($dirPath), $indexObject->getMtime());
         $this->assertEquals(fileperms($dirPath), $indexObject->getMode());
         $this->assertNull($indexObject->getSize());
+        $this->assertNull($indexObject->getHashes());
     }
 
     public function testLinkFromPath()
@@ -68,6 +71,7 @@ class IndexObjectTest extends TestCase
         $this->assertEquals(filectime($absolutePath), $indexObject->getCtime());
         $this->assertEquals(filemtime($absolutePath), $indexObject->getMtime());
         $this->assertNull($indexObject->getSize());
+        $this->assertNull($indexObject->getHashes());
     }
 
     public function testFromNonExistentPath()

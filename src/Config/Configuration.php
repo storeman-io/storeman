@@ -41,6 +41,13 @@ class Configuration implements ArraySerializableInterface
     protected $indexBuilder = 'standard';
 
     /**
+     * List of file checksums to be used for integrity checks and modification detection.
+     *
+     * @var string[]
+     */
+    protected $fileChecksums = ['sha256', 'sha1', 'md5'];
+
+    /**
      * Array of vault configurations.
      *
      * @var VaultConfiguration[]
@@ -139,6 +146,25 @@ class Configuration implements ArraySerializableInterface
     public function setIndexBuilder(string $indexBuilder): Configuration
     {
         $this->indexBuilder = $indexBuilder;
+
+        return $this;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getFileChecksums(): array
+    {
+        return $this->fileChecksums;
+    }
+
+    /**
+     * @param string[] $fileChecksums
+     * @return Configuration
+     */
+    public function setFileChecksums(array $fileChecksums): Configuration
+    {
+        $this->fileChecksums = array_values($fileChecksums);
 
         return $this;
     }

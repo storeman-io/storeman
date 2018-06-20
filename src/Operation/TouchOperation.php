@@ -2,6 +2,7 @@
 
 namespace Storeman\Operation;
 
+use Storeman\FileReader;
 use Storeman\VaultLayout\VaultLayoutInterface;
 
 class TouchOperation implements OperationInterface
@@ -32,7 +33,7 @@ class TouchOperation implements OperationInterface
         return $this->mtime;
     }
 
-    public function execute(string $localBasePath, VaultLayoutInterface $vaultLayout): bool
+    public function execute(string $localBasePath, FileReader $fileReader, VaultLayoutInterface $vaultLayout): bool
     {
         $absolutePath = $localBasePath . $this->relativePath;
 

@@ -2,6 +2,7 @@
 
 namespace Storeman\Operation;
 
+use Storeman\FileReader;
 use Storeman\Synchronization;
 use Storeman\VaultLayout\VaultLayoutInterface;
 
@@ -17,9 +18,9 @@ class WriteSynchronizationOperation implements OperationInterface
         $this->synchronization = $synchronization;
     }
 
-    public function execute(string $localBasePath, VaultLayoutInterface $vaultLayout): bool
+    public function execute(string $localBasePath, FileReader $fileReader, VaultLayoutInterface $vaultLayout): bool
     {
-        $vaultLayout->writeSynchronization($this->synchronization);
+        $vaultLayout->writeSynchronization($this->synchronization, $fileReader);
 
         return true;
     }

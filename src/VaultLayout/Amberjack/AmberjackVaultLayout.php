@@ -4,6 +4,7 @@ namespace Storeman\VaultLayout\Amberjack;
 
 use Ramsey\Uuid\Uuid;
 use Storeman\Exception;
+use Storeman\FileReader;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
 use Storeman\StorageAdapter\StorageAdapterInterface;
@@ -99,7 +100,7 @@ class AmberjackVaultLayout implements VaultLayoutInterface
     /**
      * {@inheritdoc}
      */
-    public function writeSynchronization(Synchronization $synchronization)
+    public function writeSynchronization(Synchronization $synchronization, FileReader $fileReader)
     {
         foreach ($synchronization->getIndex() as $indexObject)
         {
@@ -109,7 +110,7 @@ class AmberjackVaultLayout implements VaultLayoutInterface
             {
                 $indexObject->setBlobId($this->generateNewBlobId($synchronization->getIndex()));
 
-                $this->writeFileIndexObject($indexObject);
+                $this->storageAdapter->writeStream($indexObject->getBlobId(), $fileReader->getReadStream($indexObject));
             }
         }
 
@@ -159,18 +160,6 @@ class AmberjackVaultLayout implements VaultLayoutInterface
         $this->storageAdapter->writeStream($this->getIndexFileName($synchronization), $stream);
 
         fclose($stream);
-    }
-
-    protected function writeFileIndexObject(IndexObject $indexObject)
-    {
-        assert($indexObject->isFile());
-        assert($indexObject->getBlobId() !== null);
-
-        $localPath = $this->vaultConfiguration->getConfiguration()->getPath() . $indexObject->getRelativePath();
-
-        $stream = fopen($localPath, 'rb');
-
-        $this->storageAdapter->writeStream($indexObject->getBlobId(), $stream);
     }
 
     protected function writeSynchronizationList(SynchronizationList $synchronizationList)

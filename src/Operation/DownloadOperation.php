@@ -2,6 +2,7 @@
 
 namespace Storeman\Operation;
 
+use Storeman\FileReader;
 use Storeman\VaultLayout\VaultLayoutInterface;
 
 class DownloadOperation implements OperationInterface
@@ -22,7 +23,7 @@ class DownloadOperation implements OperationInterface
         $this->blobId = $blobId;
     }
 
-    public function execute(string $localBasePath, VaultLayoutInterface $vaultLayout): bool
+    public function execute(string $localBasePath, FileReader $fileReader, VaultLayoutInterface $vaultLayout): bool
     {
         $localStream = fopen($localBasePath . $this->relativePath, 'wb');
         $remoteStream = $vaultLayout->readBlob($this->blobId);

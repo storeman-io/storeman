@@ -23,6 +23,9 @@ class ConfigurationFileReaderTest extends TestCase
         "to/be/excluded"
     ],
     "identity": "some identity",
+    "fileChecksums": [
+        "sha1", "md5"
+    ],
     "vaults": [
         {
             "title": "Test",
@@ -47,6 +50,7 @@ JSON
         $this->assertEquals('/some/path/', $config->getPath());
         $this->assertEquals(['to/be/excluded'], $config->getExclude());
         $this->assertEquals('some identity', $config->getIdentity());
+        $this->assertEquals(['sha1', 'md5'], $config->getFileChecksums());
 
         $vaultConfig = $config->getVault('Test');
 

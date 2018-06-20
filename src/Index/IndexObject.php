@@ -3,6 +3,7 @@
 namespace Storeman\Index;
 
 use Storeman\Exception;
+use Storeman\Hash\HashContainer;
 
 /**
  * An index object is the representation of one of this filesystem primitives contained in the index.
@@ -51,6 +52,11 @@ class IndexObject
      * @var string
      */
     protected $linkTarget;
+
+    /**
+     * @var HashContainer
+     */
+    protected $hashes;
 
     /**
      * @var string
@@ -119,6 +125,11 @@ class IndexObject
         return $this->linkTarget;
     }
 
+    public function getHashes(): ?HashContainer
+    {
+        return $this->hashes;
+    }
+
     public function getBlobId(): ?string
     {
         return $this->blobId;
@@ -154,6 +165,11 @@ class IndexObject
         $equals = $equals && ($this->linkTarget === $other->linkTarget);
         $equals = $equals && ($this->blobId === $other->blobId);
 
+        if ($this->hashes)
+        {
+            $equals = $equals && $this->hashes->equals($other->hashes);
+        }
+
         return $equals;
     }
 
@@ -168,6 +184,7 @@ class IndexObject
             $this->size,
             $this->blobId,
             $this->linkTarget,
+            $this->hashes ? $this->hashes->serialize() : null,
         ];
     }
 
@@ -181,7 +198,8 @@ class IndexObject
         $object->mode = (int)$array[4];
         $object->size = (int)$array[5];
         $object->blobId = $array[6];
-        $object->linkTarget = $array[7];
+        $object->linkTarget = $array[7] ?: null;
+        $object->hashes = empty($array[8]) ? null : (new HashContainer())->unserialize($array[8]);
 
         return $object;
     }
@@ -219,6 +237,7 @@ class IndexObject
         {
             $object->type = static::TYPE_FILE;
             $object->size = (int)$stat['size'];
+            $object->hashes = new HashContainer();
         }
         elseif (is_dir($absolutePath))
         {

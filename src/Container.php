@@ -12,6 +12,14 @@ use Storeman\ConflictHandler\ConflictHandlerInterface;
 use Storeman\ConflictHandler\PanickingConflictHandler;
 use Storeman\ConflictHandler\PreferLocalConflictHandler;
 use Storeman\ConflictHandler\PreferRemoteConflictHandler;
+use Storeman\Hash\Algorithm\Adler32;
+use Storeman\Hash\Algorithm\Crc32;
+use Storeman\Hash\Algorithm\HashAlgorithmInterface;
+use Storeman\Hash\Algorithm\Md5;
+use Storeman\Hash\Algorithm\Sha1;
+use Storeman\Hash\Algorithm\Sha256;
+use Storeman\Hash\Algorithm\Sha512;
+use Storeman\Hash\HashProvider;
 use Storeman\IndexBuilder\IndexBuilderInterface;
 use Storeman\IndexBuilder\StandardIndexBuilder;
 use Storeman\IndexMerger\IndexMergerInterface;
@@ -34,6 +42,7 @@ use Storeman\VaultLayout\VaultLayoutInterface;
 final class Container implements ContainerInterface
 {
     protected const PREFIX_CONFLICT_HANDLER = 'conflictHandler.';
+    protected const PREFIX_HASH_ALGORITHM = 'hashAlgorithm.';
     protected const PREFIX_INDEX_BUILDER = 'indexBuilder.';
     protected const PREFIX_INDEX_MERGER = 'indexMerger.';
     protected const PREFIX_LOCK_ADAPTER = 'lockAdapter.';
@@ -62,6 +71,34 @@ final class Container implements ContainerInterface
         $this->delegate->add('vaults', VaultContainer::class, true)->withArguments(['configuration', 'storeman']);
         $this->delegate->add('vaultConfiguration', function(Vault $vault) { return $vault->getVaultConfiguration(); })->withArgument('vault');
 
+        $this->addHashAlgorithm('adler32', Adler32::class);
+        $this->addHashAlgorithm('crc32', Crc32::class);
+        $this->addHashAlgorithm('md5', Md5::class);
+        $this->addHashAlgorithm('sha1', Sha1::class);
+        $this->addHashAlgorithm('sha256', Sha256::class);
+        $this->addHashAlgorithm('sha512', Sha512::class);
+
+        $this->delegate->add('hashFunctions', function(Container $container) {
+
+            $return = [];
+
+            foreach ($container->getHashAlgorithmNames() as $algorithm)
+            {
+                /** @var HashAlgorithmInterface $hashFunction */
+                $hashFunction = $container->get($this->getHashAlgorithmServiceName($algorithm));
+
+                assert($hashFunction instanceof HashAlgorithmInterface);
+
+                $return[$hashFunction->getName()] = $hashFunction;
+            }
+
+            return $return;
+
+        }, true)->withArgument($this);
+
+        $this->delegate->add('fileReader', FileReader::class, true)->withArguments(['configuration', 'hashFunctions']);
+        $this->delegate->add('hashProvider', HashProvider::class, true)->withArguments(['fileReader', 'configuration', 'hashFunctions']);
+
         $this->registerServiceFactory('indexBuilder');
         $this->addIndexBuilder('standard', StandardIndexBuilder::class, true);
 
@@ -71,7 +108,7 @@ final class Container implements ContainerInterface
         $this->addConflictHandler('preferRemote', PreferRemoteConflictHandler::class, true);
 
         $this->registerVaultServiceFactory('indexMerger');
-        $this->addIndexMerger('standard', StandardIndexMerger::class, true);
+        $this->addIndexMerger('standard', StandardIndexMerger::class, true)->withArguments(['configuration', 'hashProvider']);
 
         $this->registerVaultServiceFactory('lockAdapter');
         $this->addLockAdapter('dummy', DummyLockAdapter::class);
@@ -193,6 +230,22 @@ final class Container implements ContainerInterface
     }
 
 
+    public function getHashAlgorithm(string $name): HashAlgorithmInterface
+    {
+        return $this->delegate->get($this->getHashAlgorithmServiceName($name));
+    }
+
+    public function addHashAlgorithm(string $name, $concrete, bool $shared = false): DefinitionInterface
+    {
+        return $this->delegate->add($this->getHashAlgorithmServiceName($name), $concrete, $shared);
+    }
+
+    public function getHashAlgorithmNames(): array
+    {
+        return $this->getServiceNamesWithPrefix(static::PREFIX_HASH_ALGORITHM);
+    }
+
+
     public function getIndexMerger(string $name): IndexMergerInterface
     {
         return $this->delegate->get($this->getIndexMergerServiceName($name));
@@ -292,6 +345,11 @@ final class Container implements ContainerInterface
     protected function getConflictHandlerServiceName(string $name): string
     {
         return static::PREFIX_CONFLICT_HANDLER . $name;
+    }
+
+    protected function getHashAlgorithmServiceName(string $name): string
+    {
+        return static::PREFIX_HASH_ALGORITHM . $name;
     }
 
     protected function getIndexBuilderServiceName(string $name): string

@@ -19,6 +19,7 @@ class ConfigurationFileWriterTest extends TestCase
         $configuration->setExclude(['to*', '*be', '*excluded*']);
         $configuration->setIdentity('My Identity');
         $configuration->setIndexBuilder('myIndexBuilder');
+        $configuration->setFileChecksums(['func1', 'func2']);
 
         $vaultConfiguration = new VaultConfiguration($configuration);
         $vaultConfiguration->setTitle('Some Title');
@@ -55,6 +56,7 @@ class ConfigurationFileWriterTest extends TestCase
         $this->assertEquals($configuration->getExclude(), $array['exclude']);
         $this->assertEquals($configuration->getIdentity(), $array['identity']);
         $this->assertEquals($configuration->getIndexBuilder(), $array['indexBuilder']);
+        $this->assertEquals($configuration->getFileChecksums(), $array['fileChecksums']);
 
         $this->assertCount(1, $array['vaults']);
         $this->assertTrue(isset($array['vaults'][0]));

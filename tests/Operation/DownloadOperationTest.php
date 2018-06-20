@@ -5,11 +5,10 @@ namespace Storeman\Test\Operation;
 use Storeman\Operation\DownloadOperation;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 use Storeman\Test\TestVault;
-use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use Storeman\VaultLayout\VaultLayoutInterface;
 
-class DownloadOperationTest extends TestCase
+class DownloadOperationTest extends AbstractOperationTest
 {
     use TemporaryPathGeneratorProviderTrait;
 
@@ -33,8 +32,7 @@ class DownloadOperationTest extends TestCase
 
         $operation = new DownloadOperation(basename($targetFilePath), $testBlobId);
         $operation->execute(
-            dirname($targetFilePath) . DIRECTORY_SEPARATOR,
-            $vaultLayoutMock
+            dirname($targetFilePath) . DIRECTORY_SEPARATOR, $this->getFileReaderMock(), $vaultLayoutMock
         );
 
         $this->assertEquals($testFileContent, file_get_contents($targetFilePath));
