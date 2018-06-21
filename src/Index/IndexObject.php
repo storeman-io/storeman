@@ -49,6 +49,11 @@ class IndexObject
     protected $size;
 
     /**
+     * @var int
+     */
+    protected $inode;
+
+    /**
      * @var string
      */
     protected $linkTarget;
@@ -122,6 +127,11 @@ class IndexObject
         return $this->size;
     }
 
+    public function getInode(): int
+    {
+        return $this->inode;
+    }
+
     public function getLinkTarget(): ?string
     {
         return $this->linkTarget;
@@ -164,6 +174,7 @@ class IndexObject
         $equals = $equals && ($this->ctime === $other->ctime);
         $equals = $equals && ($this->mode === $other->mode);
         $equals = $equals && ($this->size === $other->size);
+        $equals = $equals && ($this->inode === $other->inode);
         $equals = $equals && ($this->linkTarget === $other->linkTarget);
         $equals = $equals && ($this->blobId === $other->blobId);
 
@@ -229,6 +240,7 @@ class IndexObject
         $object->mtime = $stat['mtime'];
         $object->ctime = $stat['ctime'];
         $object->mode = $stat['mode'];
+        $object->inode = $stat['ino'];
 
         if (is_link($absolutePath))
         {
