@@ -54,6 +54,8 @@ class IndexObject
     protected $linkTarget;
 
     /**
+     * Content hashes for file index objects.
+     *
      * @var HashContainer
      */
     protected $hashes;
