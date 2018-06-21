@@ -4,6 +4,7 @@ namespace Storeman;
 
 use Storeman\Config\VaultConfiguration;
 use Storeman\ConflictHandler\ConflictHandlerInterface;
+use Storeman\Hash\HashContainer;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
 use Storeman\IndexBuilder\IndexBuilderInterface;
@@ -132,7 +133,7 @@ class Vault
      */
     public function buildLocalIndex(): Index
     {
-        return $this->getIndexBuilder()->buildIndexFromPath(
+        return $this->getIndexBuilder()->buildIndex(
             $this->vaultConfiguration->getConfiguration()->getPath(),
             $this->getLocalIndexExclusionPatterns()
         );
@@ -156,7 +157,7 @@ class Vault
             $index = new Index();
             while (($row = fgetcsv($stream)) !== false)
             {
-                $index->addObject(IndexObject::fromScalarArray($row));
+                $index->addObject($this->createIndexObjectFromScalarArray($row));
             }
 
             fclose($stream);
@@ -377,7 +378,7 @@ class Vault
 
         $targetPath = $targetPath ?: $this->storeman->getConfiguration()->getPath();
 
-        $localIndex = $this->getIndexBuilder()->buildIndexFromPath($targetPath, $this->getLocalIndexExclusionPatterns());
+        $localIndex = $this->getIndexBuilder()->buildIndex($targetPath, $this->getLocalIndexExclusionPatterns());
 
         $operationList = $this->getOperationListBuilder()->buildOperationList($remoteIndex, $localIndex, $remoteIndex);
 
@@ -426,13 +427,57 @@ class Vault
         {
             /** @var IndexObject $object */
 
-            if (fputcsv($stream, $object->toScalarArray()) === false)
+            if (fputcsv($stream, $this->indexObjectToScalarArray($object)) === false)
             {
                 throw new Exception("Writing to {$this->getLastLocalIndexFilePath()} failed");
             }
         }
 
         fclose($stream);
+    }
+
+    /**
+     * Transforms an IndexObject instance into a scalar array suitable for fputcsv().
+     *
+     * @param IndexObject $indexObject
+     * @return array
+     */
+    protected function indexObjectToScalarArray(IndexObject $indexObject): array
+    {
+        return [
+            $indexObject->getRelativePath(),
+            $indexObject->getType(),
+            $indexObject->getMtime(),
+            $indexObject->getCtime(),
+            $indexObject->getMode(),
+            $indexObject->getSize(),
+            $indexObject->getInode(),
+            $indexObject->getLinkTarget(),
+            $indexObject->getBlobId(),
+            $indexObject->getHashes() ? $indexObject->getHashes()->serialize() : null,
+        ];
+    }
+
+    /**
+     * Reconstructs an IndexObject instance from a scalar array read by fgetcsv().
+     *
+     * @param array $array
+     * @return IndexObject
+     */
+    protected function createIndexObjectFromScalarArray(array $array): IndexObject
+    {
+        return new IndexObject(
+            $array[0],
+            (int)$array[1],
+            (int)$array[2],
+            (int)$array[3],
+            (int)$array[4],
+            ($array[5] !== '') ? (int)$array[5] : null,
+            (int)$array[6],
+            $array[7] ?: null,
+            $array[8] ?: null,
+            $array[9] ? (new HashContainer())->unserialize($array[9]) : null
+        );
     }
 
     protected function initMetadataDirectory(): string

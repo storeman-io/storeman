@@ -5,17 +5,15 @@ namespace Storeman\Test\ConflictHandler;
 use PHPUnit\Framework\TestCase;
 use Storeman\ConflictHandler\ConflictHandlerInterface;
 use Storeman\ConflictHandler\PreferLocalConflictHandler;
-use Storeman\Index\IndexObject;
-use Storeman\Test\TemporaryPathGenerator;
+use Storeman\Test\ConfiguredMockProviderTrait;
 
 class PreferLocalConflictHandlerTest extends TestCase
 {
+    use ConfiguredMockProviderTrait;
+
     public function testHandleConflict()
     {
-        $tempPathGenerator = new TemporaryPathGenerator();
-        $filePath = $tempPathGenerator->getTemporaryFile();
-
-        $indexObject = IndexObject::fromPath(dirname($filePath), basename($filePath));
+        $indexObject = $this->getIndexObjectMock();
 
         $handler = new PreferLocalConflictHandler();
         $result = $handler->handleConflict($indexObject, $indexObject, $indexObject);

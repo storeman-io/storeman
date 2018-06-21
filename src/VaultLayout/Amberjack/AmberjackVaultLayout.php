@@ -5,6 +5,7 @@ namespace Storeman\VaultLayout\Amberjack;
 use Ramsey\Uuid\Uuid;
 use Storeman\Exception;
 use Storeman\FileReader;
+use Storeman\Hash\HashContainer;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
 use Storeman\StorageAdapter\StorageAdapterInterface;
@@ -49,7 +50,7 @@ class AmberjackVaultLayout implements VaultLayoutInterface
 
             while (is_array($row = fgetcsv($stream)))
             {
-                $synchronization = Synchronization::fromScalarArray($row);
+                $synchronization = $this->createSynchronizationFromScalarArray($row);
                 $synchronization->setIndex(new LazyLoadedIndex(function() use ($synchronization) {
 
                     return $this->readIndex($synchronization);
@@ -131,7 +132,7 @@ class AmberjackVaultLayout implements VaultLayoutInterface
         $index = new Index();
         while (($row = fgetcsv($stream)) !== false)
         {
-            $index->addObject(IndexObject::fromScalarArray($row));
+            $index->addObject($this->createIndexObjectFromScalarArray($row));
         }
 
         fclose($stream);
@@ -148,7 +149,7 @@ class AmberjackVaultLayout implements VaultLayoutInterface
         {
             /** @var IndexObject $object */
 
-            if (fputcsv($stream, $object->toScalarArray()) === false)
+            if (fputcsv($stream, $this->indexObjectToScalarArray($object)) === false)
             {
                 throw new \RuntimeException();
             }
@@ -171,7 +172,7 @@ class AmberjackVaultLayout implements VaultLayoutInterface
         {
             /** @var Synchronization $synchronization */
 
-            if (fputcsv($stream, $synchronization->toScalarArray()) === false)
+            if (fputcsv($stream, $this->synchronizationToScalarArray($synchronization)) === false)
             {
                 throw new \RuntimeException();
             }
@@ -184,6 +185,67 @@ class AmberjackVaultLayout implements VaultLayoutInterface
         $this->storageAdapter->writeStream(static::SYNCHRONIZATION_LIST_FILE_NAME, $stream);
 
         fclose($stream);
+    }
+
+    /**
+     * Transforms an IndexObject instance into a scalar array suitable for fputcsv().
+     *
+     * @param IndexObject $indexObject
+     * @return array
+     */
+    protected function indexObjectToScalarArray(IndexObject $indexObject): array
+    {
+        return [
+            $indexObject->getRelativePath(),
+            $indexObject->getType(),
+            $indexObject->getMtime(),
+            $indexObject->getCtime(),
+            $indexObject->getMode(),
+            $indexObject->getSize(),
+            $indexObject->getLinkTarget(),
+            $indexObject->getBlobId(),
+            $indexObject->getHashes() ? $indexObject->getHashes()->serialize() : null,
+        ];
+    }
+
+    /**
+     * Reconstructs an IndexObject instance from a scalar array read by fgetcsv().
+     *
+     * @param array $array
+     * @return IndexObject
+     */
+    protected function createIndexObjectFromScalarArray(array $array): IndexObject
+    {
+        return new IndexObject(
+            $array[0],
+            (int)$array[1],
+            (int)$array[2],
+            (int)$array[3],
+            (int)$array[4],
+            ($array[5] !== '') ? (int)$array[5] : null,
+            null,
+            $array[6] ?: null,
+            $array[7] ?: null,
+            $array[8] ? (new HashContainer())->unserialize($array[8]) : null
+        );
+    }
+
+    protected function synchronizationToScalarArray(Synchronization $synchronization): array
+    {
+        return [
+            $synchronization->getRevision(),
+            $synchronization->getTime()->getTimestamp(),
+            $synchronization->getIdentity(),
+        ];
+    }
+
+    protected function createSynchronizationFromScalarArray(array $array): Synchronization
+    {
+        return new Synchronization(
+            $array[0],
+            \DateTime::createFromFormat('U', $array[1]),
+            $array[2]
+        );
     }
 
     protected function generateNewBlobId(Index $index = null): string

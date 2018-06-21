@@ -2,7 +2,6 @@
 
 namespace Storeman\Index;
 
-use Storeman\Exception;
 use Storeman\Hash\HashContainer;
 
 /**
@@ -70,10 +69,24 @@ class IndexObject
      */
     protected $blobId;
 
-    /**
-     * Prevent construction not using static factory methods.
-     */
-    protected function __construct() {}
+    public function __construct(string $relativePath, int $type, int $mtime, int $ctime, int $mode, ?int $size, ?int $inode, ?string $linkTarget, ?string $blobId, ?HashContainer $hashContainer)
+    {
+        assert(($type === static::TYPE_FILE) ^ ($size === null));
+        assert(($type === static::TYPE_FILE) || ($blobId === null));
+        assert(($type === static::TYPE_FILE) ^ ($hashContainer === null));
+        assert(($type === static::TYPE_LINK) ^ ($linkTarget === null));
+
+        $this->relativePath = $relativePath;
+        $this->type = $type;
+        $this->mtime = $mtime;
+        $this->ctime = $ctime;
+        $this->mode = $mode;
+        $this->size = $size;
+        $this->inode = $inode;
+        $this->linkTarget = $linkTarget;
+        $this->blobId = $blobId;
+        $this->hashes = $hashContainer;
+    }
 
     public function getRelativePath(): string
     {
@@ -127,7 +140,7 @@ class IndexObject
         return $this->size;
     }
 
-    public function getInode(): int
+    public function getInode(): ?int
     {
         return $this->inode;
     }
@@ -184,84 +197,5 @@ class IndexObject
         }
 
         return $equals;
-    }
-
-    public function toScalarArray(): array
-    {
-        return [
-            $this->relativePath,
-            $this->type,
-            $this->mtime,
-            $this->ctime,
-            $this->mode,
-            $this->size,
-            $this->blobId,
-            $this->linkTarget,
-            $this->hashes ? $this->hashes->serialize() : null,
-        ];
-    }
-
-    public static function fromScalarArray(array $array): IndexObject
-    {
-        $object = new static;
-        $object->relativePath = $array[0];
-        $object->type = (int)$array[1];
-        $object->mtime = (int)$array[2];
-        $object->ctime = (int)$array[3];
-        $object->mode = (int)$array[4];
-        $object->size = (int)$array[5];
-        $object->blobId = $array[6];
-        $object->linkTarget = $array[7] ?: null;
-        $object->hashes = empty($array[8]) ? null : (new HashContainer())->unserialize($array[8]);
-
-        return $object;
-    }
-
-    /**
-     * Returns an instance representing the filesystem object that can be found under the given path.
-     *
-     * @param string $basePath
-     * @param string $relativePath
-     * @return IndexObject
-     */
-    public static function fromPath(string $basePath, string $relativePath): IndexObject
-    {
-        $absolutePath = rtrim($basePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $relativePath;
-
-        clearstatcache(null, $absolutePath);
-
-        if (!($stat = @lstat($absolutePath)))
-        {
-            throw new Exception("lstat() failed for {$absolutePath}");
-        }
-
-        $object = new static;
-        $object->relativePath = $relativePath;
-        $object->mtime = $stat['mtime'];
-        $object->ctime = $stat['ctime'];
-        $object->mode = $stat['mode'];
-        $object->inode = $stat['ino'];
-
-        if (is_link($absolutePath))
-        {
-            $object->type = static::TYPE_LINK;
-            $object->linkTarget = str_replace("{$basePath}/", '', readlink($absolutePath));
-        }
-        elseif (is_file($absolutePath))
-        {
-            $object->type = static::TYPE_FILE;
-            $object->size = (int)$stat['size'];
-            $object->hashes = new HashContainer();
-        }
-        elseif (is_dir($absolutePath))
-        {
-            $object->type = static::TYPE_DIR;
-        }
-        else
-        {
-            throw new \LogicException();
-        }
-
-        return $object;
     }
 }

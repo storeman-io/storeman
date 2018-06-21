@@ -4,7 +4,6 @@ namespace Storeman\Test\Index;
 
 use Storeman\Exception;
 use Storeman\Index\Index;
-use Storeman\Index\IndexObject;
 use PHPUnit\Framework\TestCase;
 use Storeman\Test\TestVault;
 
@@ -16,7 +15,7 @@ class IndexTest extends TestCase
         $testVault->fwrite('file.ext', 'Hello World!');
 
         $index = $this->getNewIndex();
-        $index->addObject($object = IndexObject::fromPath($testVault->getBasePath(), 'file.ext'));
+        $index->addObject($object = $testVault->getIndexObject('file.ext'));
 
         $this->assertEquals(1, count($index));
         $this->assertSame($object, $index->getObjectByPath('file.ext'));
@@ -38,7 +37,7 @@ class IndexTest extends TestCase
         $testVault->touch('dir/file.ext');
 
         $index = $this->getNewIndex();
-        $index->addObject(IndexObject::fromPath($testVault->getBasePath(), 'dir/file.ext'));
+        $index->addObject($testVault->getIndexObject('dir/file.ext'));
     }
 
     public function testTopologicalInvalidAddition2()
@@ -49,13 +48,13 @@ class IndexTest extends TestCase
         $testVault->touch('dir');
 
         $index = $this->getNewIndex();
-        $index->addObject(IndexObject::fromPath($testVault->getBasePath(), 'dir'));
+        $index->addObject($testVault->getIndexObject('dir'));
 
         $testVault->remove('dir');
         $testVault->mkdir('dir');
         $testVault->touch('dir/file.ext');
 
-        $index->addObject(IndexObject::fromPath($testVault->getBasePath(), 'dir/file.ext'));
+        $index->addObject($testVault->getIndexObject('dir/file.ext'));
     }
 
     public function testTrivialIteration()
@@ -67,7 +66,7 @@ class IndexTest extends TestCase
 
         $this->assertEmpty(iterator_to_array($index->getIterator()));
 
-        $index->addObject($objectA = IndexObject::fromPath($testVault->getBasePath(), 'a'));
+        $index->addObject($objectA = $testVault->getIndexObject('a'));
 
         $array = array_values(iterator_to_array($index->getIterator()));
 
@@ -82,8 +81,8 @@ class IndexTest extends TestCase
         $testVault->touch('b');
 
         $index = $this->getNewIndex();
-        $index->addObject($objectA = IndexObject::fromPath($testVault->getBasePath(), 'a'));
-        $index->addObject($objectB = IndexObject::fromPath($testVault->getBasePath(), 'b'));
+        $index->addObject($objectA = $testVault->getIndexObject('a'));
+        $index->addObject($objectB = $testVault->getIndexObject('b'));
 
         $array = array_values(iterator_to_array($index));
 
@@ -93,8 +92,8 @@ class IndexTest extends TestCase
 
 
         $index = $this->getNewIndex();
-        $index->addObject($objectB = IndexObject::fromPath($testVault->getBasePath(), 'b'));
-        $index->addObject($objectA = IndexObject::fromPath($testVault->getBasePath(), 'a'));
+        $index->addObject($objectB = $testVault->getIndexObject('b'));
+        $index->addObject($objectA = $testVault->getIndexObject('a'));
 
         $array = array_values(iterator_to_array($index));
 
@@ -110,8 +109,8 @@ class IndexTest extends TestCase
         $testVault->touch('a/b');
 
         $index = $this->getNewIndex();
-        $index->addObject($objectA = IndexObject::fromPath($testVault->getBasePath(), 'a'));
-        $index->addObject($objectB = IndexObject::fromPath($testVault->getBasePath(), 'a/b'));
+        $index->addObject($objectA = $testVault->getIndexObject('a'));
+        $index->addObject($objectB = $testVault->getIndexObject('a/b'));
 
         $array = array_values(iterator_to_array($index));
 
@@ -130,11 +129,11 @@ class IndexTest extends TestCase
         $testVault->touch('b/d/e');
 
         $index = $this->getNewIndex();
-        $index->addObject(IndexObject::fromPath($testVault->getBasePath(), 'a'));
-        $index->addObject(IndexObject::fromPath($testVault->getBasePath(), 'b'));
-        $index->addObject(IndexObject::fromPath($testVault->getBasePath(), 'b/c'));
-        $index->addObject(IndexObject::fromPath($testVault->getBasePath(), 'b/d'));
-        $index->addObject(IndexObject::fromPath($testVault->getBasePath(), 'b/d/e'));
+        $index->addObject($testVault->getIndexObject('a'));
+        $index->addObject($testVault->getIndexObject('b'));
+        $index->addObject($testVault->getIndexObject('b/c'));
+        $index->addObject($testVault->getIndexObject('b/d'));
+        $index->addObject($testVault->getIndexObject('b/d/e'));
 
         $this->assertEquals(5, $index->count());
     }
@@ -150,8 +149,8 @@ class IndexTest extends TestCase
         $testVault->fwrite('first.ext');
         $testVault->fwrite('second.ext');
 
-        $firstObject = IndexObject::fromPath($testVault->getBasePath(), 'first.ext');
-        $secondObject = IndexObject::fromPath($testVault->getBasePath(), 'second.ext');
+        $firstObject = $testVault->getIndexObject('first.ext');
+        $secondObject = $testVault->getIndexObject('second.ext');
 
         $this->assertTrue($indexA->isSubsetOf($indexB));
 
@@ -183,8 +182,8 @@ class IndexTest extends TestCase
         $testVault->fwrite('first.ext');
         $testVault->fwrite('second.ext');
 
-        $firstObject = IndexObject::fromPath($testVault->getBasePath(), 'first.ext');
-        $secondObject = IndexObject::fromPath($testVault->getBasePath(), 'second.ext');
+        $firstObject = $testVault->getIndexObject('first.ext');
+        $secondObject = $testVault->getIndexObject('second.ext');
 
         $indexA->addObject($firstObject);
 
@@ -210,10 +209,10 @@ class IndexTest extends TestCase
         $testVault->touch('b');
 
         $indexA = $this->getNewIndex();
-        $indexA->addObject($objectA = IndexObject::fromPath($testVault->getBasePath(), 'a'));
+        $indexA->addObject($objectA = $testVault->getIndexObject('a'));
 
         $indexB = $this->getNewIndex();
-        $indexB->addObject($objectB = IndexObject::fromPath($testVault->getBasePath(), 'b'));
+        $indexB->addObject($objectB = $testVault->getIndexObject('b'));
 
         $indexC = $indexA->merge($indexB);
 
@@ -228,10 +227,10 @@ class IndexTest extends TestCase
         $testVault->touch('a');
 
         $indexA = $this->getNewIndex();
-        $indexA->addObject($objectA = IndexObject::fromPath($testVault->getBasePath(), 'a'));
+        $indexA->addObject($objectA = $testVault->getIndexObject('a'));
 
         $indexB = $this->getNewIndex();
-        $indexB->addObject($objectB = IndexObject::fromPath($testVault->getBasePath(), 'a'));
+        $indexB->addObject($objectB = $testVault->getIndexObject('a'));
 
         $indexC = $indexA->merge($indexB);
 
@@ -249,19 +248,19 @@ class IndexTest extends TestCase
         $testVaultA->touch('dir/subdir/file.ext');
 
         $indexA = $this->getNewIndex();
-        $indexA->addObject($objectA = IndexObject::fromPath($testVaultA->getBasePath(), 'file.ext'));
-        $indexA->addObject(IndexObject::fromPath($testVaultA->getBasePath(), 'dir'));
-        $indexA->addObject($objectB = IndexObject::fromPath($testVaultA->getBasePath(), 'dir/file.ext'));
-        $indexA->addObject(IndexObject::fromPath($testVaultA->getBasePath(), 'dir/subdir'));
-        $indexA->addObject(IndexObject::fromPath($testVaultA->getBasePath(), 'dir/subdir/file.ext'));
+        $indexA->addObject($objectA = $testVaultA->getIndexObject('file.ext'));
+        $indexA->addObject($testVaultA->getIndexObject('dir'));
+        $indexA->addObject($objectB = $testVaultA->getIndexObject('dir/file.ext'));
+        $indexA->addObject($testVaultA->getIndexObject('dir/subdir'));
+        $indexA->addObject($testVaultA->getIndexObject('dir/subdir/file.ext'));
 
         $testVaultB = new TestVault();
         $testVaultB->mkdir('dir');
         $testVaultB->touch('dir/subdir');
 
         $indexB = $this->getNewIndex();
-        $indexB->addObject($objectC = IndexObject::fromPath($testVaultB->getBasePath(), 'dir'));
-        $indexB->addObject($objectD = IndexObject::fromPath($testVaultB->getBasePath(), 'dir/subdir'));
+        $indexB->addObject($objectC = $testVaultB->getIndexObject('dir'));
+        $indexB->addObject($objectD = $testVaultB->getIndexObject('dir/subdir'));
 
         $indexA->merge($indexB);
 
@@ -285,7 +284,7 @@ class IndexTest extends TestCase
         $this->assertCount(0, $indexA->getDifference($indexB));
         $this->assertCount(0, $indexB->getDifference($indexA));
 
-        $indexA->addObject($objectA = IndexObject::fromPath($testVault->getBasePath(), 'a'));
+        $indexA->addObject($objectA = $testVault->getIndexObject('a'));
 
         $this->assertCount(0, $indexA->getDifference($indexA));
 
@@ -304,7 +303,7 @@ class IndexTest extends TestCase
         $this->assertCount(0, $indexA->getDifference($indexB));
         $this->assertCount(0, $indexB->getDifference($indexA));
 
-        $indexB->addObject($objectB = IndexObject::fromPath($testVault->getBasePath(), 'b'));
+        $indexB->addObject($objectB = $testVault->getIndexObject('b'));
 
         $this->assertCount(1, $indexA->getDifference($indexB));
         $this->assertCount(1, $indexB->getDifference($indexA));
@@ -331,12 +330,12 @@ class IndexTest extends TestCase
         $testVault->touch('a/d/f');
 
         $indexA = $this->getNewIndex();
-        $indexA->addObject($objectA = IndexObject::fromPath($testVault->getBasePath(), 'a'));
-        $indexA->addObject($objectB = IndexObject::fromPath($testVault->getBasePath(), 'a/b'));
-        $indexA->addObject($objectC = IndexObject::fromPath($testVault->getBasePath(), 'a/c'));
-        $indexA->addObject($objectD = IndexObject::fromPath($testVault->getBasePath(), 'a/d'));
-        $indexA->addObject($objectE = IndexObject::fromPath($testVault->getBasePath(), 'a/d/e'));
-        $indexA->addObject($objectF = IndexObject::fromPath($testVault->getBasePath(), 'a/d/f'));
+        $indexA->addObject($objectA = $testVault->getIndexObject('a'));
+        $indexA->addObject($objectB = $testVault->getIndexObject('a/b'));
+        $indexA->addObject($objectC = $testVault->getIndexObject('a/c'));
+        $indexA->addObject($objectD = $testVault->getIndexObject('a/d'));
+        $indexA->addObject($objectE = $testVault->getIndexObject('a/d/e'));
+        $indexA->addObject($objectF = $testVault->getIndexObject('a/d/f'));
 
         $existingPaths = array_keys(iterator_to_array($indexA));
 

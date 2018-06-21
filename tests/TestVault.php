@@ -4,6 +4,7 @@ namespace Storeman\Test;
 
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
+use Storeman\IndexBuilder\StandardIndexBuilder;
 use Storeman\Vault;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -87,10 +88,15 @@ class TestVault implements \IteratorAggregate
         {
             /** @var SplFileInfo $fileInfo */
 
-            $index->addObject(IndexObject::fromPath($this->getBasePath(), $fileInfo->getRelativePathname()));
+            $index->addObject($this->getIndexObject($fileInfo->getRelativePathname()));
         }
 
         return $index;
+    }
+
+    public function getIndexObject(string $relativePath): IndexObject
+    {
+        return (new StandardIndexBuilder())->buildIndexObject($this->basePath, $relativePath);
     }
 
     public function getIterator(bool $filterMetaFiles = true): \Iterator

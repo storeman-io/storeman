@@ -65,25 +65,4 @@ class Synchronization
 
         return $this;
     }
-
-    public function toScalarArray(): array
-    {
-        return [
-            $this->revision,
-            $this->time->getTimestamp(),
-            $this->identity
-        ];
-    }
-
-    public static function fromScalarArray(array $array, Index $index = null): Synchronization
-    {
-        $instance = new static(
-            $array[0],
-            \DateTime::createFromFormat('U', $array[1]),
-            $array[2],
-            $index
-        );
-
-        return $instance;
-    }
 }

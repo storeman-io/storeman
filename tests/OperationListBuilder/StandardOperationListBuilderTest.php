@@ -3,7 +3,6 @@
 namespace Storeman\Test\OperationListBuilder;
 
 use Storeman\Index\Index;
-use Storeman\Index\IndexObject;
 use Storeman\Operation\OperationInterface;
 use Storeman\Operation\TouchOperation;
 use Storeman\OperationListBuilder\StandardOperationListBuilder;
@@ -29,9 +28,9 @@ class StandardOperationListBuilderTest extends TestCase
 
         $localIndex = new Index();
         $mergedIndex = new Index();
-        $mergedIndex->addObject(IndexObject::fromPath($testVault->getBasePath(), 'a'));
-        $mergedIndex->addObject(IndexObject::fromPath($testVault->getBasePath(), 'a/b'));
-        $mergedIndex->addObject(IndexObject::fromPath($testVault->getBasePath(), 'a/b/c'));
+        $mergedIndex->addObject($testVault->getIndexObject('a'));
+        $mergedIndex->addObject($testVault->getIndexObject('a/b'));
+        $mergedIndex->addObject($testVault->getIndexObject('a/b/c'));
 
         $operationList = $builder->buildOperationList($mergedIndex, $localIndex, $mergedIndex);
 

@@ -4,18 +4,16 @@ namespace Storeman\Test\ConflictHandler;
 
 use Storeman\ConflictHandler\PanickingConflictHandler;
 use Storeman\ConflictHandler\ConflictException;
-use Storeman\Index\IndexObject;
-use Storeman\Test\TemporaryPathGenerator;
+use Storeman\Test\ConfiguredMockProviderTrait;
 use PHPUnit\Framework\TestCase;
 
 class PanickingConflictHandlerTest extends TestCase
 {
+    use ConfiguredMockProviderTrait;
+
     public function testHandleConflict()
     {
-        $tempPathGenerator = new TemporaryPathGenerator();
-        $filePath = $tempPathGenerator->getTemporaryFile();
-
-        $indexObject = IndexObject::fromPath(dirname($filePath), basename($filePath));
+        $indexObject = $this->getIndexObjectMock();
 
         $this->expectException(ConflictException::class);
 
