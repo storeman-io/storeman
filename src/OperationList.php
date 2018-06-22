@@ -38,6 +38,19 @@ class OperationList implements \Countable, \IteratorAggregate
     }
 
     /**
+     * Prepends another operation list to the start of this list.
+     *
+     * @param OperationList $other
+     * @return OperationList
+     */
+    public function prepend(OperationList $other): OperationList
+    {
+        $this->operations = array_merge($other->operations, $this->operations);
+
+        return $this;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function count()

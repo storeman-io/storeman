@@ -5,6 +5,7 @@ namespace Storeman\Test\OperationListBuilder;
 use Storeman\Index\Index;
 use Storeman\Operation\OperationInterface;
 use Storeman\Operation\TouchOperation;
+use Storeman\Operation\UnlinkOperation;
 use Storeman\OperationListBuilder\StandardOperationListBuilder;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 use Storeman\Test\TestVault;
@@ -45,5 +46,30 @@ class StandardOperationListBuilderTest extends TestCase
         $this->assertEquals('a/b/c', $touchOperations[0]->getRelativePath());
         $this->assertEquals('a/b', $touchOperations[1]->getRelativePath());
         $this->assertEquals('a', $touchOperations[2]->getRelativePath());
+    }
+
+    public function testCorrectDirectoryDeletionOrder()
+    {
+        $testVault = new TestVault();
+        $testVault->mkdir('a/b/c');
+        $testVault->touch('a/b/c/d.ext');
+
+        $mergedIndex = new Index();
+        $mergedIndex->addObject($testVault->getIndexObject('a'));
+        $localIndex = $testVault->getIndex();
+
+        $builder = new StandardOperationListBuilder();
+        $operationList = $builder->buildOperationList($mergedIndex, $localIndex);
+
+        /** @var UnlinkOperation[] $unlinkOperations */
+        $unlinkOperations = array_values(array_filter(iterator_to_array($operationList), function(OperationInterface $operation) {
+
+            return $operation instanceof UnlinkOperation;
+        }));
+
+        $this->assertCount(3, $unlinkOperations);
+        $this->assertEquals('a/b/c/d.ext', $unlinkOperations[0]->getRelativePath());
+        $this->assertEquals('a/b/c', $unlinkOperations[1]->getRelativePath());
+        $this->assertEquals('a/b', $unlinkOperations[2]->getRelativePath());
     }
 }

@@ -14,6 +14,11 @@ class UnlinkOperation implements OperationInterface
         $this->relativePath = $relativePath;
     }
 
+    public function getRelativePath(): string
+    {
+        return $this->relativePath;
+    }
+
     public function execute(string $localBasePath, FileReader $fileReader, VaultLayoutInterface $vaultLayout): bool
     {
         $absolutePath = $localBasePath . $this->relativePath;

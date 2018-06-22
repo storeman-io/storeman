@@ -25,6 +25,9 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
         // set of modified paths that can be populated and is later used to add parent directory touch()es
         $modifiedPaths = [];
 
+        // paths to be removed
+        $unlinkPaths = [];
+
         // relies on the directory tree structure being traversed in pre-order (or at least a directory appears before its content)
         foreach ($mergedIndex as $mergedIndexObject)
         {
@@ -35,9 +38,7 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
             // unlink to-be-overridden local path with different type
             if ($localObject !== null && $localObject->getType() !== $mergedIndexObject->getType())
             {
-                // todo: might fail with non-empty directories
-                $operationList->addOperation(new UnlinkOperation($mergedIndexObject->getRelativePath()));
-
+                $unlinkPaths[] = $mergedIndexObject->getRelativePath();
                 $modifiedPaths[] = $mergedIndexObject->getRelativePath();
             }
 
@@ -110,8 +111,7 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
 
             if ($mergedIndex->getObjectByPath($localObject->getRelativePath()) === null)
             {
-                $operationList->addOperation(new UnlinkOperation($localObject->getRelativePath()));
-
+                $unlinkPaths[] = $localObject->getRelativePath();
                 $modifiedPaths[] = $localObject->getRelativePath();
             }
         }
@@ -121,14 +121,23 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
         {
             if (($dir = dirname($modifiedPath)) !== '.')
             {
-                $dirObject = $mergedIndex->getObjectByPath($dir);
-
-                $directoryMtimes[$dirObject->getRelativePath()] = $dirObject->getMtime();
+                if ($dirObject = $mergedIndex->getObjectByPath($dir))
+                {
+                    $directoryMtimes[$dirObject->getRelativePath()] = $dirObject->getMtime();
+                }
             }
         }
 
+        // prepend deletions
+        krsort($unlinkPaths);
+        $unlinkOperations = new OperationList();
+        foreach ($unlinkPaths as $unlinkPath)
+        {
+            $unlinkOperations->addOperation(new UnlinkOperation($unlinkPath));
+        }
+        $operationList->prepend($unlinkOperations);
+
         // set directory mtimes after all other modifications have been performed
-        // todo: test ksort for directory name characters above/below ascii value for "/"
         krsort($directoryMtimes);
         foreach ($directoryMtimes as $relativePath => $mtime)
         {
