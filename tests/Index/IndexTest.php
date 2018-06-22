@@ -291,12 +291,12 @@ class IndexTest extends TestCase
         $diff = $indexA->getDifference($indexB);
 
         $this->assertCount(1, $diff);
-        $this->assertSame($objectA, $diff->getDifference('a')->getIndexObjectA());
+        $this->assertSame($objectA, $diff->getObjectComparison('a')->getIndexObjectA());
 
         $diff = $indexB->getDifference($indexA);
 
         $this->assertCount(1, $diff);
-        $this->assertSame($objectA, $diff->getDifference('a')->getIndexObjectA());
+        $this->assertSame($objectA, $diff->getObjectComparison('a')->getIndexObjectA());
 
         $indexB->addObject($objectA);
 
@@ -311,7 +311,7 @@ class IndexTest extends TestCase
         $diff = $indexA->getDifference($indexB);
 
         $this->assertCount(1, $diff);
-        $this->assertSame($objectB, $diff->getDifference('b')->getIndexObjectA());
+        $this->assertSame($objectB, $diff->getObjectComparison('b')->getIndexObjectA());
 
         $indexA->addObject($objectB);
 
@@ -353,6 +353,33 @@ class IndexTest extends TestCase
             array_diff($existingPaths, ['a']),
             array_keys(iterator_to_array($diff))
         ));
+    }
+
+    public function testTrivialIntersection()
+    {
+        $testVault = new TestVault();
+        $testVault->touch('a');
+        $testVault->touch('b');
+        $testVault->touch('c');
+
+        $objectA = $testVault->getIndexObject('a');
+        $objectB = $testVault->getIndexObject('b');
+        $objectC = $testVault->getIndexObject('c');
+
+        $indexA = new Index();
+        $indexA->addObject($objectA);
+        $indexA->addObject($objectB);
+
+        $indexB = new Index();
+        $indexB->addObject($objectB);
+        $indexB->addObject($objectC);
+
+        $intersection = $indexA->getIntersection($indexB);
+
+        $this->assertCount(1, $intersection);
+        $this->assertTrue($intersection->hasObjectComparison('b'));
+        $this->assertTrue($objectB->equals($intersection->getObjectComparison('b')->getIndexObjectA()));
+        $this->assertTrue($objectB->equals($intersection->getObjectComparison('b')->getIndexObjectB()));
     }
 
     protected function areIndizesEqual(Index $indexA, Index $indexB)

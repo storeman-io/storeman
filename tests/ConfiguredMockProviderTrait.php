@@ -3,7 +3,6 @@
 namespace Storeman\Test;
 
 use Storeman\Config\Configuration;
-use Storeman\ConflictHandler\ConflictHandlerInterface;
 use Storeman\Hash\HashProvider;
 use Storeman\Index\IndexObject;
 
@@ -15,11 +14,6 @@ trait ConfiguredMockProviderTrait
     private function getConfigurationMock(array $config = []): Configuration
     {
         return $this->createConfiguredMock(Configuration::class, $config);
-    }
-
-    private function getConflictHandlerMock(array $config = []): ConflictHandlerInterface
-    {
-        return $this->createConfiguredMock(ConflictHandlerInterface::class, $config);
     }
 
     private function getIndexObjectMock(array $config = []): IndexObject

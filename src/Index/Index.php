@@ -3,8 +3,8 @@
 namespace Storeman\Index;
 
 use Storeman\Exception;
-use Storeman\Index\Diff\IndexDifference;
-use Storeman\Index\Diff\IndexObjectDifference;
+use Storeman\Index\Comparison\IndexComparison;
+use Storeman\Index\Comparison\IndexObjectComparison;
 
 /**
  * As the name suggests an index is a representation of the vault at some point in time.
@@ -91,31 +91,33 @@ class Index implements \Countable, \IteratorAggregate
      * Compares this index to the given index and returns the comparison result as boolean indicator.
      *
      * @param Index|null $other
+     * @param int $options
      * @return bool
      */
-    public function equals(Index $other = null): bool
+    public function equals(Index $other = null, int $options = 0): bool
     {
         if ($other === null)
         {
             return false;
         }
 
-        return $this->isSubsetOf($other) && $other->isSubsetOf($this);
+        return $this->isSubsetOf($other, $options) && $other->isSubsetOf($this, $options);
     }
 
     /**
      * Returns true if this index is a subset of the given index.
      *
      * @param Index $other
+     * @param int $options
      * @return bool
      */
-    public function isSubsetOf(Index $other): bool
+    public function isSubsetOf(Index $other, int $options = 0): bool
     {
         foreach ($this as $indexObject)
         {
             /** @var IndexObject $indexObject */
 
-            if (!$indexObject->equals($other->getObjectByPath($indexObject->getRelativePath())))
+            if (!$indexObject->equals($other->getObjectByPath($indexObject->getRelativePath()), $options))
             {
                 return false;
             }
@@ -131,16 +133,43 @@ class Index implements \Countable, \IteratorAggregate
      * this index.
      *
      * @param Index $other
-     * @return IndexDifference
+     * @param int $options
+     * @return IndexComparison
      */
-    public function getDifference(Index $other): IndexDifference
+    public function getDifference(Index $other, int $options = 0): IndexComparison
     {
-        $diff = new IndexDifference();
+        $diff = new IndexComparison();
 
-        $this->addDiffTo($other, $diff);
-        $other->addDiffTo($this, $diff);
+        $this->addDiffTo($other, $diff, $options);
+        $other->addDiffTo($this, $diff, $options);
 
         return $diff;
+    }
+
+    /**
+     * Returns the intersection of this and the given index.
+     *
+     * @param Index $other
+     * @param int $options
+     * @return IndexComparison
+     */
+    public function getIntersection(Index $other, int $options = 0): IndexComparison
+    {
+        $intersection = new IndexComparison();
+
+        foreach ($this as $object)
+        {
+            /** @var IndexObject $object */
+
+            $otherObject = $other->getObjectByPath($object->getRelativePath());
+
+            if ($object->equals($otherObject, $options))
+            {
+                $intersection->addObjectComparison(new IndexObjectComparison($object, $otherObject));
+            }
+        }
+
+        return $intersection;
     }
 
     /**
@@ -197,10 +226,11 @@ class Index implements \Countable, \IteratorAggregate
      * Returns all those objects in this index that are not existent or are different in the given index.
      *
      * @param Index $other
-     * @param IndexDifference $indexDifference
-     * @return IndexDifference
+     * @param IndexComparison $indexDifference
+     * @param int $options
+     * @return IndexComparison
      */
-    protected function addDiffTo(Index $other, IndexDifference $indexDifference): IndexDifference
+    protected function addDiffTo(Index $other, IndexComparison $indexDifference, int $options = 0): IndexComparison
     {
         foreach ($this as $object)
         {
@@ -208,9 +238,9 @@ class Index implements \Countable, \IteratorAggregate
 
             $otherObject = $other->getObjectByPath($object->getRelativePath());
 
-            if (!$object->equals($otherObject) && !$indexDifference->hasDifference($object->getRelativePath()))
+            if (!$object->equals($otherObject, $options) && !$indexDifference->hasObjectComparison($object->getRelativePath()))
             {
-                $indexDifference->addDifference(new IndexObjectDifference($object, $otherObject));
+                $indexDifference->addObjectComparison(new IndexObjectComparison($object, $otherObject));
             }
         }
 

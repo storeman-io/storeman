@@ -13,6 +13,8 @@ class IndexObject
     public const TYPE_FILE = 2;
     public const TYPE_LINK = 3;
 
+    public const CMP_IGNORE_BLOBID = 1;
+
 
     /**
      * @var string
@@ -171,9 +173,10 @@ class IndexObject
      * Equality check with all attributes.
      *
      * @param IndexObject $other
+     * @param int $options
      * @return bool
      */
-    public function equals(?IndexObject $other): bool
+    public function equals(?IndexObject $other, int $options = 0): bool
     {
         if ($other === null)
         {
@@ -189,7 +192,7 @@ class IndexObject
         $equals = $equals && ($this->size === $other->size);
         $equals = $equals && ($this->inode === $other->inode);
         $equals = $equals && ($this->linkTarget === $other->linkTarget);
-        $equals = $equals && ($this->blobId === $other->blobId);
+        $equals = $equals && (($options & static::CMP_IGNORE_BLOBID) || ($this->blobId === $other->blobId));
 
         if ($this->hashes)
         {

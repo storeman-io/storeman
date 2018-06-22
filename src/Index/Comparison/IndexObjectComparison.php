@@ -1,13 +1,10 @@
 <?php
 
-namespace Storeman\Index\Diff;
+namespace Storeman\Index\Comparison;
 
 use Storeman\Index\IndexObject;
 
-/**
- * Represents the difference between two index objects.
- */
-class IndexObjectDifference
+class IndexObjectComparison
 {
     /**
      * @var string
