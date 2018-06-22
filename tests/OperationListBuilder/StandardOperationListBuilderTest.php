@@ -32,7 +32,7 @@ class StandardOperationListBuilderTest extends TestCase
         $mergedIndex->addObject($testVault->getIndexObject('a/b'));
         $mergedIndex->addObject($testVault->getIndexObject('a/b/c'));
 
-        $operationList = $builder->buildOperationList($mergedIndex, $localIndex, $mergedIndex);
+        $operationList = $builder->buildOperationList($mergedIndex, $localIndex);
 
         /** @var TouchOperation[] $touchOperations */
         $touchOperations = array_values(array_filter(iterator_to_array($operationList), function(OperationInterface $operation) {

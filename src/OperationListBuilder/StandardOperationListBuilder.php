@@ -15,7 +15,7 @@ use Storeman\OperationList;
 
 class StandardOperationListBuilder implements OperationListBuilderInterface
 {
-    public function buildOperationList(Index $mergedIndex, Index $localIndex, Index $remoteIndex = null): OperationList
+    public function buildOperationList(Index $mergedIndex, Index $localIndex): OperationList
     {
         $operationList = new OperationList();
 

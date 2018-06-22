@@ -207,7 +207,7 @@ class Vault
 
         $mergedIndex = $this->doBuildMergedIndex($localIndex, $lastLocalIndex, $remoteIndex);
 
-        return $this->getOperationListBuilder()->buildOperationList($mergedIndex, $localIndex, $remoteIndex);
+        return $this->getOperationListBuilder()->buildOperationList($mergedIndex, $localIndex);
     }
 
     /**
@@ -255,7 +255,7 @@ class Vault
 
         $synchronization = new Synchronization($newRevision, new \DateTime(), $this->storeman->getConfiguration()->getIdentity(), $mergedIndex);
 
-        $operationList = $this->getOperationListBuilder()->buildOperationList($mergedIndex, $localIndex, $remoteIndex);
+        $operationList = $this->getOperationListBuilder()->buildOperationList($mergedIndex, $localIndex);
         $operationList->addOperation(new WriteSynchronizationOperation($synchronization));
 
         $operationResultList = new OperationResultList();
@@ -380,7 +380,7 @@ class Vault
 
         $localIndex = $this->getIndexBuilder()->buildIndex($targetPath, $this->getLocalIndexExclusionPatterns());
 
-        $operationList = $this->getOperationListBuilder()->buildOperationList($remoteIndex, $localIndex, $remoteIndex);
+        $operationList = $this->getOperationListBuilder()->buildOperationList($remoteIndex, $localIndex);
 
         $operationResultList = new OperationResultList();
 
