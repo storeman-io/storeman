@@ -26,7 +26,7 @@ class IndexObjectDifference
 
     public function __construct(?IndexObject $indexObjectA, ?IndexObject $indexObjectB)
     {
-        assert(($indexObjectA === null) xor ($indexObjectB === null));
+        assert(!(($indexObjectA === null) && ($indexObjectB === null)));
         assert(
             ($indexObjectA === null || $indexObjectB === null) ||
             ($indexObjectA->getRelativePath() === $indexObjectB->getRelativePath())
