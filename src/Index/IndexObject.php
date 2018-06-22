@@ -74,6 +74,7 @@ class IndexObject
         assert(($type === static::TYPE_FILE) || ($blobId === null));
         assert(($type === static::TYPE_FILE) ^ ($hashContainer === null));
         assert(($type === static::TYPE_LINK) ^ ($linkTarget === null));
+        assert(!($permissions & ~0777));
 
         $this->relativePath = $relativePath;
         $this->type = $type;
