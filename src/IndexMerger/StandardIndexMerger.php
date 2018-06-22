@@ -143,6 +143,7 @@ class StandardIndexMerger implements IndexMergerInterface
         $localObjectModified = $localObjectModified || ($localObject->getCtime() !== $lastLocalObject->getCtime());
         $localObjectModified = $localObjectModified || ($localObject->getMode() !== $lastLocalObject->getMode());
         $localObjectModified = $localObjectModified || ($localObject->getSize() !== $lastLocalObject->getSize());
+        $localObjectModified = $localObjectModified || ($localObject->getInode() !== $lastLocalObject->getInode());
         $localObjectModified = $localObjectModified || ($localObject->getLinkTarget() !== $lastLocalObject->getLinkTarget());
 
         if (!$localObjectModified && $localObject->isFile())
