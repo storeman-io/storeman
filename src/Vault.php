@@ -449,7 +449,7 @@ class Vault
             $indexObject->getType(),
             $indexObject->getMtime(),
             $indexObject->getCtime(),
-            $indexObject->getMode(),
+            $indexObject->getPermissions(),
             $indexObject->getSize(),
             $indexObject->getInode(),
             $indexObject->getLinkTarget(),

@@ -35,12 +35,11 @@ class IndexObject
     protected $ctime;
 
     /**
-     * Full file mode.
-     * May include additional modes like setuid, guid, etc.
+     * mode & 0777
      *
      * @var int
      */
-    protected $mode;
+    protected $permissions;
 
     /**
      * @var int
@@ -69,7 +68,7 @@ class IndexObject
      */
     protected $blobId;
 
-    public function __construct(string $relativePath, int $type, int $mtime, int $ctime, int $mode, ?int $size, ?int $inode, ?string $linkTarget, ?string $blobId, ?HashContainer $hashContainer)
+    public function __construct(string $relativePath, int $type, int $mtime, int $ctime, int $permissions, ?int $size, ?int $inode, ?string $linkTarget, ?string $blobId, ?HashContainer $hashContainer)
     {
         assert(($type === static::TYPE_FILE) ^ ($size === null));
         assert(($type === static::TYPE_FILE) || ($blobId === null));
@@ -80,7 +79,7 @@ class IndexObject
         $this->type = $type;
         $this->mtime = $mtime;
         $this->ctime = $ctime;
-        $this->mode = $mode;
+        $this->permissions = $permissions;
         $this->size = $size;
         $this->inode = $inode;
         $this->linkTarget = $linkTarget;
@@ -130,9 +129,9 @@ class IndexObject
         return $this->ctime;
     }
 
-    public function getMode(): int
+    public function getPermissions(): int
     {
-        return $this->mode;
+        return $this->permissions;
     }
 
     public function getSize(): ?int
@@ -185,7 +184,7 @@ class IndexObject
         $equals = $equals && ($this->type === $other->type);
         $equals = $equals && ($this->mtime === $other->mtime);
         $equals = $equals && ($this->ctime === $other->ctime);
-        $equals = $equals && ($this->mode === $other->mode);
+        $equals = $equals && ($this->permissions === $other->permissions);
         $equals = $equals && ($this->size === $other->size);
         $equals = $equals && ($this->inode === $other->inode);
         $equals = $equals && ($this->linkTarget === $other->linkTarget);

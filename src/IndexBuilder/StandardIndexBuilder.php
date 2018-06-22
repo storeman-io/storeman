@@ -116,6 +116,6 @@ class StandardIndexBuilder implements IndexBuilderInterface
                 return null;
         }
 
-        return new IndexObject($relativePath, $type, $stat['mtime'], $stat['ctime'], $stat['mode'], $size, $stat['ino'], $linkTarget, null, $hashContainer);
+        return new IndexObject($relativePath, $type, $stat['mtime'], $stat['ctime'], $stat['mode'] & 0777, $size, $stat['ino'], $linkTarget, null, $hashContainer);
     }
 }

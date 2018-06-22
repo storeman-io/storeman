@@ -47,7 +47,7 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
             {
                 if ($localObject === null || !$localObject->isDirectory())
                 {
-                    $operationList->addOperation(new MkdirOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getMode()));
+                    $operationList->addOperation(new MkdirOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getPermissions()));
 
                     $directoryMtimes[$mergedIndexObject->getRelativePath()] = $mergedIndexObject->getMtime();
                 }
@@ -74,7 +74,7 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
                 {
                     $operationList->addOperation(new DownloadOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getBlobId()));
                     $operationList->addOperation(new TouchOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getMtime()));
-                    $operationList->addOperation(new ChmodOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getMode()));
+                    $operationList->addOperation(new ChmodOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getPermissions()));
 
                     $modifiedPaths[] = $mergedIndexObject->getRelativePath();
                 }
@@ -85,7 +85,7 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
                 if ($localObject !== null && $localObject->getLinkTarget() !== $mergedIndexObject->getLinkTarget())
                 {
                     $operationList->addOperation(new UnlinkOperation($mergedIndexObject->getRelativePath()));
-                    $operationList->addOperation(new SymlinkOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getLinkTarget(), $mergedIndexObject->getMode()));
+                    $operationList->addOperation(new SymlinkOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getLinkTarget(), $mergedIndexObject->getPermissions()));
 
                     $modifiedPaths[] = $mergedIndexObject->getRelativePath();
                 }
@@ -98,9 +98,9 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
             }
 
 
-            if ($localObject !== null && $localObject->getMode() !== $mergedIndexObject->getMode())
+            if ($localObject !== null && $localObject->getPermissions() !== $mergedIndexObject->getPermissions())
             {
-                $operationList->addOperation(new ChmodOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getMode()));
+                $operationList->addOperation(new ChmodOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getPermissions()));
             }
         }
 

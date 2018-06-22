@@ -55,7 +55,7 @@ abstract class AbstractIndexBuilderTest extends TestCase
         $this->assertEquals(filemtime($absoluteFilePath), $object->getMtime());
         $this->assertEquals(filectime($absoluteFilePath), $object->getCtime());
         $this->assertEquals(fileinode($absoluteFilePath), $object->getInode());
-        $this->assertEquals(fileperms($absoluteFilePath), $object->getMode());
+        $this->assertEquals(fileperms($absoluteFilePath) & 0777, $object->getPermissions());
         $this->assertNull($object->getLinkTarget());
         $this->assertInstanceOf(HashContainer::class, $object->getHashes());
 
@@ -71,7 +71,7 @@ abstract class AbstractIndexBuilderTest extends TestCase
         $this->assertEquals(filemtime($absoluteFilePath), $object->getMtime());
         $this->assertEquals(filectime($absoluteFilePath), $object->getCtime());
         $this->assertEquals(fileinode($absoluteFilePath), $object->getInode());
-        $this->assertEquals(fileperms($absoluteFilePath), $object->getMode());
+        $this->assertEquals(fileperms($absoluteFilePath) & 0777, $object->getPermissions());
         $this->assertNull($object->getLinkTarget());
         $this->assertNull($object->getHashes());
 
@@ -87,7 +87,7 @@ abstract class AbstractIndexBuilderTest extends TestCase
         $this->assertEquals(filemtime($absoluteFilePath), $object->getMtime());
         $this->assertEquals(filectime($absoluteFilePath), $object->getCtime());
         $this->assertEquals(fileinode($absoluteFilePath), $object->getInode());
-        $this->assertEquals(fileperms($absoluteFilePath), $object->getMode());
+        $this->assertEquals(fileperms($absoluteFilePath) & 0777, $object->getPermissions());
         $this->assertNull($object->getLinkTarget());
         $this->assertInstanceOf(HashContainer::class, $object->getHashes());
 
@@ -104,7 +104,7 @@ abstract class AbstractIndexBuilderTest extends TestCase
         $this->assertEquals($linkInfo['mtime'], $object->getMtime());
         $this->assertEquals($linkInfo['ctime'], $object->getCtime());
         $this->assertEquals($linkInfo['ino'], $object->getInode());
-        $this->assertEquals($linkInfo['mode'], $object->getMode());
+        $this->assertEquals($linkInfo['mode'] & 0777, $object->getPermissions());
         $this->assertEquals(readlink($absoluteFilePath), $object->getLinkTarget());
         $this->assertNull($object->getHashes());
 

@@ -200,7 +200,7 @@ class AmberjackVaultLayout implements VaultLayoutInterface
             $indexObject->getType(),
             $indexObject->getMtime(),
             $indexObject->getCtime(),
-            $indexObject->getMode(),
+            $indexObject->getPermissions(),
             $indexObject->getSize(),
             $indexObject->getLinkTarget(),
             $indexObject->getBlobId(),
