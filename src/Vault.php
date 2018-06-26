@@ -7,7 +7,6 @@ use Storeman\ConflictHandler\ConflictHandlerInterface;
 use Storeman\Hash\HashContainer;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
-use Storeman\IndexBuilder\IndexBuilderInterface;
 use Storeman\Operation\WriteSynchronizationOperation;
 use Storeman\StorageAdapter\StorageAdapterInterface;
 use Storeman\IndexMerger\IndexMergerInterface;
@@ -20,8 +19,6 @@ use Storeman\Operation\OperationInterface;
 
 class Vault
 {
-    public const CONFIG_FILE_NAME = 'storeman.json';
-    public const METADATA_DIRECTORY_NAME = '.storeman';
     public const LOCK_SYNC = 'sync';
 
 
@@ -56,11 +53,6 @@ class Vault
     protected $lockAdapter;
 
     /**
-     * @var IndexBuilderInterface
-     */
-    protected $indexBuilder;
-
-    /**
      * @var IndexMergerInterface
      */
     protected $indexMerger;
@@ -79,6 +71,11 @@ class Vault
     {
         $this->storeman = $storeman;
         $this->vaultConfiguration = $vaultConfiguration;
+    }
+
+    public function getStoreman(): Storeman
+    {
+        return $this->storeman;
     }
 
     public function getVaultConfiguration(): VaultConfiguration
@@ -106,11 +103,6 @@ class Vault
         return $this->lockAdapter ?: ($this->lockAdapter = $this->getContainer()->get('lockAdapter'));
     }
 
-    public function getIndexBuilder(): IndexBuilderInterface
-    {
-        return $this->indexBuilder ?: ($this->indexBuilder = $this->getContainer()->get('indexBuilder'));
-    }
-
     public function getIndexMerger(): IndexMergerInterface
     {
         return $this->indexMerger ?: ($this->indexMerger = $this->getContainer()->get('indexMerger'));
@@ -124,19 +116,6 @@ class Vault
     public function getOperationListBuilder(): OperationListBuilderInterface
     {
         return $this->operationListBuilder ?: ($this->operationListBuilder = $this->getContainer()->get('operationListBuilder'));
-    }
-
-    /**
-     * Builds and returns an index representing the current local state.
-     *
-     * @return Index
-     */
-    public function buildLocalIndex(): Index
-    {
-        return $this->getIndexBuilder()->buildIndex(
-            $this->vaultConfiguration->getConfiguration()->getPath(),
-            $this->getLocalIndexExclusionPatterns()
-        );
     }
 
     /**
@@ -201,7 +180,7 @@ class Vault
      */
     public function getOperationList(): OperationList
     {
-        $localIndex = $this->buildLocalIndex();
+        $localIndex = $this->storeman->getLocalIndex();
         $lastLocalIndex = $this->loadLastLocalIndex();
         $remoteIndex = $this->loadRemoteIndex();
 
@@ -226,7 +205,7 @@ class Vault
             $progressionListener = new DummySynchronizationProgressListener();
         }
 
-        $localIndex = $this->buildLocalIndex();
+        $localIndex = $this->storeman->getLocalIndex();
         $lastLocalIndex = $this->loadLastLocalIndex();
 
 
@@ -332,7 +311,7 @@ class Vault
 
     protected function doBuildMergedIndex(Index $localIndex = null, Index $lastLocalIndex = null, Index $remoteIndex = null): Index
     {
-        $localIndex = $localIndex ?: $this->buildLocalIndex();
+        $localIndex = $localIndex ?: $this->storeman->getLocalIndex();
         $lastLocalIndex = $lastLocalIndex ?: $this->loadLastLocalIndex();
         $remoteIndex = $remoteIndex ?: $this->loadRemoteIndex();
 
@@ -378,7 +357,7 @@ class Vault
 
         $targetPath = $targetPath ?: $this->storeman->getConfiguration()->getPath();
 
-        $localIndex = $this->getIndexBuilder()->buildIndex($targetPath, $this->getLocalIndexExclusionPatterns());
+        $localIndex = $this->storeman->getLocalIndex($targetPath);
 
         $operationList = $this->getOperationListBuilder()->buildOperationList($remoteIndex, $localIndex);
 
@@ -480,36 +459,10 @@ class Vault
         );
     }
 
-    protected function initMetadataDirectory(): string
-    {
-        $path = $this->storeman->getConfiguration()->getPath() . static::METADATA_DIRECTORY_NAME;
-
-        if (!is_dir($path))
-        {
-            if (!mkdir($path))
-            {
-                throw new Exception("mkdir() failed for {$path}");
-            }
-        }
-
-        return $path . DIRECTORY_SEPARATOR;
-    }
-
     protected function getLastLocalIndexFilePath(): string
     {
         // todo: use other vault identifier
-        return $this->initMetadataDirectory() . sprintf('lastLocalIndex-%s', $this->vaultConfiguration->getTitle());
-    }
-
-    /**
-     * @return string[]
-     */
-    protected function getLocalIndexExclusionPatterns()
-    {
-        return array_merge($this->vaultConfiguration->getConfiguration()->getExclude(), [
-            static::CONFIG_FILE_NAME,
-            static::METADATA_DIRECTORY_NAME,
-        ]);
+        return $this->storeman->getMetadataDirectoryPath() . sprintf('lastLocalIndex-%s', $this->vaultConfiguration->getTitle());
     }
 
     /**

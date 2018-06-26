@@ -4,8 +4,8 @@ namespace Storeman\Test\Cli\Command;
 
 use Storeman\Cli\Command\InitCommand;
 use Storeman\Cli\ConfigurationFileReader;
+use Storeman\Storeman;
 use Storeman\Test\TestVault;
-use Storeman\Vault;
 use Storeman\Config\VaultConfiguration;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -37,7 +37,7 @@ class InitCommandTest extends AbstractCommandTest
             'yes', // continue
         ]);
 
-        $filePath = $testVault->getBasePath() . Vault::CONFIG_FILE_NAME;
+        $filePath = $testVault->getBasePath() . Storeman::CONFIG_FILE_NAME;
         $returnCode = $tester->execute([
             '-c' => $filePath,
         ]);

@@ -4,9 +4,9 @@ namespace Storeman\Test\Cli\Command;
 
 use Storeman\Cli\Command\RestoreCommand;
 use Storeman\Cli\Command\SynchronizeCommand;
+use Storeman\Storeman;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 use Storeman\Test\TestVault;
-use Storeman\Vault;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -30,7 +30,7 @@ class RestoreCommandTest extends AbstractCommandTest
         $originalContent = md5(rand());
 
         $testVault = new TestVault();
-        $testVault->fwrite(Vault::CONFIG_FILE_NAME, json_encode($config));
+        $testVault->fwrite(Storeman::CONFIG_FILE_NAME, json_encode($config));
         $testVault->fwrite('test.ext', $originalContent);
 
         $this->assertTrue(chdir($testVault->getBasePath()));

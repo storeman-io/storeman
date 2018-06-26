@@ -5,7 +5,7 @@ namespace Storeman\Test;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
 use Storeman\IndexBuilder\StandardIndexBuilder;
-use Storeman\Vault;
+use Storeman\Storeman;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -103,7 +103,7 @@ class TestVault implements \IteratorAggregate
     {
         $finder = new Finder();
         $finder->in($this->basePath);
-        $finder->exclude(Vault::METADATA_DIRECTORY_NAME);
+        $finder->exclude(Storeman::METADATA_DIRECTORY_NAME);
 
         return $finder->getIterator();
     }

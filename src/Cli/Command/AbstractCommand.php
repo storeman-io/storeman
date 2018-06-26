@@ -44,7 +44,7 @@ abstract class AbstractCommand extends Command
     {
         parent::configure();
 
-        $defaultConfigFilePath = sprintf('./%s', Vault::CONFIG_FILE_NAME);
+        $defaultConfigFilePath = sprintf('./%s', Storeman::CONFIG_FILE_NAME);
 
         $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, "Path to configuration file. Defaults to \"{$defaultConfigFilePath}\".", $defaultConfigFilePath);
     }

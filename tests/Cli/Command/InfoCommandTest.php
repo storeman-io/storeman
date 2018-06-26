@@ -4,9 +4,9 @@ namespace Storeman\Test\Cli\Command;
 
 use Storeman\Cli\Command\InfoCommand;
 use Storeman\Cli\Command\SynchronizeCommand;
+use Storeman\Storeman;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 use Storeman\Test\TestVault;
-use Storeman\Vault;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -36,9 +36,9 @@ class InfoCommandTest extends AbstractCommandTest
         ];
 
         $testVault = new TestVault();
-        $testVault->fwrite(Vault::CONFIG_FILE_NAME, json_encode($config));
+        $testVault->fwrite(Storeman::CONFIG_FILE_NAME, json_encode($config));
 
-        $absoluteConfigFilePath = $testVault->getBasePath() . Vault::CONFIG_FILE_NAME;
+        $absoluteConfigFilePath = $testVault->getBasePath() . Storeman::CONFIG_FILE_NAME;
 
         // ensure existing history
         $tester = new CommandTester(new SynchronizeCommand());

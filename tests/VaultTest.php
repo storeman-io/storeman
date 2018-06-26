@@ -24,14 +24,14 @@ class VaultTest extends TestCase
         $connectionTarget = $this->getTemporaryPathGenerator()->getTemporaryDirectory();
         $vault = $this->getLocalVault($testVault->getBasePath(), $connectionTarget);
 
-        $this->assertIndexEqualsTestVault($testVault, $vault->buildLocalIndex());
+        $this->assertIndexEqualsTestVault($testVault, $vault->getStoreman()->getLocalIndex());
         $this->assertNull($vault->loadLastLocalIndex());
         $this->assertNull($vault->loadRemoteIndex());
         $this->assertIndexEqualsTestVault($testVault, $vault->buildMergedIndex());
 
         $vault->synchronize();
 
-        $this->assertIndexEqualsTestVault($testVault, $vault->buildLocalIndex());
+        $this->assertIndexEqualsTestVault($testVault, $vault->getStoreman()->getLocalIndex());
         $this->assertIndexEqualsTestVault($testVault, $vault->loadLastLocalIndex());
         $this->assertIndexEqualsTestVault($testVault, $vault->loadRemoteIndex());
         $this->assertIndexEqualsTestVault($testVault, $vault->buildMergedIndex());
@@ -109,7 +109,7 @@ class VaultTest extends TestCase
 
         $verificationVault = $this->getLocalVault($dumpTarget, $this->getTemporaryPathGenerator()->getTemporaryDirectory());
 
-        $this->assertIndexEqualsTestVault($testVault, $verificationVault->buildLocalIndex());
+        $this->assertIndexEqualsTestVault($testVault, $verificationVault->getStoreman()->getLocalIndex());
     }
 
     private function assertIndexEqualsTestVault(TestVault $testVault, Index $index)

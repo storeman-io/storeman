@@ -4,10 +4,10 @@ namespace Storeman\Test\Cli\Command;
 
 use Storeman\Cli\Command\DumpCommand;
 use Storeman\Cli\Command\SynchronizeCommand;
+use Storeman\Storeman;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 use Storeman\Test\TestVault;
 use Storeman\Test\TestVaultGeneratorProviderTrait;
-use Storeman\Vault;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Finder\SplFileInfo;
@@ -31,7 +31,7 @@ class DumpCommandTest extends AbstractCommandTest
         ];
 
         $testVault = $this->getTestVaultGenerator()->generate();
-        $testVault->fwrite(Vault::CONFIG_FILE_NAME, json_encode($config));
+        $testVault->fwrite(Storeman::CONFIG_FILE_NAME, json_encode($config));
 
         $this->assertTrue(chdir($testVault->getBasePath()));
 

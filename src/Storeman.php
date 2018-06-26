@@ -3,6 +3,8 @@
 namespace Storeman;
 
 use Storeman\Config\Configuration;
+use Storeman\Index\Index;
+use Storeman\IndexBuilder\IndexBuilderInterface;
 use Storeman\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 
 /**
@@ -10,6 +12,9 @@ use Storeman\SynchronizationProgressListener\SynchronizationProgressListenerInte
  */
 class Storeman
 {
+    public const CONFIG_FILE_NAME = 'storeman.json';
+    public const METADATA_DIRECTORY_NAME = '.storeman';
+
     /**
      * @var Container
      */
@@ -52,6 +57,30 @@ class Storeman
     public function getVaultContainer(): VaultContainer
     {
         return $this->container->getVaultContainer();
+    }
+
+    /**
+     * Returns configured index builder.
+     *
+     * @return IndexBuilderInterface
+     */
+    public function getIndexBuilder(): IndexBuilderInterface
+    {
+        return $this->container->get('indexBuilder');
+    }
+
+    /**
+     * Builds and returns an index representing the current local state.
+     *
+     * @param string $path
+     * @return Index
+     */
+    public function getLocalIndex(string $path = null): Index
+    {
+        return $this->getIndexBuilder()->buildIndex(
+            $path ?: $this->getConfiguration()->getPath(),
+            $this->getLocalIndexExclusionPatterns()
+        );
     }
 
     public function synchronize(array $vaultTitles = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
@@ -124,6 +153,11 @@ class Storeman
         return $max ?: null;
     }
 
+    public function getMetadataDirectoryPath(): string
+    {
+        return $this->initMetadataDirectory();
+    }
+
     /**
      * @param Vault[] $vaults
      * @param string $lockName
@@ -180,5 +214,31 @@ class Storeman
         }
 
         return $vault;
+    }
+
+    protected function initMetadataDirectory(): string
+    {
+        $path = $this->getConfiguration()->getPath() . static::METADATA_DIRECTORY_NAME;
+
+        if (!is_dir($path))
+        {
+            if (!mkdir($path))
+            {
+                throw new Exception("mkdir() failed for {$path}");
+            }
+        }
+
+        return $path . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * @return string[]
+     */
+    protected function getLocalIndexExclusionPatterns(): array
+    {
+        return array_merge($this->getConfiguration()->getExclude(), [
+            static::CONFIG_FILE_NAME,
+            static::METADATA_DIRECTORY_NAME,
+        ]);
     }
 }
