@@ -33,6 +33,28 @@ class ConfigurationFileReader implements LoggerAwareInterface
     {
         $this->logger->info("Reading config file from {$configurationFilePath}...");
 
+        $array = $this->readJsonFile($configurationFilePath);
+        $array = $this->mergeDefaults($array, $configurationDefaults, $vaultConfigurationDefaults);
+
+        try
+        {
+            $configuration = new Configuration();
+            $configuration->exchangeArray($array);
+        }
+        catch (\InvalidArgumentException $exception)
+        {
+            throw new ConfigurationException("In file {$configurationFilePath}", 0, $exception);
+        }
+
+        $this->validateConfiguration($configuration, $configurationFilePath);
+
+        $this->logger->info("The following configuration has been read: " . var_export($configuration->getArrayCopy(), true));
+
+        return $configuration;
+    }
+
+    protected function readJsonFile(string $configurationFilePath): array
+    {
         $configurationFilePath = PathUtils::getAbsolutePath($configurationFilePath);
 
         if (!is_file($configurationFilePath) || !is_readable($configurationFilePath))
@@ -50,14 +72,23 @@ class ConfigurationFileReader implements LoggerAwareInterface
             throw new Exception("Malformed configuration file: {$configurationFilePath}.");
         }
 
-        if (!array_key_exists('vaults', $array) || !is_array($array['vaults']))
+        if (!is_array($array))
+        {
+            throw new ConfigurationException("Malformed configuration file: {$configurationFilePath}");
+        }
+
+        return $array;
+    }
+
+    protected function mergeDefaults(array $config, array $configurationDefaults, array $vaultConfigurationDefaults): array
+    {
+        if (!array_key_exists('vaults', $config) || !is_array($config['vaults']))
         {
             throw new ConfigurationException("Missing vault configurations");
         }
 
-        // merge defaults
-        $array = ArrayUtils::merge($configurationDefaults, $array);
-        $array['vaults'] = array_map(function($vaultConfig) use ($vaultConfigurationDefaults) {
+        $config = ArrayUtils::merge($configurationDefaults, $config);
+        $config['vaults'] = array_map(function($vaultConfig) use ($vaultConfigurationDefaults) {
 
             if (!is_array($vaultConfig))
             {
@@ -66,21 +97,13 @@ class ConfigurationFileReader implements LoggerAwareInterface
 
             return ArrayUtils::merge($vaultConfigurationDefaults, $vaultConfig);
 
-        }, $array['vaults']);
+        }, $config['vaults']);
 
+        return $config;
+    }
 
-        try
-        {
-            $configuration = new Configuration();
-            $configuration->exchangeArray($array);
-        }
-        catch (\InvalidArgumentException $exception)
-        {
-            throw new ConfigurationException("In file {$configurationFilePath}", 0, $exception);
-        }
-
-
-        // validate configuration
+    protected function validateConfiguration(Configuration $configuration, string $configurationFilePath)
+    {
         $constraintViolations = $this->getValidator()->validate($configuration);
         if ($constraintViolations->count())
         {
@@ -88,10 +111,6 @@ class ConfigurationFileReader implements LoggerAwareInterface
 
             throw new ConfigurationException("{$configurationFilePath}: {$violation->getPropertyPath()} - {$violation->getMessage()}");
         }
-
-        $this->logger->info("The following configuration has been read: " . var_export($configuration->getArrayCopy(), true));
-
-        return $configuration;
     }
 
     protected function getValidator(): ValidatorInterface
