@@ -10,7 +10,6 @@ use Storeman\Config\Configuration;
 use Storeman\Container;
 use Storeman\PathUtils;
 use Storeman\Storeman;
-use Storeman\Vault;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
