@@ -2,6 +2,7 @@
 
 namespace Storeman;
 
+use Psr\Log\LoggerInterface;
 use Storeman\Config\Configuration;
 use Storeman\Index\Index;
 use Storeman\IndexBuilder\IndexBuilderInterface;
@@ -93,6 +94,8 @@ class Storeman
 
     public function synchronize(array $vaultTitles = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
+        $this->getLogger()->notice(sprintf("Synchronizing to these vaults: %s", $vaultTitles ? implode(', ', $vaultTitles) : '-all-'));
+
         /** @var Vault[] $vaults */
         $vaults = ($vaultTitles === null) ? $this->getVaultContainer() : $this->getVaultContainer()->getVaultsByTitles($vaultTitles);
 
@@ -113,6 +116,8 @@ class Storeman
 
     public function restore(int $toRevision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
+        $this->getLogger()->notice(sprintf("Restoring from %s...", $toRevision ? "r{$toRevision}": 'latest revision'));
+
         $vault = $this->getVaultForDownload($toRevision, $fromVault);
 
         if ($vault === null)
@@ -127,6 +132,8 @@ class Storeman
 
     public function dump(string $targetPath, int $revision = null, string $fromVault = null, SynchronizationProgressListenerInterface $progressListener = null): OperationResultList
     {
+        $this->getLogger()->notice(sprintf("Dumping from %s to {$targetPath}...", $revision ? "r{$revision}": 'latest revision'));
+
         $vault = $this->getVaultForDownload($revision, $fromVault);
 
         if ($vault === null)
@@ -146,6 +153,8 @@ class Storeman
      */
     public function getLastRevision(): ?int
     {
+        $this->getLogger()->debug("Determining max revision...");
+
         $max = 0;
 
         foreach ($this->getVaultContainer() as $vault)
@@ -154,9 +163,17 @@ class Storeman
 
             if ($lastSynchronization = $vault->getVaultLayout()->getLastSynchronization())
             {
+                $this->getLogger()->debug("Vault {$vault->getVaultConfiguration()->getTitle()} is at r{$lastSynchronization->getRevision()}");
+
                 $max = max($max, $lastSynchronization->getRevision());
             }
+            else
+            {
+                $this->getLogger()->debug("Vault {$vault->getVaultConfiguration()->getTitle()} has no synchronizations yet");
+            }
         }
+
+        $this->getLogger()->info("Found max revision to be " . ($max ?: '-'));
 
         return $max ?: null;
     }
@@ -248,5 +265,10 @@ class Storeman
             static::CONFIG_FILE_NAME,
             static::METADATA_DIRECTORY_NAME,
         ]);
+    }
+
+    protected function getLogger(): LoggerInterface
+    {
+        return $this->container->getLogger();
     }
 }
