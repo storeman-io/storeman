@@ -19,15 +19,15 @@ final class VaultContainer implements ContainerInterface, \Countable, \IteratorA
     {
         foreach ($configuration->getVaults() as $vaultConfiguration)
         {
-            if (array_key_exists($vaultConfiguration->getTitle(), $this->vaults))
-            {
-                throw new ConfigurationException("Duplicate vault title: {$vaultConfiguration->getTitle()}");
-            }
-
             $vault = new Vault($storeman, $vaultConfiguration);
             $vault->setLogger($logger);
 
-            $this->vaults[$vaultConfiguration->getTitle()] = $vault;
+            if (array_key_exists($vault->getHash(), $this->vaults))
+            {
+                throw new ConfigurationException("Duplicate vault hash: {$vault->getHash()}");
+            }
+
+            $this->vaults[$vault->getHash()] = $vault;
         }
     }
 
@@ -39,7 +39,17 @@ final class VaultContainer implements ContainerInterface, \Countable, \IteratorA
      */
     public function getVaultByTitle(string $title): ?Vault
     {
-        return array_key_exists($title, $this->vaults) ? $this->vaults[$title] : null;
+        foreach ($this as $vault)
+        {
+            /** @var Vault $vault */
+
+            if ($vault->getVaultConfiguration()->getTitle() === $title)
+            {
+                return $vault;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -50,10 +60,11 @@ final class VaultContainer implements ContainerInterface, \Countable, \IteratorA
      */
     public function getVaultsByTitles(array $titles): array
     {
-        return array_filter($this->vaults, function(Vault $vault) use ($titles) {
+        return array_filter(array_map(function(string $title) {
 
-            return in_array($vault->getVaultConfiguration()->getTitle(), $titles);
-        });
+            return $this->getVaultByTitle($title);
+
+        }, $titles));
     }
 
     /**
@@ -100,7 +111,7 @@ final class VaultContainer implements ContainerInterface, \Countable, \IteratorA
      */
     public function has($id)
     {
-        return $this->getVaultByTitle($id) !== null;
+        return array_key_exists($id, $this->vaults);
     }
 
     /**
@@ -108,9 +119,9 @@ final class VaultContainer implements ContainerInterface, \Countable, \IteratorA
      */
     public function get($id)
     {
-        if ($vault = $this->getVaultByTitle($id))
+        if (array_key_exists($id, $this->vaults))
         {
-            return $vault;
+            return $this->vaults[$id];
         }
 
         throw new NotFoundException();

@@ -2,6 +2,8 @@
 
 namespace Storeman\StorageAdapter;
 
+use Storeman\Config\VaultConfiguration;
+
 interface StorageAdapterInterface
 {
     /**
@@ -36,4 +38,13 @@ interface StorageAdapterInterface
      * @return resource
      */
     public function getReadStream(string $relativePath);
+
+    /**
+     * Returns some string that identifies the given vault configuration based on settings that cannot be changed without
+     * creating a reference to another vault.
+     *
+     * @param VaultConfiguration $vaultConfiguration
+     * @return string
+     */
+    public static function getIdentificationString(VaultConfiguration $vaultConfiguration): string;
 }

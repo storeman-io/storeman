@@ -53,6 +53,7 @@ class InfoCommand extends AbstractCommand
             $table->addRow([
                 "Vault #{$index}",
                 implode("\n", [
+                    'Identifier:',
                     'Title:',
                     'Storage adapter:',
                     'Vault layout:',
@@ -63,6 +64,7 @@ class InfoCommand extends AbstractCommand
                     'Current lock:',
                 ]),
                 implode("\n", [
+                    $vault->getHash(),
                     "<info>{$vault->getVaultConfiguration()->getTitle()}</info>",
                     $vaultConfiguration->getAdapter(),
                     $vaultConfiguration->getVaultLayout(),
@@ -115,7 +117,7 @@ class InfoCommand extends AbstractCommand
                     $revision,
                     $time->format('r'),
                     $identity,
-                    implode(',', array_unique(array_keys($synchronizations)))
+                    implode("\n", array_unique(array_keys($synchronizations)))
                 ]);
             }
 
@@ -141,14 +143,13 @@ class InfoCommand extends AbstractCommand
         {
             /** @var Vault $vault */
 
-            $vaultConfig = $vault->getVaultConfiguration();
             $list = $vault->getVaultLayout()->getSynchronizations();
 
             foreach ($list as $synchronization)
             {
                 /** @var Synchronization $synchronization */
 
-                $return[$synchronization->getRevision()][$vaultConfig->getTitle()] = $synchronization;
+                $return[$synchronization->getRevision()][$vault->getIdentifier()] = $synchronization;
             }
         }
 

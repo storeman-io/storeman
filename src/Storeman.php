@@ -163,13 +163,13 @@ class Storeman
 
             if ($lastSynchronization = $vault->getVaultLayout()->getLastSynchronization())
             {
-                $this->getLogger()->debug("Vault {$vault->getVaultConfiguration()->getTitle()} is at r{$lastSynchronization->getRevision()}");
+                $this->getLogger()->debug("Vault {$vault->getIdentifier()} is at r{$lastSynchronization->getRevision()}");
 
                 $max = max($max, $lastSynchronization->getRevision());
             }
             else
             {
-                $this->getLogger()->debug("Vault {$vault->getVaultConfiguration()->getTitle()} has no synchronizations yet");
+                $this->getLogger()->debug("Vault {$vault->getIdentifier()} has no synchronizations yet");
             }
         }
 
@@ -193,7 +193,7 @@ class Storeman
         {
             if (!$vault->getLockAdapter()->acquireLock($lockName))
             {
-                throw new Exception("Failed to acquire lock for vault {$vault->getVaultConfiguration()->getTitle()}");
+                throw new Exception("Failed to acquire lock for vault {$vault->getIdentifier()}");
             }
         }
     }
@@ -208,7 +208,7 @@ class Storeman
         {
             if (!$vault->getLockAdapter()->releaseLock($lockName))
             {
-                throw new Exception("Failed to release lock for vault {$vault->getVaultConfiguration()->getTitle()}");
+                throw new Exception("Failed to release lock for vault {$vault->getIdentifier()}");
             }
         }
     }

@@ -297,6 +297,26 @@ class Vault implements LoggerAwareInterface
         return $this->doRestore($revision, $progressListener, true, $targetPath);
     }
 
+    /**
+     * Returns a hash that is the same for any vault referencing the same physical storage location.
+     *
+     * @return string
+     */
+    public function getHash(): string
+    {
+        return hash('sha1', $this->getStorageAdapter()->getIdentificationString($this->vaultConfiguration));
+    }
+
+    /**
+     * Returns an identifier usable for UI.
+     *
+     * @return string
+     */
+    public function getIdentifier(): string
+    {
+        return "{$this->getHash()} ({$this->vaultConfiguration->getTitle()})";
+    }
+
     protected function doBuildMergedIndex(Index $localIndex = null, Index $lastLocalIndex = null, Index $remoteIndex = null): Index
     {
         $localIndex = $localIndex ?: $this->storeman->getLocalIndex();
@@ -457,8 +477,7 @@ class Vault implements LoggerAwareInterface
 
     protected function getLastLocalIndexFilePath(): string
     {
-        // todo: use other vault identifier
-        return $this->storeman->getMetadataDirectoryPath() . sprintf('lastLocalIndex-%s', $this->vaultConfiguration->getTitle());
+        return $this->storeman->getMetadataDirectoryPath() . sprintf('lastLocalIndex-%s', $this->getHash());
     }
 
     /**

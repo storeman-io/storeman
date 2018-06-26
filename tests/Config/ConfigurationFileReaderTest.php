@@ -52,7 +52,7 @@ JSON
         $this->assertEquals('some identity', $config->getIdentity());
         $this->assertEquals(['sha1', 'md5'], $config->getFileChecksums());
 
-        $vaultConfig = $config->getVault('Test');
+        $vaultConfig = $config->getVaultByTitle('Test');
 
         $this->assertInstanceOf(VaultConfiguration::class, $vaultConfig);
         $this->assertEquals('local', $vaultConfig->getAdapter());

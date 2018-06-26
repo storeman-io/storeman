@@ -2,7 +2,6 @@
 
 namespace Storeman\Config;
 
-use Storeman\Exception;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Zend\Stdlib\ArraySerializableInterface;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -176,21 +175,12 @@ class Configuration implements ArraySerializableInterface
 
     /**
      * @param string $title
-     * @return bool
-     */
-    public function hasVault(string $title): bool
-    {
-        return $this->getVaultConfiguration($title) !== null;
-    }
-
-    /**
-     * @param string $title
      *
      * @return VaultConfiguration
      */
-    public function getVault(string $title): VaultConfiguration
+    public function getVaultByTitle(string $title): VaultConfiguration
     {
-        if ($vaultConfiguration = $this->getVaultConfiguration($title))
+        if ($vaultConfiguration = $this->getVaultConfigurationByTitle($title))
         {
             return $vaultConfiguration;
         }
@@ -198,22 +188,10 @@ class Configuration implements ArraySerializableInterface
         throw new \InvalidArgumentException("Unknown vault configuration requested: {$title}");
     }
 
-    /**
-     * @internal Use VaultConfiguration constructor
-     * @param VaultConfiguration $configuration
-     *
-     * @return Configuration
-     * @throws Exception
-     */
     public function addVault(VaultConfiguration $configuration): Configuration
     {
         if (array_search($configuration, $this->vaults) === false)
         {
-            if ($this->hasVault($configuration->getTitle()))
-            {
-                throw new Exception(sprintf('Trying to add vault with duplicate title %s.', $configuration->getTitle()));
-            }
-
             $this->vaults[] = $configuration;
         }
 
@@ -275,7 +253,7 @@ class Configuration implements ArraySerializableInterface
         return $return;
     }
 
-    protected function getVaultConfiguration(string $title): ?VaultConfiguration
+    protected function getVaultConfigurationByTitle(string $title): ?VaultConfiguration
     {
         foreach ($this->vaults as $vaultConfiguration)
         {

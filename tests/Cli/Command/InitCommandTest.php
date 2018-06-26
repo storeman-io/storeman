@@ -54,7 +54,7 @@ class InitCommandTest extends AbstractCommandTest
 
         $this->assertCount(1, $config->getVaults());
 
-        $vault = $config->getVault('My Title');
+        $vault = $config->getVaultByTitle('My Title');
 
         $this->assertInstanceOf(VaultConfiguration::class, $vault);
 

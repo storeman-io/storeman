@@ -29,4 +29,12 @@ class LocalStorageAdapter extends FlysystemStorageAdapter
 
         parent::__construct($filesystem);
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getIdentificationString(VaultConfiguration $vaultConfiguration): string
+    {
+        return $vaultConfiguration->getSetting('path');
+    }
 }
