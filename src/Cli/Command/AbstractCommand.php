@@ -113,7 +113,12 @@ abstract class AbstractCommand extends Command
 
             if (is_file($configFilePath))
             {
-                return (new ConfigurationFileReader($container))->getConfiguration($configFilePath);
+                /** @var ConfigurationFileReader $reader */
+                $reader = $container->get('cliConfigurationFileReader');
+
+                assert($reader instanceof ConfigurationFileReader);
+
+                return $reader->getConfiguration($configFilePath);
             }
         }
 

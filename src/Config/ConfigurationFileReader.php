@@ -2,6 +2,9 @@
 
 namespace Storeman\Config;
 
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\NullLogger;
 use Storeman\ArrayUtils;
 use Storeman\Container;
 use Storeman\Exception;
@@ -10,8 +13,11 @@ use Storeman\Validation\ContainerConstraintValidatorFactory;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class ConfigurationFileReader
+class ConfigurationFileReader implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
+
     public const CONFIG_CLASS = Configuration::class;
 
 
@@ -23,10 +29,13 @@ class ConfigurationFileReader
     public function __construct(Container $container = null)
     {
         $this->container = $container ?: new Container();
+        $this->logger = new NullLogger();
     }
 
     public function getConfiguration(string $configurationFilePath): Configuration
     {
+        $this->logger->info("Reading config file from {$configurationFilePath}...");
+
         $configurationFilePath = PathUtils::getAbsolutePath($configurationFilePath);
 
         if (!is_file($configurationFilePath) || !is_readable($configurationFilePath))
@@ -74,6 +83,8 @@ class ConfigurationFileReader
 
             throw new ConfigurationException("{$configurationFilePath}: {$violation->getPropertyPath()} - {$violation->getMessage()}");
         }
+
+        $this->logger->info("The following configuration has been read: " . var_export($configuration->getArrayCopy(), true));
 
         return $configuration;
     }
