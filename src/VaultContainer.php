@@ -4,6 +4,7 @@ namespace Storeman;
 
 use League\Container\Exception\NotFoundException;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 use Storeman\Config\Configuration;
 use Storeman\Config\ConfigurationException;
 
@@ -14,7 +15,7 @@ final class VaultContainer implements ContainerInterface, \Countable, \IteratorA
      */
     protected $vaults = [];
 
-    public function __construct(Configuration $configuration, Storeman $storeman)
+    public function __construct(Configuration $configuration, Storeman $storeman, LoggerInterface $logger)
     {
         foreach ($configuration->getVaults() as $vaultConfiguration)
         {
@@ -23,7 +24,10 @@ final class VaultContainer implements ContainerInterface, \Countable, \IteratorA
                 throw new ConfigurationException("Duplicate vault title: {$vaultConfiguration->getTitle()}");
             }
 
-            $this->vaults[$vaultConfiguration->getTitle()] = new Vault($storeman, $vaultConfiguration);
+            $vault = new Vault($storeman, $vaultConfiguration);
+            $vault->setLogger($logger);
+
+            $this->vaults[$vaultConfiguration->getTitle()] = $vault;
         }
     }
 

@@ -69,7 +69,7 @@ final class Container implements ContainerInterface
         $this->delegate->inflector(LoggerAwareInterface::class)->invokeMethod('setLogger', ['logger']);
 
         $this->delegate->add('logger', NullLogger::class);
-        $this->delegate->add('vaults', VaultContainer::class, true)->withArguments(['configuration', 'storeman']);
+        $this->delegate->add('vaults', VaultContainer::class, true)->withArguments(['configuration', 'storeman', 'logger']);
         $this->delegate->add('vaultConfiguration', function(Vault $vault) { return $vault->getVaultConfiguration(); })->withArgument('vault');
 
         $this->delegate->add('configurationFileReader', ConfigurationFileReader::class, true)->withArguments([$this]);

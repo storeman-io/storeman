@@ -2,6 +2,9 @@
 
 namespace Storeman;
 
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\NullLogger;
 use Storeman\Config\VaultConfiguration;
 use Storeman\ConflictHandler\ConflictHandlerInterface;
 use Storeman\Hash\HashContainer;
@@ -17,8 +20,11 @@ use Storeman\SynchronizationProgressListener\SynchronizationProgressListenerInte
 use Storeman\VaultLayout\VaultLayoutInterface;
 use Storeman\Operation\OperationInterface;
 
-class Vault
+class Vault implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
+
     public const LOCK_SYNC = 'sync';
 
 
@@ -66,6 +72,7 @@ class Vault
     {
         $this->storeman = $storeman;
         $this->vaultConfiguration = $vaultConfiguration;
+        $this->logger = new NullLogger();
     }
 
     public function getStoreman(): Storeman
@@ -121,6 +128,8 @@ class Vault
 
         if (is_file($path))
         {
+            $this->logger->info("Reading in last local index from {$path}...");
+
             $stream = fopen($path, 'rb');
 
             $index = new Index();
@@ -130,6 +139,12 @@ class Vault
             }
 
             fclose($stream);
+
+            $this->logger->info("Read {$index->count()} records.");
+        }
+        else
+        {
+            $this->logger->info("No last local index exists");
         }
 
         return $index;
@@ -144,6 +159,8 @@ class Vault
      */
     public function getRemoteIndex(int $revision = null): ?Index
     {
+        $this->logger->info(sprintf("Loading %s remote index...", $revision ? "r{$revision}" : 'latest'));
+
         $synchronization = $revision ?
             $this->getVaultLayout()->getSynchronization($revision) :
             $this->getVaultLayout()->getLastSynchronization();
@@ -390,6 +407,8 @@ class Vault
 
     protected function writeLastLocalIndex(Index $index): void
     {
+        $this->logger->info(sprintf("Writing last local index with %d records to %s", $index->count(), $this->getLastLocalIndexFilePath()));
+
         $stream = fopen($this->getLastLocalIndexFilePath(), 'wb');
 
         foreach ($index as $object)
