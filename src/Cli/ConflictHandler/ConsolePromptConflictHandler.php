@@ -4,6 +4,7 @@ namespace Storeman\Cli\ConflictHandler;
 
 use Storeman\Cli\ConsoleStyle;
 use Storeman\ConflictHandler\ConflictHandlerInterface;
+use Storeman\Exception;
 use Storeman\Index\IndexObject;
 
 /**
@@ -26,6 +27,11 @@ class ConsolePromptConflictHandler implements ConflictHandlerInterface
      */
     public function handleConflict(IndexObject $remoteObject, IndexObject $localObject = null, IndexObject $lastLocalObject = null): int
     {
+        if (!$this->consoleStyle->getInput()->isInteractive())
+        {
+            throw new Exception(sprintf("Trying to use conflict handler %s with non-interactive input", static::class));
+        }
+
         $text = <<<TXT
 <question>Encountered conflict at {$remoteObject->getRelativePath()}</question>
 TXT;

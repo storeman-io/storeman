@@ -9,11 +9,34 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ConsoleStyle extends SymfonyStyle
 {
+    /**
+     * @var InputInterface
+     */
+    protected $input;
+
+    /**
+     * @var OutputInterface
+     */
+    protected $output;
+
     public function __construct(InputInterface $input, OutputInterface $output)
     {
         parent::__construct($input, $output);
 
+        $this->input = $input;
+        $this->output = $output;
+
         $this->getFormatter()->setStyle('bold', new OutputFormatterStyle(null, null, ['bold']));
+    }
+
+    public function getInput(): InputInterface
+    {
+        return $this->input;
+    }
+
+    public function getOutput(): OutputInterface
+    {
+        return $this->output;
     }
 
     /**

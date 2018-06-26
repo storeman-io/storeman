@@ -7,9 +7,12 @@ use Storeman\Cli\ConflictHandler\ConsolePromptConflictHandler;
 use Storeman\Cli\ConsoleStyle;
 use Storeman\ConflictHandler\ConflictHandlerInterface;
 use Storeman\Index\IndexObject;
+use Storeman\Test\ConfiguredMockProviderTrait;
 
 class ConsolePromptConflictHandlerTest extends TestCase
 {
+    use ConfiguredMockProviderTrait;
+
     public function test()
     {
         /** @var IndexObject $indexObject */
@@ -17,12 +20,12 @@ class ConsolePromptConflictHandlerTest extends TestCase
 
         $this->assertEquals(
             ConflictHandlerInterface::USE_LOCAL,
-            (new ConsolePromptConflictHandler($this->createConfiguredMock(ConsoleStyle::class, ['choice' => 'l'])))->handleConflict($indexObject)
+            (new ConsolePromptConflictHandler($this->getConsoleStyleMock(['choice' => 'l', 'getInput' => $this->getInputMock(['isInteractive' => true])])))->handleConflict($indexObject)
         );
 
         $this->assertEquals(
             ConflictHandlerInterface::USE_REMOTE,
-            (new ConsolePromptConflictHandler($this->createConfiguredMock(ConsoleStyle::class, ['choice' => 'r'])))->handleConflict($indexObject)
+            (new ConsolePromptConflictHandler($this->getConsoleStyleMock(['choice' => 'r', 'getInput' => $this->getInputMock(['isInteractive' => true])])))->handleConflict($indexObject)
         );
     }
 
@@ -33,6 +36,7 @@ class ConsolePromptConflictHandlerTest extends TestCase
             ->expects($this->exactly(3))
             ->method('choice')
             ->willReturnOnConsecutiveCalls('', 'x', 'l');
+        $consoleStyle->method('getInput')->willReturn($this->getInputMock(['isInteractive' => true]));
 
         $this->assertEquals(
             ConflictHandlerInterface::USE_LOCAL,
