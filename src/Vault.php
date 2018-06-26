@@ -189,24 +189,6 @@ class Vault implements LoggerAwareInterface
     }
 
     /**
-     * Returns ordered list of operations required to synchronize the vault with the local path.
-     * In addition to the object specific operations contained in the returned OperationList additional operations
-     * might be necessary like index updates that do not belong to specific index objects.
-     *
-     * @return OperationList
-     */
-    public function getOperationList(): OperationList
-    {
-        $localIndex = $this->storeman->getLocalIndex();
-        $lastLocalIndex = $this->getLastLocalIndex();
-        $remoteIndex = $this->getRemoteIndex();
-
-        $mergedIndex = $this->doBuildMergedIndex($localIndex, $lastLocalIndex, $remoteIndex);
-
-        return $this->getOperationListBuilder()->buildOperationList($mergedIndex, $localIndex);
-    }
-
-    /**
      * Synchronizes the local with the remote state by executing all operations returned by getOperationList()
      *
      * @param int $newRevision
