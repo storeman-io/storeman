@@ -2,6 +2,9 @@
 
 namespace Storeman\IndexMerger;
 
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Storeman\Config\Configuration;
 use Storeman\ConflictHandler\ConflictHandlerInterface;
 use Storeman\Hash\HashProvider;
@@ -9,7 +12,7 @@ use Storeman\Index\Comparison\IndexObjectComparison;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
 
-class StandardIndexMerger implements IndexMergerInterface
+class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
 {
     public const VERIFY_CONTENT = 1;
 
@@ -24,10 +27,24 @@ class StandardIndexMerger implements IndexMergerInterface
      */
     protected $hashProvider;
 
+    /**
+     * @var LoggerInterface
+     */
+    protected $logger;
+
     public function __construct(Configuration $configuration, HashProvider $hashProvider)
     {
         $this->configuration = $configuration;
         $this->hashProvider = $hashProvider;
+        $this->logger = new NullLogger();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
     }
 
     /**
@@ -35,10 +52,14 @@ class StandardIndexMerger implements IndexMergerInterface
      */
     public function merge(ConflictHandlerInterface $conflictHandler, Index $remoteIndex, Index $localIndex, ?Index $lastLocalIndex, int $options = 0): Index
     {
+        $this->logger->info(sprintf("Merging indices using %s (Options: %s)", static::class, static::getOptionsDebugString($options)));
+
         $mergedIndex = new Index();
         $lastLocalIndex = $lastLocalIndex ?: new Index();
 
         $diff = $localIndex->getDifference($remoteIndex, IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE);
+
+        $this->logger->debug(sprintf("Found %d differences between local and remote index", count($diff)));
 
         foreach ($diff as $cmp)
         {
@@ -65,7 +86,11 @@ class StandardIndexMerger implements IndexMergerInterface
             }
         }
 
-        foreach ($localIndex->getIntersection($remoteIndex, IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE) as $cmp)
+        $intersection = $localIndex->getIntersection($remoteIndex, IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE);
+
+        $this->logger->debug(sprintf("Found %d similarities between local and remote index", count($intersection)));
+
+        foreach ($intersection as $cmp)
         {
             /** @var IndexObjectComparison $cmp */
 
@@ -121,6 +146,8 @@ class StandardIndexMerger implements IndexMergerInterface
 
     protected function resolveConflict(ConflictHandlerInterface $conflictHandler, IndexObject $remoteObject, ?IndexObject $localObject, ?IndexObject $lastLocalObject): IndexObject
     {
+        $this->logger->notice("Resolving conflict at {$remoteObject->getRelativePath()}...");
+
         assert(($localObject === null) || ($localObject->getRelativePath() === $remoteObject->getRelativePath()));
         assert(($lastLocalObject === null) || ($lastLocalObject->getRelativePath() === $remoteObject->getRelativePath()));
 
@@ -131,19 +158,17 @@ class StandardIndexMerger implements IndexMergerInterface
         {
             case ConflictHandlerInterface::USE_LOCAL:
 
-                if ($localObject)
-                {
-                    $return = $localObject;
-                }
+                $this->logger->info("Using local version for conflict at {$remoteObject->getRelativePath()}");
+
+                $return = $localObject;
 
                 break;
 
             case ConflictHandlerInterface::USE_REMOTE:
 
-                if ($remoteObject)
-                {
-                    $return = $remoteObject;
-                }
+                $this->logger->info("Using remote version for conflict at {$remoteObject->getRelativePath()}");
+
+                $return = $remoteObject;
 
                 break;
 
@@ -153,5 +178,17 @@ class StandardIndexMerger implements IndexMergerInterface
         }
 
         return $return;
+    }
+
+    public static function getOptionsDebugString(int $options): string
+    {
+        $strings = [];
+
+        if ($options & static::VERIFY_CONTENT)
+        {
+            $strings[] = 'VERIFY_CONTENT';
+        }
+
+        return empty($strings) ? '-' : implode(',', $strings);
     }
 }

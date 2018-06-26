@@ -47,8 +47,11 @@ class StorageBasedLockAdapter extends AbstractLockAdapter
 
         while(true)
         {
+            $this->logger->debug("Checking lock existence for '{$name}'...");
+
             if (!$this->storageAdapter->exists($lockFileName))
             {
+                $this->logger->debug("Lock '{$name}' is not taken");
                 $this->logger->debug("Writing lock file {$lockFileName}...");
 
                 $this->storageAdapter->writeStream($lockFileName, $payloadStream);
@@ -56,10 +59,12 @@ class StorageBasedLockAdapter extends AbstractLockAdapter
                 return true;
             }
 
+            $this->logger->debug("Lock '{$name}' is taken");
+
             // timeout not reached: sleep another round and try againg
             if ($timeout === null || ($started + $timeout) < time())
             {
-                $this->logger->debug('Sleeping...');
+                $this->logger->debug('Waiting for retry...');
 
                 sleep(3);
             }
