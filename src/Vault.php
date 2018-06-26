@@ -114,7 +114,7 @@ class Vault
      * @return Index
      * @throws Exception
      */
-    public function loadLastLocalIndex(): ?Index
+    public function getLastLocalIndex(): ?Index
     {
         $index = null;
         $path = $this->getLastLocalIndexFilePath();
@@ -142,7 +142,7 @@ class Vault
      *
      * @return Index
      */
-    public function loadRemoteIndex(int $revision = null): ?Index
+    public function getRemoteIndex(int $revision = null): ?Index
     {
         $synchronization = $revision ?
             $this->getVaultLayout()->getSynchronization($revision) :
@@ -156,7 +156,7 @@ class Vault
      *
      * @return Index
      */
-    public function buildMergedIndex(): Index
+    public function getMergedIndex(): Index
     {
         return $this->doBuildMergedIndex();
     }
@@ -171,8 +171,8 @@ class Vault
     public function getOperationList(): OperationList
     {
         $localIndex = $this->storeman->getLocalIndex();
-        $lastLocalIndex = $this->loadLastLocalIndex();
-        $remoteIndex = $this->loadRemoteIndex();
+        $lastLocalIndex = $this->getLastLocalIndex();
+        $remoteIndex = $this->getRemoteIndex();
 
         $mergedIndex = $this->doBuildMergedIndex($localIndex, $lastLocalIndex, $remoteIndex);
 
@@ -196,7 +196,7 @@ class Vault
         }
 
         $localIndex = $this->storeman->getLocalIndex();
-        $lastLocalIndex = $this->loadLastLocalIndex();
+        $lastLocalIndex = $this->getLastLocalIndex();
 
 
         if (!$this->getLockAdapter()->acquireLock(static::LOCK_SYNC))
@@ -302,8 +302,8 @@ class Vault
     protected function doBuildMergedIndex(Index $localIndex = null, Index $lastLocalIndex = null, Index $remoteIndex = null): Index
     {
         $localIndex = $localIndex ?: $this->storeman->getLocalIndex();
-        $lastLocalIndex = $lastLocalIndex ?: $this->loadLastLocalIndex();
-        $remoteIndex = $remoteIndex ?: $this->loadRemoteIndex();
+        $lastLocalIndex = $lastLocalIndex ?: $this->getLastLocalIndex();
+        $remoteIndex = $remoteIndex ?: $this->getRemoteIndex();
 
         if ($remoteIndex === null)
         {
@@ -338,7 +338,7 @@ class Vault
             $revision = $lastSynchronization->getRevision();
         }
 
-        $remoteIndex = $this->loadRemoteIndex($revision);
+        $remoteIndex = $this->getRemoteIndex($revision);
 
         if ($remoteIndex === null)
         {

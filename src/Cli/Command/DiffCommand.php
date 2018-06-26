@@ -47,7 +47,7 @@ class DiffCommand extends AbstractCommand
             return 1;
         }
 
-        $index = $vault->loadRemoteIndex($revision);
+        $index = $vault->getRemoteIndex($revision);
 
 
         $compareTo = intval($input->getArgument('compareTo')) ?: null;
@@ -73,7 +73,7 @@ class DiffCommand extends AbstractCommand
                 return 1;
             }
 
-            $compareToIndex = $vault->loadRemoteIndex($compareTo);
+            $compareToIndex = $vault->getRemoteIndex($compareTo);
 
             assert($compareToIndex instanceof Index);
         }

@@ -64,7 +64,7 @@ class ShowIndexCommand extends AbstractCommand
                 return 1;
             }
 
-            $index = $vault->loadRemoteIndex($revision);
+            $index = $vault->getRemoteIndex($revision);
         }
 
         /** @var DisplayIndexHelper $displayIndexHelper */

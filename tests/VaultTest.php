@@ -25,16 +25,16 @@ class VaultTest extends TestCase
         $vault = $this->getLocalVault($testVault->getBasePath(), $connectionTarget);
 
         $this->assertIndexEqualsTestVault($testVault, $vault->getStoreman()->getLocalIndex());
-        $this->assertNull($vault->loadLastLocalIndex());
-        $this->assertNull($vault->loadRemoteIndex());
-        $this->assertIndexEqualsTestVault($testVault, $vault->buildMergedIndex());
+        $this->assertNull($vault->getLastLocalIndex());
+        $this->assertNull($vault->getRemoteIndex());
+        $this->assertIndexEqualsTestVault($testVault, $vault->getMergedIndex());
 
         $vault->synchronize();
 
         $this->assertIndexEqualsTestVault($testVault, $vault->getStoreman()->getLocalIndex());
-        $this->assertIndexEqualsTestVault($testVault, $vault->loadLastLocalIndex());
-        $this->assertIndexEqualsTestVault($testVault, $vault->loadRemoteIndex());
-        $this->assertIndexEqualsTestVault($testVault, $vault->buildMergedIndex());
+        $this->assertIndexEqualsTestVault($testVault, $vault->getLastLocalIndex());
+        $this->assertIndexEqualsTestVault($testVault, $vault->getRemoteIndex());
+        $this->assertIndexEqualsTestVault($testVault, $vault->getMergedIndex());
     }
 
     public function testTwoPartySynchronization()
@@ -48,28 +48,28 @@ class VaultTest extends TestCase
         $firstVault = $this->getLocalVault($firstTestVault->getBasePath(), $connectionTarget);
         $secondVault = $this->getLocalVault($secondTestVault->getBasePath(), $connectionTarget);
 
-        $this->assertNull($firstVault->loadRemoteIndex());
-        $this->assertNull($firstVault->loadLastLocalIndex());
-        $this->assertNull($secondVault->loadRemoteIndex());
-        $this->assertNull($secondVault->loadLastLocalIndex());
+        $this->assertNull($firstVault->getRemoteIndex());
+        $this->assertNull($firstVault->getLastLocalIndex());
+        $this->assertNull($secondVault->getRemoteIndex());
+        $this->assertNull($secondVault->getLastLocalIndex());
 
         $firstSynchronizationResult = $firstVault->synchronize();
 
         $this->assertInstanceOf(OperationResultList::class, $firstSynchronizationResult);
-        $this->assertInstanceOf(Index::class, $firstVault->loadRemoteIndex());
-        $this->assertInstanceOf(Index::class, $firstVault->loadLastLocalIndex());
-        $this->assertIndexEqualsTestVault($firstTestVault, $firstVault->loadRemoteIndex());
-        $this->assertIndexEqualsTestVault($firstTestVault, $firstVault->loadLastLocalIndex());
-        $this->assertIndexContainsTestVault($firstTestVault, $secondVault->loadRemoteIndex());
+        $this->assertInstanceOf(Index::class, $firstVault->getRemoteIndex());
+        $this->assertInstanceOf(Index::class, $firstVault->getLastLocalIndex());
+        $this->assertIndexEqualsTestVault($firstTestVault, $firstVault->getRemoteIndex());
+        $this->assertIndexEqualsTestVault($firstTestVault, $firstVault->getLastLocalIndex());
+        $this->assertIndexContainsTestVault($firstTestVault, $secondVault->getRemoteIndex());
 
         $secondSynchronizationResult = $secondVault->synchronize();
 
         $this->assertInstanceOf(OperationResultList::class, $secondSynchronizationResult);
-        $this->assertInstanceOf(Index::class, $secondVault->loadRemoteIndex());
-        $this->assertInstanceOf(Index::class, $secondVault->loadLastLocalIndex());
-        $this->assertTrue($firstVault->loadRemoteIndex()->equals($secondVault->loadRemoteIndex()));
-        $this->assertIndexContainsTestVault($firstTestVault, $firstVault->loadRemoteIndex());
-        $this->assertIndexContainsTestVault($secondTestVault, $firstVault->loadRemoteIndex());
+        $this->assertInstanceOf(Index::class, $secondVault->getRemoteIndex());
+        $this->assertInstanceOf(Index::class, $secondVault->getLastLocalIndex());
+        $this->assertTrue($firstVault->getRemoteIndex()->equals($secondVault->getRemoteIndex()));
+        $this->assertIndexContainsTestVault($firstTestVault, $firstVault->getRemoteIndex());
+        $this->assertIndexContainsTestVault($secondTestVault, $firstVault->getRemoteIndex());
 
 
         $thirdSynchronizationResult = $firstVault->synchronize();
