@@ -68,6 +68,11 @@ class Vault implements LoggerAwareInterface
      */
     protected $operationListBuilder;
 
+    /**
+     * @var Index
+     */
+    protected $lastLocalIndex;
+
     public function __construct(Storeman $storeman, VaultConfiguration $vaultConfiguration)
     {
         $this->storeman = $storeman;
@@ -123,31 +128,36 @@ class Vault implements LoggerAwareInterface
      */
     public function getLastLocalIndex(): ?Index
     {
-        $index = null;
-        $path = $this->getLastLocalIndexFilePath();
-
-        if (is_file($path))
+        if ($this->lastLocalIndex === null)
         {
-            $this->logger->info("Reading in last local index from {$path}...");
+            $index = null;
+            $path = $this->getLastLocalIndexFilePath();
 
-            $stream = fopen($path, 'rb');
-
-            $index = new Index();
-            while (($row = fgetcsv($stream)) !== false)
+            if (is_file($path))
             {
-                $index->addObject($this->createIndexObjectFromScalarArray($row));
+                $this->logger->info("Reading in last local index from {$path}...");
+
+                $stream = fopen($path, 'rb');
+
+                $index = new Index();
+                while (($row = fgetcsv($stream)) !== false)
+                {
+                    $index->addObject($this->createIndexObjectFromScalarArray($row));
+                }
+
+                fclose($stream);
+
+                $this->logger->info("Read {$index->count()} records for last local index");
+            }
+            else
+            {
+                $this->logger->info("No last local index exists");
             }
 
-            fclose($stream);
-
-            $this->logger->info("Read {$index->count()} records.");
-        }
-        else
-        {
-            $this->logger->info("No last local index exists");
+            $this->lastLocalIndex = $index;
         }
 
-        return $index;
+        return $this->lastLocalIndex;
     }
 
     /**
@@ -409,6 +419,9 @@ class Vault implements LoggerAwareInterface
     {
         $this->logger->info(sprintf("Writing last local index with %d records to %s", $index->count(), $this->getLastLocalIndexFilePath()));
 
+        // prevent outdated cache on failure
+        $this->lastLocalIndex = null;
+
         $stream = fopen($this->getLastLocalIndexFilePath(), 'wb');
 
         foreach ($index as $object)
@@ -422,6 +435,9 @@ class Vault implements LoggerAwareInterface
         }
 
         fclose($stream);
+
+        // update local cache
+        $this->lastLocalIndex = $index;
     }
 
     /**
