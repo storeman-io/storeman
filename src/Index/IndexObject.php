@@ -201,13 +201,13 @@ class IndexObject
         $equals &= $this->ctime === $other->ctime;
         $equals &= $this->permissions === $other->permissions;
         $equals &= $this->size === $other->size;
-        $equals &= ($options & static::CMP_IGNORE_INODE) | ($this->inode === $other->inode);
+        $equals &= ($options & static::CMP_IGNORE_INODE) || ($this->inode === $other->inode);
         $equals &= $this->linkTarget === $other->linkTarget;
-        $equals &= ($options & static::CMP_IGNORE_BLOBID) | ($this->blobId === $other->blobId);
+        $equals &= ($options & static::CMP_IGNORE_BLOBID) || ($this->blobId === $other->blobId);
 
-        if ($this->hashes)
+        if ($this->hashes && $other->hashes)
         {
-            $equals = $equals & $this->hashes->equals($other->hashes);
+            $equals &= $this->hashes->equals($other->hashes);
         }
 
         return $equals;
