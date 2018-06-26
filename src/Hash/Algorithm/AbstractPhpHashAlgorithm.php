@@ -19,7 +19,7 @@ abstract class AbstractPhpHashAlgorithm implements HashAlgorithmInterface
      */
     public function digest(string $buffer): void
     {
-        assert(is_resource($this->context), sprintf('Calling %s() on uninitialized context.', __FUNCTION__));
+        assert($this->context !== null, sprintf('Calling %s() on uninitialized context.', __FUNCTION__));
 
         hash_update($this->context, $buffer);
     }
@@ -29,7 +29,7 @@ abstract class AbstractPhpHashAlgorithm implements HashAlgorithmInterface
      */
     public function finalize(): string
     {
-        assert(is_resource($this->context), sprintf('Calling %s() on uninitialized context.', __FUNCTION__));
+        assert($this->context !== null, sprintf('Calling %s() on uninitialized context.', __FUNCTION__));
 
         return hash_final($this->context);
     }
