@@ -2,9 +2,9 @@
 
 namespace Storeman\Cli\Command;
 
-use Storeman\Cli\Configuration;
-use Storeman\Cli\VaultConfiguration;
+use Storeman\Config\Configuration;
 use Storeman\Config\ConfigurationFileWriter;
+use Storeman\Config\VaultConfiguration;
 use Storeman\PathUtils;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;

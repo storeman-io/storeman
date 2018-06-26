@@ -3,7 +3,7 @@
 namespace Storeman\Test\Cli\Command;
 
 use Storeman\Cli\Command\InitCommand;
-use Storeman\Cli\ConfigurationFileReader;
+use Storeman\Config\ConfigurationFileReader;
 use Storeman\Storeman;
 use Storeman\Test\TestVault;
 use Storeman\Config\VaultConfiguration;

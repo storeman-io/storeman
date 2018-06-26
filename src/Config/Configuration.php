@@ -9,9 +9,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class Configuration implements ArraySerializableInterface
 {
-    public const VAULT_CONFIG_CLASS = VaultConfiguration::class;
-
-
     /**
      * The local base path of the archive.
      *
@@ -251,10 +248,7 @@ class Configuration implements ArraySerializableInterface
                         throw new \InvalidArgumentException();
                     }
 
-                    $className = static::VAULT_CONFIG_CLASS;
-
-                    /** @var VaultConfiguration $vaultConfig */
-                    $vaultConfig = new $className($this);
+                    $vaultConfig = new VaultConfiguration($this);
                     $vaultConfig->exchangeArray($val);
                 }
             }

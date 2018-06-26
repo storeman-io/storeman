@@ -73,7 +73,6 @@ final class Container implements ContainerInterface
         $this->delegate->add('vaultConfiguration', function(Vault $vault) { return $vault->getVaultConfiguration(); })->withArgument('vault');
 
         $this->delegate->add('configurationFileReader', ConfigurationFileReader::class, true)->withArguments([$this]);
-        $this->delegate->add('cliConfigurationFileReader', \Storeman\Cli\ConfigurationFileReader::class, true)->withArguments([$this]);
 
         $this->addHashAlgorithm('adler32', Adler32::class);
         $this->addHashAlgorithm('crc32', Crc32::class);

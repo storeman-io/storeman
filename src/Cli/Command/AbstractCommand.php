@@ -2,11 +2,11 @@
 
 namespace Storeman\Cli\Command;
 
-use Storeman\Cli\ConfigurationFileReader;
 use Storeman\Cli\ConflictHandler\ConsolePromptConflictHandler;
 use Storeman\Cli\ConsoleLogger;
 use Storeman\Cli\ConsoleStyle;
 use Storeman\Config\Configuration;
+use Storeman\Config\ConfigurationFileReader;
 use Storeman\Container;
 use Storeman\PathUtils;
 use Storeman\Storeman;
@@ -114,11 +114,20 @@ abstract class AbstractCommand extends Command
             if (is_file($configFilePath))
             {
                 /** @var ConfigurationFileReader $reader */
-                $reader = $container->get('cliConfigurationFileReader');
+                $reader = $container->get('configurationFileReader');
 
                 assert($reader instanceof ConfigurationFileReader);
 
-                return $reader->getConfiguration($configFilePath);
+                $configurationDefaults = [
+                    'path' => dirname($configFilePath),
+                    'identity' => sprintf('%s@%s', get_current_user(), gethostname()),
+                ];
+
+                $vaultConfigurationDefaults = [
+                    'conflictHandler' => 'consolePrompt',
+                ];
+
+                return $reader->getConfiguration($configFilePath, $configurationDefaults, $vaultConfigurationDefaults);
             }
         }
 

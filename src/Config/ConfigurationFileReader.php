@@ -18,9 +18,6 @@ class ConfigurationFileReader implements LoggerAwareInterface
     use LoggerAwareTrait;
 
 
-    public const CONFIG_CLASS = Configuration::class;
-
-
     /**
      * @var Container
      */
@@ -32,7 +29,7 @@ class ConfigurationFileReader implements LoggerAwareInterface
         $this->logger = new NullLogger();
     }
 
-    public function getConfiguration(string $configurationFilePath): Configuration
+    public function getConfiguration(string $configurationFilePath, array $configurationDefaults = [], array $vaultConfigurationDefaults = []): Configuration
     {
         $this->logger->info("Reading config file from {$configurationFilePath}...");
 
@@ -53,20 +50,28 @@ class ConfigurationFileReader implements LoggerAwareInterface
             throw new Exception("Malformed configuration file: {$configurationFilePath}.");
         }
 
+        if (!array_key_exists('vaults', $array) || !is_array($array['vaults']))
+        {
+            throw new ConfigurationException("Missing vault configurations");
+        }
 
-        // default values
-        $array = ArrayUtils::merge([
-            'path' => dirname($configurationFilePath),
-            'identity' => sprintf('%s@%s', get_current_user(), gethostname()),
-        ], $array);
+        // merge defaults
+        $array = ArrayUtils::merge($configurationDefaults, $array);
+        $array['vaults'] = array_map(function($vaultConfig) use ($vaultConfigurationDefaults) {
+
+            if (!is_array($vaultConfig))
+            {
+                throw new ConfigurationException();
+            }
+
+            return ArrayUtils::merge($vaultConfigurationDefaults, $vaultConfig);
+
+        }, $array['vaults']);
 
 
         try
         {
-            $className = static::CONFIG_CLASS;
-
-            /** @var Configuration $configuration */
-            $configuration = new $className();
+            $configuration = new Configuration();
             $configuration->exchangeArray($array);
         }
         catch (\InvalidArgumentException $exception)
