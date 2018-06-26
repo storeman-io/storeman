@@ -8,6 +8,7 @@ use Storeman\Cli\ConsoleLogger;
 use Storeman\Cli\ConsoleStyle;
 use Storeman\Config\Configuration;
 use Storeman\Container;
+use Storeman\PathUtils;
 use Storeman\Storeman;
 use Storeman\Vault;
 use Symfony\Component\Console\Command\Command;
@@ -107,11 +108,14 @@ abstract class AbstractCommand extends Command
      */
     protected function getConfiguration(Container $container, InputInterface $input): ?Configuration
     {
-        $configFilePath = $input->getOption('config');
-
-        if ($configFilePath && is_file($configFilePath))
+        if ($configFilePath = $input->getOption('config'))
         {
-            return (new ConfigurationFileReader($container))->getConfiguration($configFilePath);
+            $configFilePath = PathUtils::expandTilde($configFilePath);
+
+            if (is_file($configFilePath))
+            {
+                return (new ConfigurationFileReader($container))->getConfiguration($configFilePath);
+            }
         }
 
         return null;
