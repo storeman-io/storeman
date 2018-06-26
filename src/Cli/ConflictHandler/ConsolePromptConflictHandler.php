@@ -32,8 +32,13 @@ class ConsolePromptConflictHandler implements ConflictHandlerInterface
             throw new Exception(sprintf("Trying to use conflict handler %s with non-interactive input", static::class));
         }
 
+        $localObjectString = $localObject ? $localObject->__toString() : '-';
+        $lastLocalObjectString = $lastLocalObject ? $lastLocalObject->__toString() : '-';
         $text = <<<TXT
-<question>Encountered conflict at {$remoteObject->getRelativePath()}</question>
+<question>Encountered conflict at {$remoteObject->getRelativePath()}
+Local: {$localObjectString}
+Last local: {$lastLocalObjectString}
+Remote: {$remoteObject}</question>
 TXT;
 
         $this->consoleStyle->writeln($text);

@@ -108,6 +108,11 @@ class IndexObject
         return $this->type;
     }
 
+    public function getTypeName(): string
+    {
+        return static::getTypeNameMap()[$this->type];
+    }
+
     public function isDirectory(): bool
     {
         return $this->type === static::TYPE_DIR;
@@ -136,6 +141,11 @@ class IndexObject
     public function getPermissions(): int
     {
         return $this->permissions;
+    }
+
+    public function getPermissionsString(): string
+    {
+        return decoct($this->permissions);
     }
 
     public function getSize(): ?int
@@ -201,5 +211,47 @@ class IndexObject
         }
 
         return $equals;
+    }
+
+    public function __toString(): string
+    {
+        $inode = $this->inode ?: '-';
+
+        $parts = [
+            $this->getTypeName(),
+            "mtime: {$this->mtime}",
+            "ctime: {$this->ctime}",
+            "permissions: {$this->getPermissionsString()}",
+            "inode: {$inode}"
+        ];
+
+        if ($this->isFile())
+        {
+            $blobId = $this->blobId ?: '-';
+
+            $parts = array_merge($parts, [
+                "size: {$this->size}",
+                "blobId: {$blobId}",
+            ]);
+        }
+        elseif ($this->isLink())
+        {
+            $parts = array_merge($parts, [
+                "target: {$this->linkTarget}",
+            ]);
+        }
+
+        $attributesString = implode(', ', $parts);
+
+        return "{$this->relativePath} ({$attributesString})";
+    }
+
+    public static function getTypeNameMap(): array
+    {
+        return [
+            static::TYPE_DIR => 'DIR',
+            static::TYPE_FILE => 'FILE',
+            static::TYPE_LINK => 'LINK',
+        ];
     }
 }
