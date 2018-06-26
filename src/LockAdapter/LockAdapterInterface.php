@@ -55,18 +55,4 @@ interface LockAdapterInterface
      * @return bool
      */
     public function releaseLock(string $name): bool;
-
-    /**
-     * Sets an identity string to be used to identify a lock.
-     *
-     * @param string $identity
-     *
-     * @return LockAdapterInterface
-     */
-    public function setIdentity(string $identity): LockAdapterInterface;
-
-    /**
-     * @return string
-     */
-    public function getIdentity(): string;
 }

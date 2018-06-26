@@ -5,6 +5,7 @@ namespace Storeman\LockAdapter;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Storeman\Config\Configuration;
 
 abstract class AbstractLockAdapter implements LockAdapterInterface, LoggerAwareInterface
 {
@@ -14,17 +15,18 @@ abstract class AbstractLockAdapter implements LockAdapterInterface, LoggerAwareI
     protected $lockDepthMap = [];
 
     /**
-     * @var string
+     * @var Configuration
      */
-    protected $identity;
+    protected $configuration;
 
     /**
      * @var LoggerInterface
      */
     protected $logger;
 
-    public function __construct()
+    public function __construct(Configuration $configuration)
     {
+        $this->configuration = $configuration;
         $this->logger = new NullLogger();
     }
 
@@ -105,18 +107,6 @@ abstract class AbstractLockAdapter implements LockAdapterInterface, LoggerAwareI
         return true;
     }
 
-    public function setIdentity(string $identity): LockAdapterInterface
-    {
-        $this->identity = $identity;
-
-        return $this;
-    }
-
-    public function getIdentity(): string
-    {
-        return $this->identity;
-    }
-
     public function __destruct()
     {
         $this->releaseAcquiredLocks();
@@ -136,7 +126,7 @@ abstract class AbstractLockAdapter implements LockAdapterInterface, LoggerAwareI
 
     protected function getNewLockPayload(string $name): string
     {
-        return (new Lock($name, $this->identity))->getPayload();
+        return (new Lock($name, $this->configuration->getIdentity()))->getPayload();
     }
 
     abstract protected function doGetLock(string $name): ?Lock;

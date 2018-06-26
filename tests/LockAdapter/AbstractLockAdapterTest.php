@@ -1,6 +1,6 @@
 <?php
 
-namespace LockAdapter;
+namespace Storeman\Test\LockAdapter;
 
 use Storeman\LockAdapter\Lock;
 use Storeman\LockAdapter\LockAdapterInterface;
@@ -59,18 +59,16 @@ abstract class AbstractLockAdapterTest extends TestCase
 
     public function testLockPayload()
     {
-        $identity = md5(rand());
-
         $adapter = $this->getLockAdapter();
-        $adapter->setIdentity($identity);
         $adapter->acquireLock('x');
 
         $lock = $adapter->getLock('x');
 
         $this->assertInstanceof(Lock::class, $lock);
         $this->assertEquals('x', $lock->getName());
-        $this->assertEquals($identity, $lock->getIdentity());
+        $this->assertEquals('test identity', $lock->getIdentity());
         $this->assertInstanceof(\DateTime::class, $lock->getAcquired());
+        $this->assertEquals(time(), $lock->getAcquired()->getTimestamp(), '', 1.0);
     }
 
     abstract protected function getLockAdapter(): LockAdapterInterface;

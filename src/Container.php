@@ -111,8 +111,8 @@ final class Container implements ContainerInterface
         $this->addIndexMerger('standard', StandardIndexMerger::class, true)->withArguments(['configuration', 'hashProvider']);
 
         $this->registerVaultServiceFactory('lockAdapter');
-        $this->addLockAdapter('dummy', DummyLockAdapter::class);
-        $this->addLockAdapter('storage', StorageBasedLockAdapter::class)->withArguments(['storageAdapter']);
+        $this->addLockAdapter('dummy', DummyLockAdapter::class)->withArguments(['configuration']);
+        $this->addLockAdapter('storage', StorageBasedLockAdapter::class)->withArguments(['configuration', 'storageAdapter']);
 
         $this->registerVaultServiceFactory('operationListBuilder');
         $this->addOperationListBuilder('standard', StandardOperationListBuilder::class, true);

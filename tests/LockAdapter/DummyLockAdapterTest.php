@@ -1,15 +1,19 @@
 <?php
 
-namespace LockAdapter\Test\LockAdapter;
+namespace Storeman\Test\LockAdapter;
 
 use Storeman\LockAdapter\DummyLockAdapter;
 use Storeman\LockAdapter\LockAdapterInterface;
-use LockAdapter\AbstractLockAdapterTest;
+use Storeman\Test\ConfiguredMockProviderTrait;
 
 class DummyLockAdapterTest extends AbstractLockAdapterTest
 {
+    use ConfiguredMockProviderTrait;
+
     protected function getLockAdapter(): LockAdapterInterface
     {
-        return new DummyLockAdapter();
+        return new DummyLockAdapter(
+            $this->getConfigurationMock(['getIdentity' => 'test identity'])
+        );
     }
 }

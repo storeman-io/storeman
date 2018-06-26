@@ -21,7 +21,7 @@ class DummyLockAdapter extends AbstractLockAdapter
 
     protected function doAcquireLock(string $name, int $timeout = null): bool
     {
-        $this->lockMap[$name] = new Lock($name, $this->identity);
+        $this->lockMap[$name] = new Lock($name, $this->configuration->getIdentity());
 
         return true;
     }

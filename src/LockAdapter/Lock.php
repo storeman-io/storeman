@@ -19,7 +19,7 @@ class Lock
      */
     protected $acquired;
 
-    public function __construct(string $name, string $identity = null, \DateTime $acquired = null)
+    public function __construct(string $name, string $identity, \DateTime $acquired = null)
     {
         $this->name = $name;
         $this->identity = $identity;

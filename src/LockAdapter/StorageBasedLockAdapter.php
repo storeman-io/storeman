@@ -2,6 +2,7 @@
 
 namespace Storeman\LockAdapter;
 
+use Storeman\Config\Configuration;
 use Storeman\StorageAdapter\StorageAdapterInterface;
 
 class StorageBasedLockAdapter extends AbstractLockAdapter
@@ -11,9 +12,9 @@ class StorageBasedLockAdapter extends AbstractLockAdapter
      */
     protected $storageAdapter;
 
-    public function __construct(StorageAdapterInterface $storageAdapter)
+    public function __construct(Configuration $configuration, StorageAdapterInterface $storageAdapter)
     {
-        parent::__construct();
+        parent::__construct($configuration);
 
         $this->storageAdapter = $storageAdapter;
     }
