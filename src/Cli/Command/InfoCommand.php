@@ -142,7 +142,7 @@ class InfoCommand extends AbstractCommand
             /** @var Vault $vault */
 
             $vaultConfig = $vault->getVaultConfiguration();
-            $list = $vault->loadSynchronizationList();
+            $list = $vault->getVaultLayout()->getSynchronizations();
 
             foreach ($list as $synchronization)
             {

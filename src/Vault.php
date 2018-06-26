@@ -214,8 +214,7 @@ class Vault implements LoggerAwareInterface
         }
 
 
-        $synchronizationList = $this->loadSynchronizationList();
-        $lastSynchronization = $synchronizationList->getLastSynchronization();
+        $lastSynchronization = $this->getVaultLayout()->getLastSynchronization();
 
         if ($lastSynchronization)
         {
@@ -269,16 +268,6 @@ class Vault implements LoggerAwareInterface
         $progressionListener->finish();
 
         return $operationResultList;
-    }
-
-    /**
-     * Loads and returns the list of synchronizations from the vault.
-     *
-     * @return SynchronizationList
-     */
-    public function loadSynchronizationList(): SynchronizationList
-    {
-        return $this->getVaultLayout()->getSynchronizations();
     }
 
     /**
