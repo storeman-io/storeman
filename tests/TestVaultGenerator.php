@@ -66,6 +66,6 @@ class TestVaultGenerator
 
         $pathParts[] = $iterator->current()->getName();
 
-        return implode(DIRECTORY_SEPARATOR, $pathParts);
+        return implode('/', $pathParts);
     }
 }

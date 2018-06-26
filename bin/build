@@ -1,11 +1,11 @@
 #!/usr/bin/env php
 <?php
 
-require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bootstrap.php';
+require dirname(__DIR__) . '/bootstrap.php';
 
 if (ini_get('phar.readonly') == 1)
 {
-    fwrite(STDERR, 'Has to be called with php setting phar.readonly=0. Try `php -d phar.readonly=0 bin/build`.' . PHP_EOL);
+    fwrite(STDERR, "Has to be called with php setting phar.readonly=0. Try `php -d phar.readonly=0 bin/build`.\n");
 
     exit(1);
 }

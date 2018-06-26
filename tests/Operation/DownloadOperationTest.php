@@ -32,7 +32,7 @@ class DownloadOperationTest extends AbstractOperationTest
 
         $operation = new DownloadOperation(basename($targetFilePath), $testBlobId);
         $operation->execute(
-            dirname($targetFilePath) . DIRECTORY_SEPARATOR, $this->getFileReaderMock(), $vaultLayoutMock
+            dirname($targetFilePath) . '/', $this->getFileReaderMock(), $vaultLayoutMock
         );
 
         $this->assertEquals($testFileContent, file_get_contents($targetFilePath));

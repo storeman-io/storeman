@@ -53,7 +53,7 @@ class InfoCommandTest extends AbstractCommandTest
         $output = $tester->getDisplay(true);
 
         $this->assertEquals(0, $returnCode);
-        $this->assertContains(rtrim($testVault->getBasePath(), DIRECTORY_SEPARATOR), $output);
+        $this->assertContains(rtrim($testVault->getBasePath(), '/'), $output);
         $this->assertContains($config['identity'], $output);
         $this->assertContains($config['indexBuilder'], $output);
 

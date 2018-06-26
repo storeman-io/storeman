@@ -34,7 +34,7 @@ class Index implements \Countable, \IteratorAggregate
         $parentNode = $this->rootNode;
 
         // ensure existence of containing directory
-        if (substr_count($indexObject->getRelativePath(), DIRECTORY_SEPARATOR) > 0)
+        if (substr_count($indexObject->getRelativePath(), '/') > 0)
         {
             $parentNode = $this->rootNode->getNodeByPath(dirname($indexObject->getRelativePath()));
 

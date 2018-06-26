@@ -69,9 +69,9 @@ class Configuration implements ArraySerializableInterface
      */
     public function setPath(string $path): Configuration
     {
-        if (substr($path, -1) !== DIRECTORY_SEPARATOR)
+        if (substr($path, -1) !== '/')
         {
-            $path .= DIRECTORY_SEPARATOR;
+            $path .= '/';
         }
 
         $this->path = $path;

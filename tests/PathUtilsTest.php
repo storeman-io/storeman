@@ -14,7 +14,7 @@ class PathUtilsTest extends TestCase
         $this->assertEquals('test', PathUtils::expandTilde('test'));
         $this->assertEquals('./test', PathUtils::expandTilde('./test'));
         $this->assertEquals('/tmp/test', PathUtils::expandTilde('/tmp/test'));
-        $this->assertEquals($currentUserHome . DIRECTORY_SEPARATOR . 'test', PathUtils::expandTilde('~/test'));
+        $this->assertEquals("{$currentUserHome}/" . 'test', PathUtils::expandTilde('~/test'));
     }
 
     /**

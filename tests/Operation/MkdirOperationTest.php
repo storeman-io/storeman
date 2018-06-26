@@ -13,10 +13,10 @@ class MkdirOperationTest extends AbstractOperationTest
     {
         $tempDir = $this->getTemporaryPathGenerator()->getTemporaryDirectory();
         $newDirName = 'Test Directory';
-        $absolutePath = $tempDir . DIRECTORY_SEPARATOR . $newDirName;
+        $absolutePath = "{$tempDir}/{$newDirName}";
 
         $operation = new MkdirOperation($newDirName, 0754);
-        $operation->execute($tempDir . DIRECTORY_SEPARATOR, $this->getFileReaderMock(), $this->getVaultLayoutMock());
+        $operation->execute("{$tempDir}/", $this->getFileReaderMock(), $this->getVaultLayoutMock());
 
         $this->assertTrue(is_dir($absolutePath));
         $this->assertEquals(0754, fileperms($absolutePath) & 0777);

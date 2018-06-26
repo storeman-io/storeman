@@ -37,7 +37,7 @@ class TestVault implements \IteratorAggregate
 
     public function getObjectByRelativePath(string $relativePath): SplFileInfo
     {
-        $absolutePath = $this->basePath . DIRECTORY_SEPARATOR . $relativePath;
+        $absolutePath = "{$this->basePath}/{$relativePath}";
 
         return new SplFileInfo($absolutePath, dirname($absolutePath), $relativePath);
     }
@@ -120,6 +120,6 @@ class TestVault implements \IteratorAggregate
 
     protected function getAbsolutePath(string $relativePath): string
     {
-        return $this->basePath . DIRECTORY_SEPARATOR . $relativePath;
+        return "{$this->basePath}/{$relativePath}";
     }
 }

@@ -103,7 +103,7 @@ class IndexNode implements \Countable
     {
         $current = $this;
 
-        foreach (explode(DIRECTORY_SEPARATOR, $path) as $pathPart)
+        foreach (explode('/', $path) as $pathPart)
         {
             $current = $current->getChild($pathPart);
 

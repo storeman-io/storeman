@@ -16,7 +16,7 @@ class UnlinkOperationTest extends AbstractOperationTest
         $this->assertTrue(is_file($tempFile));
 
         $operation = new UnlinkOperation(basename($tempFile));
-        $operation->execute(dirname($tempFile) . DIRECTORY_SEPARATOR, $this->getFileReaderMock(), $this->getVaultLayoutMock());
+        $operation->execute(dirname($tempFile) . '/', $this->getFileReaderMock(), $this->getVaultLayoutMock());
 
         $this->assertFalse(is_file($tempFile));
     }

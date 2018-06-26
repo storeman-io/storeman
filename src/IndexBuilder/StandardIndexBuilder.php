@@ -91,7 +91,7 @@ class StandardIndexBuilder implements IndexBuilderInterface, LoggerAwareInterfac
      */
     public function buildIndexObject(string $basePath, string $relativePath): ?IndexObject
     {
-        $absolutePath = rtrim($basePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $relativePath;
+        $absolutePath = rtrim($basePath, '/') . '/' . $relativePath;
 
         clearstatcache(null, $absolutePath);
 

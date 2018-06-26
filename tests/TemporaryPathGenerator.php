@@ -34,7 +34,7 @@ class TemporaryPathGenerator
 
     public function getTemporaryDirectory(string $prefix = 'tempDir', int $perms = 0777): string
     {
-        $path = $this->getTemporaryPath($prefix) . DIRECTORY_SEPARATOR;
+        $path = "{$this->getTemporaryPath($prefix)}/";
 
         $this->filesystem->mkdir($path, $perms);
 
@@ -66,7 +66,7 @@ class TemporaryPathGenerator
     {
         do
         {
-            $path = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $prefix . '_' . uniqid();
+            $path = sys_get_temp_dir() . "/{$prefix}_" . uniqid();
         }
         while($this->filesystem->exists($path));
 

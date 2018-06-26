@@ -98,7 +98,7 @@ class IndexObject
 
     public function getBasename(): string
     {
-        $pos = strrpos($this->relativePath, DIRECTORY_SEPARATOR);
+        $pos = strrpos($this->relativePath, '/');
 
         return ($pos === false) ? $this->relativePath : substr($this->relativePath, $pos + 1);
     }

@@ -236,7 +236,7 @@ class Storeman
             }
         }
 
-        return $path . DIRECTORY_SEPARATOR;
+        return "{$path}/";
     }
 
     /**

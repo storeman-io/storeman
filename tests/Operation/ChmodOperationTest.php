@@ -14,7 +14,7 @@ class ChmodOperationTest extends AbstractOperationTest
         $testFilePath = $this->getTemporaryPathGenerator()->getTemporaryFile(0664);
 
         $operation = new ChmodOperation(basename($testFilePath), 0777);
-        $operation->execute(dirname($testFilePath) . DIRECTORY_SEPARATOR, $this->getFileReaderMock(), $this->getVaultLayoutMock());
+        $operation->execute(dirname($testFilePath) . '/', $this->getFileReaderMock(), $this->getVaultLayoutMock());
 
         $this->assertEquals(fileperms($testFilePath) & 0777, 0777);
     }

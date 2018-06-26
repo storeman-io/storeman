@@ -20,7 +20,7 @@ class TouchOperationTest extends AbstractOperationTest
         $this->assertEquals($originalMTime, filemtime($tempFile));
 
         $operation = new TouchOperation(basename($tempFile), $newMTime);
-        $operation->execute(dirname($tempFile) . DIRECTORY_SEPARATOR, $this->getFileReaderMock(), $this->getVaultLayoutMock());
+        $operation->execute(dirname($tempFile) . '/', $this->getFileReaderMock(), $this->getVaultLayoutMock());
 
         clearstatcache(null, $tempFile);
 
