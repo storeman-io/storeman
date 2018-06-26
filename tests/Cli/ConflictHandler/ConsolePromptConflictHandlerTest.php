@@ -30,9 +30,9 @@ class ConsolePromptConflictHandlerTest extends TestCase
     {
         $consoleStyle = $this->createMock(ConsoleStyle::class);
         $consoleStyle
-            ->expects($this->exactly(2))
+            ->expects($this->exactly(3))
             ->method('choice')
-            ->willReturnOnConsecutiveCalls('x', 'l');
+            ->willReturnOnConsecutiveCalls('', 'x', 'l');
 
         $this->assertEquals(
             ConflictHandlerInterface::USE_LOCAL,
