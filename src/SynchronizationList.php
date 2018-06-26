@@ -2,8 +2,6 @@
 
 namespace Storeman;
 
-use Storeman\Exception;
-
 class SynchronizationList implements \Countable, \IteratorAggregate
 {
     /**
