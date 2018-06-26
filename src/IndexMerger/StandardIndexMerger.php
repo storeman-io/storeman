@@ -38,7 +38,7 @@ class StandardIndexMerger implements IndexMergerInterface
         $mergedIndex = new Index();
         $lastLocalIndex = $lastLocalIndex ?: new Index();
 
-        $diff = $localIndex->getDifference($remoteIndex, IndexObject::CMP_IGNORE_BLOBID);
+        $diff = $localIndex->getDifference($remoteIndex, IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE);
 
         foreach ($diff as $cmp)
         {
@@ -65,7 +65,7 @@ class StandardIndexMerger implements IndexMergerInterface
             }
         }
 
-        foreach ($localIndex->getIntersection($remoteIndex) as $cmp)
+        foreach ($localIndex->getIntersection($remoteIndex, IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE) as $cmp)
         {
             /** @var IndexObjectComparison $cmp */
 
@@ -82,7 +82,7 @@ class StandardIndexMerger implements IndexMergerInterface
             return $localObject !== null;
         }
 
-        $localObjectModified = !$lastLocalObject->equals($localObject, IndexObject::CMP_IGNORE_BLOBID);
+        $localObjectModified = !$lastLocalObject->equals($localObject, IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE);
 
         // eventually verify file content
         if (!$localObjectModified && $localObject->isFile() && $options & static::VERIFY_CONTENT)
@@ -111,7 +111,7 @@ class StandardIndexMerger implements IndexMergerInterface
     {
         if ($lastLocalObject)
         {
-            return !$lastLocalObject->equals($remoteObject, IndexObject::CMP_IGNORE_BLOBID);
+            return !$lastLocalObject->equals($remoteObject, IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE);
         }
         else
         {

@@ -14,6 +14,7 @@ class IndexObject
     public const TYPE_LINK = 3;
 
     public const CMP_IGNORE_BLOBID = 1;
+    public const CMP_IGNORE_INODE = 2;
 
 
     /**
@@ -190,7 +191,7 @@ class IndexObject
         $equals = $equals && ($this->ctime === $other->ctime);
         $equals = $equals && ($this->permissions === $other->permissions);
         $equals = $equals && ($this->size === $other->size);
-        $equals = $equals && ($this->inode === $other->inode);
+        $equals = $equals && (($options & static::CMP_IGNORE_INODE) || ($this->inode === $other->inode));
         $equals = $equals && ($this->linkTarget === $other->linkTarget);
         $equals = $equals && (($options & static::CMP_IGNORE_BLOBID) || ($this->blobId === $other->blobId));
 
