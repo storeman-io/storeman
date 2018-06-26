@@ -70,6 +70,14 @@ class Storeman
     }
 
     /**
+     * @return FileReader
+     */
+    public function getFileReader(): FileReader
+    {
+        return $this->container->get('fileReader');
+    }
+
+    /**
      * Builds and returns an index representing the current local state.
      *
      * @param string $path

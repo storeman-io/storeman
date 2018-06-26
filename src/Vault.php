@@ -38,11 +38,6 @@ class Vault
     protected $vaultLayout;
 
     /**
-     * @var FileReader
-     */
-    protected $fileReader;
-
-    /**
      * @var StorageAdapterInterface
      */
     protected $storageAdapter;
@@ -86,11 +81,6 @@ class Vault
     public function getVaultLayout(): VaultLayoutInterface
     {
         return $this->vaultLayout ?: ($this->vaultLayout = $this->getContainer()->get('vaultLayout'));
-    }
-
-    public function getFileReader(): FileReader
-    {
-        return $this->fileReader ?: ($this->fileReader = $this->getContainer()->get('fileReader'));
     }
 
     public function getStorageAdapter(): StorageAdapterInterface
@@ -248,7 +238,7 @@ class Vault
         {
             /** @var OperationInterface $operation */
 
-            $success = $operation->execute($this->storeman->getConfiguration()->getPath(), $this->getFileReader(), $this->getVaultLayout());
+            $success = $operation->execute($this->storeman->getConfiguration()->getPath(), $this->storeman->getFileReader(), $this->getVaultLayout());
 
             $operationResult = new OperationResult($operation, $success);
             $operationResultList->addOperationResult($operationResult);
@@ -372,7 +362,7 @@ class Vault
         {
             /** @var OperationInterface $operation */
 
-            $success = $operation->execute($targetPath, $this->getFileReader(), $this->getVaultLayout());
+            $success = $operation->execute($targetPath, $this->storeman->getFileReader(), $this->getVaultLayout());
 
             $operationResult = new OperationResult($operation, $success);
             $operationResultList->addOperationResult($operationResult);
