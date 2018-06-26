@@ -73,6 +73,16 @@ class TestVault implements \IteratorAggregate
         return $this;
     }
 
+    public function rename(string $relativeSourcePath, string $relativeTargetPath): TestVault
+    {
+        $this->filesystem->rename(
+            $this->getAbsolutePath($relativeSourcePath),
+            $this->getAbsolutePath($relativeTargetPath)
+        );
+
+        return $this;
+    }
+
     public function remove(string $relativePath): TestVault
     {
         $this->filesystem->remove($this->getAbsolutePath($relativePath));
