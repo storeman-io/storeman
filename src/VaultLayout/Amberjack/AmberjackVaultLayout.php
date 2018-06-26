@@ -11,7 +11,6 @@ use Storeman\Index\IndexObject;
 use Storeman\StorageAdapter\StorageAdapterInterface;
 use Storeman\Synchronization;
 use Storeman\SynchronizationList;
-use Storeman\Config\VaultConfiguration;
 use Storeman\VaultLayout\LazyLoadedIndex;
 use Storeman\VaultLayout\VaultLayoutInterface;
 
@@ -24,15 +23,9 @@ class AmberjackVaultLayout implements VaultLayoutInterface
      */
     protected $storageAdapter;
 
-    /**
-     * @var VaultConfiguration
-     */
-    protected $vaultConfiguration;
-
-    public function __construct(StorageAdapterInterface $storageAdapter, VaultConfiguration $vaultConfiguration)
+    public function __construct(StorageAdapterInterface $storageAdapter)
     {
         $this->storageAdapter = $storageAdapter;
-        $this->vaultConfiguration = $vaultConfiguration;
     }
 
     /**

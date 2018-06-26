@@ -121,7 +121,7 @@ final class Container implements ContainerInterface
         $this->addStorageAdapter('local', LocalStorageAdapter::class)->withArgument('vaultConfiguration');
 
         $this->registerVaultServiceFactory('vaultLayout');
-        $this->addVaultLayout('amberjack', AmberjackVaultLayout::class)->withArguments(['storageAdapter', 'vaultConfiguration']);
+        $this->addVaultLayout('amberjack', AmberjackVaultLayout::class)->withArguments(['storageAdapter']);
 
         $this->delegate->add(ExistingServiceValidator::class)->withArgument($this);
     }
