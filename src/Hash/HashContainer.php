@@ -81,4 +81,13 @@ final class HashContainer implements \Countable, \IteratorAggregate, \Serializab
 
         return $this;
     }
+
+    public function __toString(): string
+    {
+        return implode(', ', array_map(function(string $algorithm, string $hash) {
+
+            return "{$algorithm}: {$hash}";
+
+        }, array_keys($this->map), $this->map)) ?: '-';
+    }
 }

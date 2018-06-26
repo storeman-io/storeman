@@ -2,6 +2,8 @@
 
 namespace Storeman\Cli;
 
+use Storeman\Cli\Helper\DisplayIndexHelper;
+
 class Application extends \Symfony\Component\Console\Application
 {
     public const LOGO =  <<<TXT
@@ -14,9 +16,22 @@ class Application extends \Symfony\Component\Console\Application
 
 TXT;
 
-
+    /**
+     * {@inheritdoc}
+     */
     public function getHelp()
     {
         return static::LOGO . parent::getHelp();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultHelperSet()
+    {
+        $helperSet = parent::getDefaultHelperSet();
+        $helperSet->set(new DisplayIndexHelper());
+
+        return $helperSet;
     }
 }
