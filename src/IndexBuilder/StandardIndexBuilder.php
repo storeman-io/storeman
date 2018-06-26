@@ -2,6 +2,9 @@
 
 namespace Storeman\IndexBuilder;
 
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Storeman\Exception;
 use Storeman\Hash\HashContainer;
 use Storeman\Index\Index;
@@ -9,13 +12,33 @@ use Storeman\Index\IndexObject;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
-class StandardIndexBuilder implements IndexBuilderInterface
+class StandardIndexBuilder implements IndexBuilderInterface, LoggerAwareInterface
 {
+    /**
+     * @var LoggerInterface
+     */
+    protected $logger;
+
+    public function __construct()
+    {
+        $this->logger = new NullLogger();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+    }
+
     /**
      * {@inheritdoc}
      */
     public function buildIndex(string $path, array $excludedPathsRegexp = []): Index
     {
+        $this->logger->info(sprintf("Building index using %s for path '%s' (excluded: %s)...", static::class, $path, implode(',', $excludedPathsRegexp) ?: '-'));
+
         if (!file_exists($path))
         {
             throw new \InvalidArgumentException("Given path '{$path}' does not exist.");
@@ -102,7 +125,7 @@ class StandardIndexBuilder implements IndexBuilderInterface
 
                 if ($linkTarget === false)
                 {
-                    // todo: log
+                    $this->logger->notice("Found broken link: {$absolutePath}");
 
                     // silently ignore broken links
                     return null;
