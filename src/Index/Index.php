@@ -140,8 +140,8 @@ class Index implements \Countable, \IteratorAggregate
     {
         $diff = new IndexComparison();
 
-        $this->addDiffTo($other, $diff, $options);
-        $other->addDiffTo($this, $diff, $options);
+        $this->addDiffTo($other, $diff, $options, false);
+        $other->addDiffTo($this, $diff, $options, true);
 
         return $diff;
     }
@@ -228,9 +228,10 @@ class Index implements \Countable, \IteratorAggregate
      * @param Index $other
      * @param IndexComparison $indexDifference
      * @param int $options
+     * @param bool $flipped
      * @return IndexComparison
      */
-    protected function addDiffTo(Index $other, IndexComparison $indexDifference, int $options = 0): IndexComparison
+    protected function addDiffTo(Index $other, IndexComparison $indexDifference, int $options, bool $flipped): IndexComparison
     {
         foreach ($this as $object)
         {
@@ -240,7 +241,10 @@ class Index implements \Countable, \IteratorAggregate
 
             if (!$object->equals($otherObject, $options) && !$indexDifference->hasObjectComparison($object->getRelativePath()))
             {
-                $indexDifference->addObjectComparison(new IndexObjectComparison($object, $otherObject));
+                $objectA = $flipped ? $otherObject : $object;
+                $objectB = $flipped ? $object : $otherObject;
+
+                $indexDifference->addObjectComparison(new IndexObjectComparison($objectA, $objectB));
             }
         }
 

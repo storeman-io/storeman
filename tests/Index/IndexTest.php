@@ -296,7 +296,7 @@ class IndexTest extends TestCase
         $diff = $indexB->getDifference($indexA);
 
         $this->assertCount(1, $diff);
-        $this->assertSame($objectA, $diff->getObjectComparison('a')->getIndexObjectA());
+        $this->assertSame($objectA, $diff->getObjectComparison('a')->getIndexObjectB());
 
         $indexB->addObject($objectA);
 
@@ -311,7 +311,7 @@ class IndexTest extends TestCase
         $diff = $indexA->getDifference($indexB);
 
         $this->assertCount(1, $diff);
-        $this->assertSame($objectB, $diff->getObjectComparison('b')->getIndexObjectA());
+        $this->assertSame($objectB, $diff->getObjectComparison('b')->getIndexObjectB());
 
         $indexA->addObject($objectB);
 
