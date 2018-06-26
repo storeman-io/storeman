@@ -195,19 +195,19 @@ class IndexObject
         }
 
         $equals = true;
-        $equals = $equals && ($this->relativePath === $other->relativePath);
-        $equals = $equals && ($this->type === $other->type);
-        $equals = $equals && ($this->mtime === $other->mtime);
-        $equals = $equals && ($this->ctime === $other->ctime);
-        $equals = $equals && ($this->permissions === $other->permissions);
-        $equals = $equals && ($this->size === $other->size);
-        $equals = $equals && (($options & static::CMP_IGNORE_INODE) || ($this->inode === $other->inode));
-        $equals = $equals && ($this->linkTarget === $other->linkTarget);
-        $equals = $equals && (($options & static::CMP_IGNORE_BLOBID) || ($this->blobId === $other->blobId));
+        $equals &= $this->relativePath === $other->relativePath;
+        $equals &= $this->type === $other->type;
+        $equals &= $this->mtime === $other->mtime;
+        $equals &= $this->ctime === $other->ctime;
+        $equals &= $this->permissions === $other->permissions;
+        $equals &= $this->size === $other->size;
+        $equals &= ($options & static::CMP_IGNORE_INODE) | ($this->inode === $other->inode);
+        $equals &= $this->linkTarget === $other->linkTarget;
+        $equals &= ($options & static::CMP_IGNORE_BLOBID) | ($this->blobId === $other->blobId);
 
         if ($this->hashes)
         {
-            $equals = $equals && $this->hashes->equals($other->hashes);
+            $equals = $equals & $this->hashes->equals($other->hashes);
         }
 
         return $equals;
