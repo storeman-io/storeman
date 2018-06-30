@@ -91,7 +91,7 @@ class FileReader implements LoggerAwareInterface
             $aggregateHashAlgorithm = new AggregateHashAlgorithm(array_intersect_key($this->hashFunctions, array_flip($missingHashes)));
             $aggregateHashAlgorithm->initialize();
 
-            StreamFilter\prepend($stream, function(string $chunk = null) use ($aggregateHashAlgorithm, $indexObject) {
+            $filter = StreamFilter\prepend($stream, function(string $chunk = null) use ($aggregateHashAlgorithm, $indexObject, &$filter) {
 
                 // eof
                 if ($chunk === null)
@@ -102,6 +102,8 @@ class FileReader implements LoggerAwareInterface
                     {
                         $indexObject->getHashes()->addHash($algorithm, $hash);
                     }
+
+                    StreamFilter\remove($filter);
                 }
 
                 // digest chunk
@@ -111,7 +113,8 @@ class FileReader implements LoggerAwareInterface
                 }
 
                 return $chunk;
-            });
+
+            }, STREAM_FILTER_READ);
         }
     }
 }
