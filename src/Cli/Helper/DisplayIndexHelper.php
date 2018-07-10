@@ -37,7 +37,7 @@ class DisplayIndexHelper extends Helper implements HelperInterface
                 "0{$indexObject->getPermissionsString()}",
                 $indexObject->getInode() ?: '-',
                 $indexObject->getLinkTarget() ?: '-',
-                $indexObject->getSize() ? static::formatMemory($indexObject->getSize()) : '-',
+                ($indexObject->getSize() !== null) ? static::formatMemory($indexObject->getSize()) : '-',
                 $indexObject->getBlobId() ?: '-',
                     $indexObject->getHashes() ? str_replace(', ', "\n", $indexObject->getHashes()->__toString()) : '-',
             ]);
