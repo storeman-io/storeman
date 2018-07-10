@@ -67,7 +67,7 @@ class ShowIndexCommand extends AbstractCommand
             $index = $vault->getRemoteIndex($revision);
         }
 
-        if (!$index->count())
+        if ($index->count())
         {
             /** @var DisplayIndexHelper $displayIndexHelper */
             $displayIndexHelper = $this->getHelper('displayIndex');
