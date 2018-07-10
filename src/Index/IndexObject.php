@@ -7,7 +7,7 @@ use Storeman\Hash\HashContainer;
 /**
  * An index object is the representation of one of this filesystem primitives contained in the index.
  */
-class IndexObject
+class IndexObject implements \ArrayAccess
 {
     public const TYPE_DIR = 1;
     public const TYPE_FILE = 2;
@@ -214,6 +214,40 @@ class IndexObject
         }
 
         return $equals;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function offsetExists($offset)
+    {
+        return method_exists($this, 'get' . ucfirst($offset));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function offsetGet($offset)
+    {
+        assert(method_exists($this, 'get' . ucfirst($offset)));
+
+        return call_user_func([$this, 'get' . ucfirst($offset)]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function offsetSet($offset, $value)
+    {
+        throw new \LogicException();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function offsetUnset($offset)
+    {
+        throw new \LogicException();
     }
 
     public function __clone()

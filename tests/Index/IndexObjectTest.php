@@ -56,4 +56,39 @@ class IndexObjectTest extends TestCase
         $this->assertEquals('x', $object->getHashes()->getHash('x'));
         $this->assertNull($object->getHashes()->getHash('y'));
     }
+
+    public function testArrayAccess()
+    {
+        $testVault = new TestVault();
+        $testVault->fwrite('file.ext', 'foobar');
+
+        $object = $testVault->getIndex()->getObjectByPath('file.ext');
+
+        $this->assertEquals($object->getRelativePath(), $object['relativePath']);
+        $this->assertEquals($object->getMtime(), $object['mtime']);
+    }
+
+    public function testInvalidArrayAccessSet()
+    {
+        $testVault = new TestVault();
+        $testVault->fwrite('file.ext', 'foobar');
+
+        $object = $testVault->getIndex()->getObjectByPath('file.ext');
+
+        $this->expectException(\LogicException::class);
+
+        $object['relativePath'] = 'test';
+    }
+
+    public function testInvalidArrayAccessUnset()
+    {
+        $testVault = new TestVault();
+        $testVault->fwrite('file.ext', 'foobar');
+
+        $object = $testVault->getIndex()->getObjectByPath('file.ext');
+
+        $this->expectException(\LogicException::class);
+
+        unset($object['relativePath']);
+    }
 }
