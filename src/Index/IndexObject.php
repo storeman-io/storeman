@@ -15,6 +15,7 @@ class IndexObject
 
     public const CMP_IGNORE_BLOBID = 1;
     public const CMP_IGNORE_INODE = 2;
+    public const CMP_IGNORE_CTIME = 4;
 
 
     /**
@@ -198,7 +199,7 @@ class IndexObject
         $equals &= $this->relativePath === $other->relativePath;
         $equals &= $this->type === $other->type;
         $equals &= $this->mtime === $other->mtime;
-        $equals &= $this->ctime === $other->ctime;
+        $equals &= ($options & static::CMP_IGNORE_CTIME) || ($this->ctime === $other->ctime);
         $equals &= $this->permissions === $other->permissions;
         $equals &= $this->size === $other->size;
         $equals &= ($options & static::CMP_IGNORE_INODE) || ($this->inode === $other->inode);

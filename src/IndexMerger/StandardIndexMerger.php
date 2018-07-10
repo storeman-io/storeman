@@ -16,9 +16,13 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-
     public const VERIFY_CONTENT = 1;
 
+    protected const CMP_OPTIONS =
+        IndexObject::CMP_IGNORE_BLOBID |
+        IndexObject::CMP_IGNORE_INODE |
+        IndexObject::CMP_IGNORE_CTIME
+    ;
 
     /**
      * @var Configuration
@@ -47,7 +51,7 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
         $mergedIndex = new Index();
         $lastLocalIndex = $lastLocalIndex ?: new Index();
 
-        $diff = $localIndex->getDifference($remoteIndex, IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE);
+        $diff = $localIndex->getDifference($remoteIndex, static::CMP_OPTIONS);
 
         $this->logger->debug(sprintf("Found %d differences between local and remote index", count($diff)));
 
@@ -76,7 +80,7 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
             }
         }
 
-        $intersection = $localIndex->getIntersection($remoteIndex, IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE);
+        $intersection = $localIndex->getIntersection($remoteIndex, static::CMP_OPTIONS);
 
         $this->logger->debug(sprintf("Found %d similarities between local and remote index", count($intersection)));
 
@@ -98,7 +102,7 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
             return $localObject !== null;
         }
 
-        $localObjectModified = !$lastLocalObject->equals($localObject, IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE);
+        $localObjectModified = !$lastLocalObject->equals($localObject, static::CMP_OPTIONS);
 
         // eventually verify file content
         if (!$localObjectModified && $localObject->isFile() && $options & static::VERIFY_CONTENT)
@@ -127,7 +131,7 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
     {
         if ($lastLocalObject)
         {
-            return !$lastLocalObject->equals($remoteObject, IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE);
+            return !$lastLocalObject->equals($remoteObject, static::CMP_OPTIONS);
         }
         else
         {

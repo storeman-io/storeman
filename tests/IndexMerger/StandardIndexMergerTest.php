@@ -170,6 +170,27 @@ class StandardIndexMergerTest extends TestCase
         $this->assertTrue($mergedIndex->equals($remoteIndex));
     }
 
+    public function testCtimeIgnorance()
+    {
+        $testVault = new TestVault();
+        $testVault->touch('file');
+
+        $index = $testVault->getIndex();
+
+        sleep(1);
+
+        $object = $index->getObjectByPath('file');
+
+        $object->setBlobId('xxx'); // make index object identifiable
+        $testVault->touch('file', $object->getMtime()); // change only ctime
+
+        $localIndex = $testVault->getIndex();
+
+        $mergedIndex = $this->getIndexMerger($testVault)->merge(new PanickingConflictHandler(), $index, $localIndex, $index);
+
+        $this->assertEquals('xxx', $mergedIndex->getObjectByPath('file')->getBlobId());
+    }
+
     protected function getIndexMerger(TestVault $testVault): StandardIndexMerger
     {
         $configuration = new Configuration();
