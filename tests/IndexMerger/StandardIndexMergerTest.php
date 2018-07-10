@@ -154,6 +154,22 @@ class StandardIndexMergerTest extends TestCase
         $this->assertTrue($mergedIndex->getObjectByPath('file')->equals($remoteIndex->getObjectByPath('file')));
     }
 
+    public function testBlobIdReusage()
+    {
+        $testVault = new TestVault();
+        $testVault->touch('file');
+
+        $merger = $this->getIndexMerger($testVault);
+
+        $localIndex = $testVault->getIndex();
+        $remoteIndex = $testVault->getIndex();
+        $remoteIndex->getObjectByPath('file')->setBlobId('xxx');
+
+        $mergedIndex = $merger->merge(new PanickingConflictHandler(), $remoteIndex, $localIndex, $remoteIndex);
+
+        $this->assertTrue($mergedIndex->equals($remoteIndex));
+    }
+
     protected function getIndexMerger(TestVault $testVault): StandardIndexMerger
     {
         $configuration = new Configuration();

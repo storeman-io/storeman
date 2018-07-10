@@ -84,7 +84,8 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
         {
             /** @var IndexObjectComparison $cmp */
 
-            $mergedIndex->addObject($cmp->getIndexObjectA());
+            // indexObjectB refers to remote object which we want to use to re-use the already existing blobId
+            $mergedIndex->addObject($cmp->getIndexObjectB());
         }
 
         return $mergedIndex;
