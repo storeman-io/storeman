@@ -3,7 +3,7 @@
 namespace Storeman\IndexBuilder;
 
 use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
 use Storeman\Exception;
 use Storeman\Hash\HashContainer;
@@ -14,22 +14,11 @@ use Symfony\Component\Finder\SplFileInfo;
 
 class StandardIndexBuilder implements IndexBuilderInterface, LoggerAwareInterface
 {
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
+    use LoggerAwareTrait;
 
     public function __construct()
     {
         $this->logger = new NullLogger();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
     }
 
     /**

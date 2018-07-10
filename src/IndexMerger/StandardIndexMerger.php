@@ -3,7 +3,7 @@
 namespace Storeman\IndexMerger;
 
 use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
 use Storeman\Config\Configuration;
 use Storeman\ConflictHandler\ConflictHandlerInterface;
@@ -14,6 +14,9 @@ use Storeman\Index\IndexObject;
 
 class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
+
     public const VERIFY_CONTENT = 1;
 
 
@@ -27,24 +30,11 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
      */
     protected $hashProvider;
 
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-
     public function __construct(Configuration $configuration, HashProvider $hashProvider)
     {
         $this->configuration = $configuration;
         $this->hashProvider = $hashProvider;
         $this->logger = new NullLogger();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setLogger(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
     }
 
     /**

@@ -4,7 +4,7 @@ namespace Storeman;
 
 use Clue\StreamFilter;
 use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
 use Storeman\Config\Configuration;
 use Storeman\Hash\AggregateHashAlgorithm;
@@ -16,6 +16,8 @@ use Storeman\Index\IndexObject;
  */
 class FileReader implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * @var Configuration
      */
@@ -26,26 +28,12 @@ class FileReader implements LoggerAwareInterface
      */
     protected $hashFunctions;
 
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-
     public function __construct(Configuration $configuration, array $hashFunctions)
     {
         $this->configuration = $configuration;
         $this->hashFunctions = $hashFunctions;
         $this->logger = new NullLogger();
     }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
-    }
-
 
     /**
      * Returns a readable stream for the given file index object.

@@ -3,12 +3,14 @@
 namespace Storeman\LockAdapter;
 
 use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
 use Storeman\Config\Configuration;
 
 abstract class AbstractLockAdapter implements LockAdapterInterface, LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * @var int[]
      */
@@ -19,23 +21,10 @@ abstract class AbstractLockAdapter implements LockAdapterInterface, LoggerAwareI
      */
     protected $configuration;
 
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-
     public function __construct(Configuration $configuration)
     {
         $this->configuration = $configuration;
         $this->logger = new NullLogger();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
     }
 
     public function isLocked(string $name): bool
