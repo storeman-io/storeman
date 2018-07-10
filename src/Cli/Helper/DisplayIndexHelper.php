@@ -39,7 +39,7 @@ class DisplayIndexHelper extends Helper implements HelperInterface
                 $indexObject->getLinkTarget() ?: '-',
                 ($indexObject->getSize() !== null) ? static::formatMemory($indexObject->getSize()) : '-',
                 $indexObject->getBlobId() ?: '-',
-                    $indexObject->getHashes() ? str_replace(', ', "\n", $indexObject->getHashes()->__toString()) : '-',
+                $indexObject->getHashes() ? str_replace(', ', "\n", $indexObject->getHashes()->__toString()) : '-',
             ]);
         }
 

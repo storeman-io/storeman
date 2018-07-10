@@ -45,6 +45,28 @@ class DisplayIndexComparisonHelper extends Helper implements HelperInterface
             return '-';
         }
 
-        return "mtime: {$indexObject->getMtime()}, size: {$indexObject->getSize()}";
+        $parts = [
+            $indexObject->getTypeName(),
+            "mtime: " . \DateTime::createFromFormat('U', $indexObject->getMtime())->format('c'),
+            "ctime: " . \DateTime::createFromFormat('U', $indexObject->getCtime())->format('c'),
+            "perms: 0{$indexObject->getPermissionsString()}",
+        ];
+
+        if ($indexObject->isFile())
+        {
+            $parts = array_merge($parts, [
+                "size: " . (($indexObject->getSize() !== null) ? static::formatMemory($indexObject->getSize()) : '-'),
+                "blobId: " . ($indexObject->getBlobId() ?: '-'),
+                "hash(es):" . ($indexObject->getHashes() && $indexObject->getHashes()->count() ? ("\n" . str_replace(', ', "\n", $indexObject->getHashes()->__toString())) : ' -'),
+            ]);
+        }
+        elseif ($indexObject->isLink())
+        {
+            $parts = array_merge($parts, [
+                "target: {$indexObject->getLinkTarget()}"
+            ]);
+        }
+
+        return implode("\n", $parts);
     }
 }
