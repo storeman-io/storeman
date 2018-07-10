@@ -62,6 +62,66 @@ class SynchronizationCommandTest extends AbstractCommandTest
         }
     }
 
+    public function testNestedVaultsSupport()
+    {
+        $firstConfig = [
+            'identity' => 'Someone',
+            'vaults' => [
+                [
+                    'adapter' => 'local',
+                    'settings' => [
+                        'path' => $this->getTemporaryPathGenerator()->getTemporaryDirectory(),
+                    ],
+                ],
+            ],
+        ];
+
+        $secondConfig = $firstConfig;
+        $secondConfig['identity'] = 'Some other one';
+
+        $firstSubVaultConfig = $firstConfig;
+        $firstSubVaultConfig['identity'] = 'The sub one';
+        $firstSubVaultConfig['vaults'][0]['settings']['path'] = $this->getTemporaryPathGenerator()->getTemporaryDirectory();
+
+        $secondSubVaultConfig = $firstSubVaultConfig;
+        $secondSubVaultConfig['identity'] = 'The second sub one';
+
+
+        $firstTestVault = new TestVault();
+        $firstTestVault->fwrite(Storeman::CONFIG_FILE_NAME, json_encode($firstConfig, JSON_PRETTY_PRINT));
+        $firstTestVault->touch('firstFile.ext');
+        $firstTestVault->mkdir('sub vault');
+        $firstTestVault->fwrite('sub vault/' . Storeman::CONFIG_FILE_NAME, json_encode($firstSubVaultConfig, JSON_PRETTY_PRINT));
+        $firstTestVault->touch('sub vault/firstSubFile.ext');
+
+        $secondTestVault = new TestVault();
+        $secondTestVault->fwrite(Storeman::CONFIG_FILE_NAME, json_encode($secondConfig, JSON_PRETTY_PRINT));
+        $secondTestVault->touch('secondFile.ext');
+
+        $subTestVault = new TestVault();
+        $subTestVault->fwrite(Storeman::CONFIG_FILE_NAME, json_encode($secondSubVaultConfig));
+        $subTestVault->touch('secondSubFile.ext');
+
+
+        $tester = new CommandTester(new SynchronizeCommand());
+
+        $this->assertEquals(0, $tester->execute(['-c' => $firstTestVault->getBasePath() . Storeman::CONFIG_FILE_NAME]));
+        $this->assertEquals(0, $tester->execute(['-c' => $secondTestVault->getBasePath() . Storeman::CONFIG_FILE_NAME]));
+
+        $this->assertTrue(is_file($secondTestVault->getBasePath() . 'firstFile.ext'));
+        $this->assertTrue(is_dir($secondTestVault->getBasePath() . 'sub vault'));
+        $this->assertTrue(is_file($secondTestVault->getBasePath() . 'sub vault/firstSubFile.ext'));
+
+        $this->assertEquals(0, $tester->execute(['-c' => $firstTestVault->getBasePath() . Storeman::CONFIG_FILE_NAME]));
+
+        $this->assertTrue(is_file($firstTestVault->getBasePath() . 'secondFile.ext'));
+
+        $this->assertEquals(0, $tester->execute(['-c' => $firstTestVault->getBasePath() . 'sub vault/' . Storeman::CONFIG_FILE_NAME]));
+        $this->assertEquals(0, $tester->execute(['-c' => $subTestVault->getBasePath() . Storeman::CONFIG_FILE_NAME]));
+
+        $this->assertTrue(is_file($subTestVault->getBasePath() . 'firstSubFile.ext'));
+    }
+
     protected function getCommand(): Command
     {
         return new SynchronizeCommand();
