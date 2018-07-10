@@ -111,6 +111,11 @@ abstract class AbstractCommand extends Command
         {
             $configFilePath = PathUtils::expandTilde($configFilePath);
 
+            if (is_dir($configFilePath))
+            {
+                $configFilePath = "{$configFilePath}/" . Storeman::CONFIG_FILE_NAME;
+            }
+
             if (is_file($configFilePath))
             {
                 /** @var ConfigurationFileReader $reader */
