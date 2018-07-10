@@ -49,7 +49,7 @@ class DiffCommand extends AbstractCommand
         $index = $vault->getRemoteIndex($revision);
 
 
-        $compareTo = intval($input->getArgument('compareTo')) ?: null;
+        $compareTo = $input->getArgument('compareTo') ? intval($input->getArgument('compareTo')) : null;
 
         if ($compareTo === 0)
         {
