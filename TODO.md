@@ -2,13 +2,23 @@
 # Todo
 
 - (Potential) bugs
-    - Replace usage of DIRECTORY_SEPARATOR with normalized "/"
+    - Ensure non-conflicting OperationLists across vaults
+    - Implement signal handler and ensure released locks on abortion
+    - ensure blobIds are the same across vaults
+    - PHP config
+        - "bootstrap" project like
     - Deadlock prevention
         - Ensure same locking order of vaults
         - Same lockAdapter across multiple vaults?
     - Nested archives
 - Features
-    - Use merkle tree for integrity validation
+    - Extend index merging to handle modified file content and modified metadata separately
+    - Implement rsync-like algorithm for DownloadOperation
+    - Seekable container
+    - Partial checkouts (only some subdirectory)
+    - "Transactional/Atomic" file operations (temp + rename)
+    - Detect file movement and add corresponding local operation
+        - inode usage
     - Use full available mtime/ctime resolution
         - Keep comparison across systems with different resolutions in mind
     - Add "force-local" parameter to synchronization to be able to "keep" restored state
@@ -29,9 +39,10 @@
         - WebApp?
     - Inotify watcher
     - Add version string during phar build
-    - Check php (module) dependencies on runtime and offer installation help
+    - Check (php module, system, etc.) dependencies on runtime and offer installation help
     - Synchronization dry-run
-    - Sanity-Check
+    - Sanity-Checks
+    - Use precomputed hashes (e.g. from zfs)
 - Encryption
     - https://cryptomator.org/architecture/
     - Encryption/decryption as stream filter
@@ -48,5 +59,19 @@
     - Test (recursive) symlink support
     - Offer plugin/module integration
     - Versionable (across storeman versions) Local/Remote index format
-    - Final classes
     - Tests for phar compiler
+
+
+## File hash usages
+
+|Storage|Hash|
+|---|---|
+|S3|MD5|
+|Backblaze|SHA1|
+|FTP|_various_|
+|Azure|MD5|
+|Google Cloud Storage|CRC32C|
+|ZFS|fletcher2, fletcher4, SHA256|
+|Dropbox|[custom](https://www.dropbox.com/developers/reference/content-hash)|
+
+
