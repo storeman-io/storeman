@@ -235,16 +235,16 @@ class Vault implements LoggerAwareInterface
         $operationList = $this->getOperationListBuilder()->buildOperationList($mergedIndex, $localIndex);
         $operationList->addOperation(new WriteSynchronizationOperation($synchronization));
 
+        $this->logger->notice(sprintf("Executing %d operation(s)...", count($operationList)));
+
         $operationResultList = new OperationResultList();
 
-        // operation count +
-        // save merged index as last local index +
-        // release lock
-        $progressionListener->start(count($operationList) + 2);
-
+        $progressionListener->start(count($operationList));
         foreach ($operationList as $operation)
         {
             /** @var OperationInterface $operation */
+
+            $this->logger->debug("...{$operation}");
 
             $success = $operation->execute($this->storeman->getConfiguration()->getPath(), $this->storeman->getFileReader(), $this->getVaultLayout());
 
@@ -253,19 +253,16 @@ class Vault implements LoggerAwareInterface
 
             $progressionListener->advance();
         }
+        $progressionListener->finish();
 
         // save merged index locally
         $this->writeLastLocalIndex($mergedIndex);
-        $progressionListener->advance();
 
         // release lock
         if (!$this->getLockAdapter()->releaseLock(static::LOCK_SYNC))
         {
             throw new Exception('Failed to release lock.');
         }
-        $progressionListener->advance();
-
-        $progressionListener->finish();
 
         return $operationResultList;
     }
@@ -369,16 +366,16 @@ class Vault implements LoggerAwareInterface
 
         $operationList = $this->getOperationListBuilder()->buildOperationList($remoteIndex, $localIndex);
 
+        $this->logger->notice(sprintf("Executing %d operation(s)...", count($operationList)));
+
         $operationResultList = new OperationResultList();
 
-        // operation count +
-        // save merged index as last local index +
-        // release lock
-        $progressionListener->start(count($operationList) + 2);
-
+        $progressionListener->start(count($operationList));
         foreach ($operationList as $operation)
         {
             /** @var OperationInterface $operation */
+
+            $this->logger->debug("...{$operation}");
 
             $success = $operation->execute($targetPath, $this->storeman->getFileReader(), $this->getVaultLayout());
 
@@ -387,21 +384,17 @@ class Vault implements LoggerAwareInterface
 
             $progressionListener->advance();
         }
+        $progressionListener->finish();
 
         if (!$skipLastLocalIndexUpdate)
         {
             $this->writeLastLocalIndex($remoteIndex);
         }
 
-        $progressionListener->advance();
-
         if (!$this->getLockAdapter()->releaseLock(static::LOCK_SYNC))
         {
             throw new Exception('Failed to release lock.');
         }
-
-        $progressionListener->advance();
-        $progressionListener->finish();
 
         return $operationResultList;
     }
