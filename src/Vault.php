@@ -325,7 +325,7 @@ class Vault implements LoggerAwareInterface
             return $localIndex;
         }
 
-        return $this->getIndexMerger()->merge($this->getConflictHandler(), $remoteIndex, $localIndex, $lastLocalIndex);
+        return $this->getIndexMerger()->merge($this->getConflictHandler(), $remoteIndex, $localIndex, $lastLocalIndex, IndexMergerInterface::INJECT_BLOBID);
     }
 
     protected function doRestore(int $revision = null, SynchronizationProgressListenerInterface $progressionListener = null, bool $skipLastLocalIndexUpdate = false, string $targetPath = null): OperationResultList

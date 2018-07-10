@@ -14,6 +14,7 @@ use Storeman\Hash\Algorithm\Sha256;
 use Storeman\Hash\Algorithm\Sha512;
 use Storeman\Hash\HashProvider;
 use Storeman\Index\Index;
+use Storeman\IndexMerger\IndexMergerInterface;
 use Storeman\IndexMerger\StandardIndexMerger;
 use Storeman\Test\TestVault;
 use Storeman\Test\TestVaultSet;
@@ -189,6 +190,21 @@ class StandardIndexMergerTest extends TestCase
         $mergedIndex = $this->getIndexMerger($testVault)->merge(new PanickingConflictHandler(), $index, $localIndex, $index);
 
         $this->assertEquals('xxx', $mergedIndex->getObjectByPath('file')->getBlobId());
+    }
+
+    public function testBlobIdInjection()
+    {
+        $testVault = new TestVault();
+        $testVault->touch('file');
+
+        $localIndex = $testVault->getIndex();
+        $remoteIndex = $testVault->getIndex();
+
+        $remoteIndex->getObjectByPath('file')->setBlobId('xxx');
+
+        $this->getIndexMerger($testVault)->merge(new PanickingConflictHandler(), $remoteIndex, $localIndex, null, IndexMergerInterface::INJECT_BLOBID);
+
+        $this->assertEquals('xxx', $localIndex->getObjectByPath('file')->getBlobId());
     }
 
     protected function getIndexMerger(TestVault $testVault): StandardIndexMerger

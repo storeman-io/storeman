@@ -16,7 +16,7 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    public const VERIFY_CONTENT = 1;
+    public const VERIFY_CONTENT = 2;
 
     protected const CMP_OPTIONS =
         IndexObject::CMP_IGNORE_BLOBID |
@@ -66,6 +66,13 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
             $localObjectModified = $this->isLocalObjectModified($localObject, $lastLocalObject, $options);
             $remoteObjectModified = $this->isRemoteObjectModified($remoteObject, $lastLocalObject);
 
+            if ($options & static::INJECT_BLOBID && $localObject !== null && !$localObjectModified)
+            {
+                assert($lastLocalObject !== null || $remoteObject !== null);
+
+                $localObject->setBlobId($lastLocalObject ? $lastLocalObject->getBlobId() : $remoteObject->getBlobId());
+            }
+
             if ($localObjectModified && $remoteObjectModified)
             {
                 $mergedIndex->addObject($this->resolveConflict($conflictHandler, $remoteObject, $localObject, $lastLocalObject));
@@ -89,7 +96,14 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
             /** @var IndexObjectComparison $cmp */
 
             // indexObjectB refers to remote object which we want to use to re-use the already existing blobId
-            $mergedIndex->addObject($cmp->getIndexObjectB());
+            $remoteObject = $cmp->getIndexObjectB();
+
+            $mergedIndex->addObject($remoteObject);
+
+            if ($options & static::INJECT_BLOBID && $remoteObject->isFile())
+            {
+                $cmp->getIndexObjectA()->setBlobId($remoteObject->getBlobId());
+            }
         }
 
         return $mergedIndex;
