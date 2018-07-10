@@ -24,7 +24,11 @@ final class VaultContainer implements ContainerInterface, \Countable, \IteratorA
 
             if (array_key_exists($vault->getHash(), $this->vaults))
             {
-                throw new ConfigurationException("Duplicate vault hash: {$vault->getHash()}");
+                $existingVault = $this->vaults[$vault->getHash()];
+
+                assert($existingVault instanceof Vault);
+
+                throw new ConfigurationException("Duplicate vault hash for vaults '{$vault->getIdentifier()}' and '{$existingVault->getIdentifier()}'");
             }
 
             $this->vaults[$vault->getHash()] = $vault;
