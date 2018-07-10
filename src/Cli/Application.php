@@ -2,6 +2,7 @@
 
 namespace Storeman\Cli;
 
+use Storeman\Cli\Helper\DisplayIndexComparisonHelper;
 use Storeman\Cli\Helper\DisplayIndexHelper;
 
 class Application extends \Symfony\Component\Console\Application
@@ -30,6 +31,7 @@ TXT;
     protected function getDefaultHelperSet()
     {
         $helperSet = parent::getDefaultHelperSet();
+        $helperSet->set(new DisplayIndexComparisonHelper());
         $helperSet->set(new DisplayIndexHelper());
 
         return $helperSet;

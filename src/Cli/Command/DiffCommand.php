@@ -2,11 +2,10 @@
 
 namespace Storeman\Cli\Command;
 
-use Storeman\Index\Comparison\IndexObjectComparison;
+use Storeman\Cli\Helper\DisplayIndexComparisonHelper;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
 use Storeman\Storeman;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -85,22 +84,9 @@ class DiffCommand extends AbstractCommand
         {
             $output->writeln(sprintf("Found %d difference(s):\n", $diff->count() ?: 'No'));
 
-            $table = new Table($output);
-            $table->setStyle('compact');
-            $table->setHeaders(['Path', "r{$revision}", $compareTo ? "r{$compareTo}" : "local"]);
-            $table->addRows(array_map(function(IndexObjectComparison $difference) {
-
-                return [
-                    $difference->getRelativePath(),
-                    $this->renderIndexObjectColumn($difference->getIndexObjectA()),
-                    $this->renderIndexObjectColumn($difference->getIndexObjectB()),
-                ];
-
-            }, iterator_to_array($diff->getIterator())));
-
-            $table->render();
-
-            $output->write("\n");
+            /** @var DisplayIndexComparisonHelper $helper */
+            $helper = $this->getHelper('displayIndexComparison');
+            $helper->displayIndexComparison($diff, $output, "r{$revision}", $compareTo ? "r{$compareTo}" : "local");
         }
 
         else
@@ -109,15 +95,5 @@ class DiffCommand extends AbstractCommand
         }
 
         return 0;
-    }
-
-    protected function renderIndexObjectColumn(?IndexObject $indexObject): string
-    {
-        if ($indexObject === null)
-        {
-            return '-';
-        }
-
-        return "mtime: {$indexObject->getMtime()}, size: {$indexObject->getSize()}";
     }
 }
