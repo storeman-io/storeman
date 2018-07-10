@@ -75,15 +75,15 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
 
             if ($localObjectModified && $remoteObjectModified)
             {
-                $mergedIndex->addObject($this->resolveConflict($conflictHandler, $remoteObject, $localObject, $lastLocalObject));
+                $mergedIndex->addObject(clone $this->resolveConflict($conflictHandler, $remoteObject, $localObject, $lastLocalObject));
             }
             elseif ($localObjectModified && $localObject !== null)
             {
-                $mergedIndex->addObject($localObject);
+                $mergedIndex->addObject(clone $localObject);
             }
             elseif ($remoteObjectModified && $remoteObject !== null)
             {
-                $mergedIndex->addObject($remoteObject);
+                $mergedIndex->addObject(clone $remoteObject);
             }
         }
 
@@ -98,7 +98,7 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
             // indexObjectB refers to remote object which we want to use to re-use the already existing blobId
             $remoteObject = $cmp->getIndexObjectB();
 
-            $mergedIndex->addObject($remoteObject);
+            $mergedIndex->addObject(clone $remoteObject);
 
             if ($options & static::INJECT_BLOBID && $remoteObject->isFile())
             {

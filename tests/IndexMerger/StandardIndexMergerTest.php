@@ -192,6 +192,21 @@ class StandardIndexMergerTest extends TestCase
         $this->assertEquals('xxx', $mergedIndex->getObjectByPath('file')->getBlobId());
     }
 
+    public function testNoIndexObjectReusage()
+    {
+        $testVault = new TestVault();
+        $testVault->fwrite('file.ext', 'Hello World');
+
+        $index = $testVault->getIndex();
+        $object = $index->getObjectByPath('file.ext');
+
+        $merger = $this->getIndexMerger($testVault);
+
+        $this->assertNotSame($object, $merger->merge(new PanickingConflictHandler(), $index, new Index(), null)->getObjectByPath('file.ext'));
+        $this->assertNotSame($object, $merger->merge(new PanickingConflictHandler(), new Index(), $index, null)->getObjectByPath('file.ext'));
+        $this->assertNotSame($object, $merger->merge(new PanickingConflictHandler(), $index, new Index(), $index)->getObjectByPath('file.ext'));
+    }
+
     public function testBlobIdInjection()
     {
         $testVault = new TestVault();
