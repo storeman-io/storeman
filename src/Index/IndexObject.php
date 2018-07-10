@@ -216,6 +216,14 @@ class IndexObject
         return $equals;
     }
 
+    public function __clone()
+    {
+        if ($this->hashes !== null)
+        {
+            $this->hashes = clone $this->hashes;
+        }
+    }
+
     public function __toString(): string
     {
         $inode = $this->inode ?: '-';

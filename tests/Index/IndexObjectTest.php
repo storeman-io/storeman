@@ -41,4 +41,19 @@ class IndexObjectTest extends TestCase
         $this->assertFalse($indexObjectA1->equals($indexObjectA2));
         $this->assertFalse($indexObjectA1->equals($indexObjectA2, IndexObject::CMP_IGNORE_BLOBID));
     }
+
+    public function testHashCloning()
+    {
+        $testVault = new TestVault();
+        $testVault->fwrite('file.ext', 'foobar');
+
+        $object = $testVault->getIndex()->getObjectByPath('file.ext');
+        $object->getHashes()->addHash('x', 'x');
+
+        $clone = clone $object;
+        $clone->getHashes()->addHash('y', 'y');
+
+        $this->assertEquals('x', $object->getHashes()->getHash('x'));
+        $this->assertNull($object->getHashes()->getHash('y'));
+    }
 }
