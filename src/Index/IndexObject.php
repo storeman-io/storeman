@@ -176,6 +176,8 @@ class IndexObject
 
     public function setBlobId(string $blobId): IndexObject
     {
+        assert($this->blobId === null);
+
         $this->blobId = $blobId;
 
         return $this;
