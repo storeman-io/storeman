@@ -263,8 +263,8 @@ class Storeman
     protected function getLocalIndexExclusionPatterns(): array
     {
         return array_merge($this->getConfiguration()->getExclude(), [
-            static::CONFIG_FILE_NAME,
-            static::METADATA_DIRECTORY_NAME,
+            sprintf('/^%s$/', preg_quote(static::CONFIG_FILE_NAME)),
+            sprintf('/^%s($|\/)/', preg_quote(static::METADATA_DIRECTORY_NAME)),
         ]);
     }
 

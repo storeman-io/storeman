@@ -38,6 +38,25 @@ class StoremanTest extends TestCase
         $this->assertCount(1, $vaultContainer->getVaultByTitle('Second')->getVaultLayout()->getSynchronizations());
     }
 
+    public function testPotentiallyAmbivalentPathExclusion()
+    {
+        $testVault = new TestVault();
+        $testVault->touch('x' . Storeman::CONFIG_FILE_NAME);
+        $testVault->touch('x' . Storeman::METADATA_DIRECTORY_NAME);
+        $testVault->touch(Storeman::CONFIG_FILE_NAME . 'x');
+        $testVault->touch(Storeman::METADATA_DIRECTORY_NAME . 'x');
+
+        $config = new Configuration();
+        $config->setPath($testVault->getBasePath());
+        $this->getTestVaultConfig($config)->setTitle('test');
+
+        $storeman = new Storeman((new Container())->injectConfiguration($config));
+        $storeman->getMetadataDirectoryPath(); // init dir
+        $index = $storeman->getLocalIndex();
+
+        $this->assertCount(4, $index);
+    }
+
     protected function getTestVaultConfig(Configuration $configuration): VaultConfiguration
     {
         $config = new VaultConfiguration($configuration);
