@@ -301,7 +301,10 @@ class Vault implements LoggerAwareInterface
      */
     public function getHash(): string
     {
-        return hash('sha1', $this->getStorageAdapter()->getIdentificationString($this->vaultConfiguration));
+        return hash('sha1', implode([
+            get_class($this->getStorageAdapter()),
+            $this->getStorageAdapter()->getIdentificationString($this->vaultConfiguration),
+        ]));
     }
 
     /**

@@ -33,6 +33,9 @@ final class VaultContainer implements ContainerInterface, \Countable, \IteratorA
 
             $this->vaults[$vault->getHash()] = $vault;
         }
+
+        // ensure consistent iterator order
+        ksort($this->vaults);
     }
 
     /**

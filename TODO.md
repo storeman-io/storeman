@@ -8,7 +8,7 @@
     - PHP config
         - "bootstrap" project like
     - Deadlock prevention
-        - Ensure same locking order of vaults
+        - (done) Ensure same locking order of vaults
         - Same lockAdapter across multiple vaults?
     - Nested archives
 - Features

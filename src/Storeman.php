@@ -99,6 +99,7 @@ class Storeman
         /** @var Vault[] $vaults */
         $vaults = ($vaultTitles === null) ? $this->getVaultContainer() : $this->getVaultContainer()->getVaultsByTitles($vaultTitles);
 
+        // vault list order is ensured to be consistent across instances by the VaultContainer which is mandatory for deadlock prevention
         $this->acquireLocks($vaults, Vault::LOCK_SYNC);
 
         $newRevision = ($this->getLastRevision() ?: 0) + 1;
