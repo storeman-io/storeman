@@ -3,8 +3,8 @@
 namespace Storeman\Cli\Command;
 
 use Storeman\Cli\Helper\DisplayIndexComparisonHelper;
+use Storeman\ConflictHandler\PreferLocalConflictHandler;
 use Storeman\Index\Index;
-use Storeman\Index\IndexObject;
 use Storeman\Storeman;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -78,7 +78,8 @@ class DiffCommand extends AbstractCommand
         }
 
 
-        $diff = $index->getDifference($compareToIndex, IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE);
+        $mergedIndex = $vault->getIndexMerger()->merge(new PreferLocalConflictHandler(), $index, $compareToIndex, $index);
+        $diff = $index->getDifference($mergedIndex);
 
         if ($diff->count() > 0)
         {
