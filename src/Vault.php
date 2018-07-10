@@ -240,11 +240,11 @@ class Vault implements LoggerAwareInterface
         $operationResultList = new OperationResultList();
 
         $progressionListener->start(count($operationList));
-        foreach ($operationList as $operation)
+        foreach ($operationList as $index => $operation)
         {
             /** @var OperationInterface $operation */
 
-            $this->logger->debug("...{$operation}");
+            $this->logger->debug(sprintf("#%d {$operation}", $index + 1));
 
             $success = $operation->execute($this->storeman->getConfiguration()->getPath(), $this->storeman->getFileReader(), $this->getVaultLayout());
 
@@ -371,11 +371,11 @@ class Vault implements LoggerAwareInterface
         $operationResultList = new OperationResultList();
 
         $progressionListener->start(count($operationList));
-        foreach ($operationList as $operation)
+        foreach ($operationList as $index => $operation)
         {
             /** @var OperationInterface $operation */
 
-            $this->logger->debug("...{$operation}");
+            $this->logger->debug(sprintf("#%d: {$operation}", $index + 1));
 
             $success = $operation->execute($targetPath, $this->storeman->getFileReader(), $this->getVaultLayout());
 
