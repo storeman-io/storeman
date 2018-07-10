@@ -64,11 +64,8 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
 
             elseif ($mergedIndexObject->isFile())
             {
-                // local file did not exist, hasn't been a file before or is outdated
-                $doDownloadFile = $localObject === null || !$localObject->isFile() || $localObject->getMtime() < $mergedIndexObject->getMtime();
-
-                // file has to be restored as it does not equal the local version
-                $doDownloadFile = $doDownloadFile || ($localObject !== null && $mergedIndexObject->getBlobId() !== $localObject->getBlobId());
+                // local file did not exist, hasn't been a file before or has outdated content
+                $doDownloadFile = $localObject === null || !$localObject->isFile() || $mergedIndexObject->getBlobId() !== $localObject->getBlobId();
 
                 if ($doDownloadFile)
                 {
