@@ -2,6 +2,7 @@
 
 namespace Storeman\Test\Operation;
 
+use Storeman\FilesystemUtility;
 use Storeman\Operation\TouchOperation;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 
@@ -11,19 +12,15 @@ class TouchOperationTest extends AbstractOperationTest
 
     public function testExecution()
     {
-        $tempFile = $this->getTemporaryPathGenerator()->getTemporaryDirectory();
-        $originalMTime = time() - 100;
-        $newMTime = time() - 50;
+        $tempFile = $this->getTemporaryPathGenerator()->getTemporaryFile();
 
-        touch($tempFile, $originalMTime);
+        $mtime = 4231.1234;
 
-        $this->assertEquals($originalMTime, filemtime($tempFile));
+        $this->assertNotEquals($mtime, FilesystemUtility::lstat($tempFile)['mtime']);
 
-        $operation = new TouchOperation(basename($tempFile), $newMTime);
+        $operation = new TouchOperation(basename($tempFile), $mtime);
         $operation->execute(dirname($tempFile) . '/', $this->getFileReaderMock(), $this->getVaultLayoutMock());
 
-        clearstatcache(null, $tempFile);
-
-        $this->assertEquals($newMTime, filemtime($tempFile));
+        $this->assertEquals($mtime, FilesystemUtility::lstat($tempFile)['mtime']);
     }
 }

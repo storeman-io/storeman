@@ -47,8 +47,8 @@ class DisplayIndexComparisonHelper extends Helper implements HelperInterface
 
         $parts = [
             $indexObject->getTypeName(),
-            "mtime: " . \DateTime::createFromFormat('U', $indexObject->getMtime())->format('c'),
-            "ctime: " . \DateTime::createFromFormat('U', $indexObject->getCtime())->format('c'),
+            "mtime: " . \DateTime::createFromFormat('U', (int)$indexObject->getMtime())->format('c'),
+            "ctime: " . \DateTime::createFromFormat('U', (int)$indexObject->getCtime())->format('c'),
             "perms: 0{$indexObject->getPermissionsString()}",
         ];
 

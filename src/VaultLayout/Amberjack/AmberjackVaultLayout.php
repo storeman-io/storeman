@@ -191,8 +191,8 @@ class AmberjackVaultLayout implements VaultLayoutInterface
         return [
             $indexObject->getRelativePath(),
             $indexObject->getType(),
-            $indexObject->getMtime(),
-            $indexObject->getCtime(),
+            sprintf('%.9f', $indexObject->getMtime()),
+            sprintf('%.9f', $indexObject->getCtime()),
             $indexObject->getPermissions(),
             $indexObject->getSize(),
             $indexObject->getLinkTarget(),
@@ -212,8 +212,8 @@ class AmberjackVaultLayout implements VaultLayoutInterface
         return new IndexObject(
             $array[0],
             (int)$array[1],
-            (int)$array[2],
-            (int)$array[3],
+            (float)$array[2],
+            (float)$array[3],
             (int)$array[4],
             ($array[5] !== '') ? (int)$array[5] : null,
             null,

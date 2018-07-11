@@ -29,12 +29,12 @@ class IndexObject implements \ArrayAccess
     protected $type;
 
     /**
-     * @var int
+     * @var float
      */
     protected $mtime;
 
     /**
-     * @var int
+     * @var float
      */
     protected $ctime;
 
@@ -72,7 +72,7 @@ class IndexObject implements \ArrayAccess
      */
     protected $blobId;
 
-    public function __construct(string $relativePath, int $type, int $mtime, int $ctime, int $permissions, ?int $size, ?int $inode, ?string $linkTarget, ?string $blobId, ?HashContainer $hashContainer)
+    public function __construct(string $relativePath, int $type, float $mtime, float $ctime, int $permissions, ?int $size, ?int $inode, ?string $linkTarget, ?string $blobId, ?HashContainer $hashContainer)
     {
         assert(($type === static::TYPE_FILE) ^ ($size === null));
         assert(($type === static::TYPE_FILE) || ($blobId === null));
@@ -129,12 +129,12 @@ class IndexObject implements \ArrayAccess
         return $this->type === static::TYPE_LINK;
     }
 
-    public function getMtime(): int
+    public function getMtime(): float
     {
         return $this->mtime;
     }
 
-    public function getCtime(): int
+    public function getCtime(): float
     {
         return $this->ctime;
     }

@@ -5,7 +5,7 @@ namespace Storeman\IndexBuilder;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
-use Storeman\Exception;
+use Storeman\FilesystemUtility;
 use Storeman\Hash\HashContainer;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
@@ -82,12 +82,7 @@ class StandardIndexBuilder implements IndexBuilderInterface, LoggerAwareInterfac
     {
         $absolutePath = rtrim($basePath, '/') . '/' . $relativePath;
 
-        clearstatcache(null, $absolutePath);
-
-        if (!($stat = @lstat($absolutePath)))
-        {
-            throw new Exception("lstat() failed for {$absolutePath}");
-        }
+        $stat = FilesystemUtility::lstat($absolutePath);
 
         $size = $linkTarget = $hashContainer = null;
 

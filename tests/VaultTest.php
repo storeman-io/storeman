@@ -3,6 +3,7 @@
 namespace Storeman\Test;
 
 use Storeman\Container;
+use Storeman\FilesystemUtility;
 use Storeman\Storeman;
 use Storeman\Config\Configuration;
 use Storeman\Index\Index;
@@ -154,10 +155,12 @@ class VaultTest extends TestCase
 
     private function assertTestVaultObjectEqualsIndexObject(SplFileInfo $testVaultObject, IndexObject $indexObject)
     {
+        $stat = FilesystemUtility::lstat($testVaultObject->getPathname());
+
         $this->assertEquals($testVaultObject->isFile(), $indexObject->isFile());
         $this->assertEquals($testVaultObject->isDir(), $indexObject->isDirectory());
         $this->assertEquals($testVaultObject->isLink(), $indexObject->isLink());
-        $this->assertEquals($testVaultObject->getMTime(), $indexObject->getMtime());
+        $this->assertEquals($stat['mtime'], $indexObject->getMtime());
         $this->assertEquals($testVaultObject->getPerms() & 0777, $indexObject->getPermissions());
 
         if ($testVaultObject->isFile())
