@@ -23,5 +23,5 @@ interface ConflictHandlerInterface
      * @param IndexObject $lastLocalObject
      * @return int
      */
-    public function handleConflict(IndexObject $remoteObject, IndexObject $localObject = null, IndexObject $lastLocalObject = null): int;
+    public function handleConflict(IndexObject $remoteObject, ?IndexObject $localObject, ?IndexObject $lastLocalObject): int;
 }
