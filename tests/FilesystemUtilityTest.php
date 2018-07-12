@@ -27,25 +27,28 @@ class FilesystemUtilityTest extends TestCase
      */
     public function testLstat()
     {
-        $stat = FilesystemUtility::lstat(PHP_BINARY);
-        $ref = lstat(PHP_BINARY);
+        foreach ([PHP_BINARY, PHP_BINDIR, sys_get_temp_dir()] as $path)
+        {
+            $stat = FilesystemUtility::lstat($path);
+            $ref = lstat($path);
 
-        $keys = array_diff(array_keys($ref), ['atime', 'mtime', 'ctime', 'blksize', 8, 9, 10, 11]);
+            $keys = array_diff(array_keys($ref), ['atime', 'mtime', 'ctime', 'blksize', 8, 9, 10, 11]);
 
-        $this->assertEquals(
-            array_intersect_key($ref, array_flip($keys)),
-            array_intersect_key($stat, array_flip($keys))
-        );
+            $this->assertEquals(
+                array_intersect_key($ref, array_flip($keys)),
+                array_intersect_key($stat, array_flip($keys))
+            );
 
-        $this->assertEquals($ref['atime'], floor($stat['atime']));
-        $this->assertEquals($ref['mtime'], floor($stat['mtime']));
-        $this->assertEquals($ref['ctime'], floor($stat['ctime']));
-        $this->assertEquals($ref['atime'], floor($stat[8]));
-        $this->assertEquals($ref['mtime'], floor($stat[9]));
-        $this->assertEquals($ref['ctime'], floor($stat[10]));
+            $this->assertEquals($ref['atime'], floor($stat['atime']));
+            $this->assertEquals($ref['mtime'], floor($stat['mtime']));
+            $this->assertEquals($ref['ctime'], floor($stat['ctime']));
+            $this->assertEquals($ref['atime'], floor($stat[8]));
+            $this->assertEquals($ref['mtime'], floor($stat[9]));
+            $this->assertEquals($ref['ctime'], floor($stat[10]));
 
-        // do not compare blksize as its unreliable
-        // see https://unix.stackexchange.com/questions/14409/difference-between-block-size-and-cluster-size/14411#14411
+            // do not compare blksize as its unreliable
+            // see https://unix.stackexchange.com/questions/14409/difference-between-block-size-and-cluster-size/14411#14411
+        }
     }
 
     public function testInvalidLstat()
