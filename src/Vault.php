@@ -234,35 +234,7 @@ class Vault implements LoggerAwareInterface
         $operationList = $this->getOperationListBuilder()->buildOperationList($mergedIndex, $localIndex);
         $operationList->add(new OperationListItem(new WriteSynchronizationOperation($synchronization)));
 
-        $this->logger->notice(sprintf("Executing %d operation(s)...", count($operationList)));
-
-        $operationResultList = new OperationResultList();
-
-        $progressionListener->start(count($operationList));
-        foreach ($operationList as $index => $operationListItem)
-        {
-            /** @var OperationListItem $operationListItem */
-
-            $this->logger->debug(sprintf("#%d {$operationListItem->getOperation()}", $index + 1));
-
-            $success = $operationListItem->getOperation()->execute($this->storeman->getConfiguration()->getPath(), $this->storeman->getFileReader(), $this->getVaultLayout());
-
-            if ($success && $indexObject = $operationListItem->getIndexObject())
-            {
-                $absolutePath = PathUtils::getAbsolutePath($this->storeman->getConfiguration()->getPath() . $indexObject->getRelativePath());
-
-                if (is_file($absolutePath))
-                {
-                    $indexObject->setCtime(FilesystemUtility::lstat($absolutePath)['ctime']);
-                }
-            }
-
-            $operationResult = new OperationResult($operationListItem->getOperation(), $success);
-            $operationResultList->addOperationResult($operationResult);
-
-            $progressionListener->advance();
-        }
-        $progressionListener->finish();
+        $operationResultList = $this->executeOperationList($operationList, $this->storeman->getConfiguration()->getPath(), $progressionListener);
 
         // save merged index locally
         $this->writeLastLocalIndex($mergedIndex);
@@ -378,6 +350,23 @@ class Vault implements LoggerAwareInterface
 
         $operationList = $this->getOperationListBuilder()->buildOperationList($remoteIndex, $localIndex);
 
+        $operationResultList = $this->executeOperationList($operationList, $targetPath, $progressionListener);
+
+        if (!$skipLastLocalIndexUpdate)
+        {
+            $this->writeLastLocalIndex($remoteIndex);
+        }
+
+        if (!$this->getLockAdapter()->releaseLock(static::LOCK_SYNC))
+        {
+            throw new Exception('Failed to release lock.');
+        }
+
+        return $operationResultList;
+    }
+
+    protected function executeOperationList(OperationList $operationList, string $basePath, SynchronizationProgressListenerInterface $progressionListener): OperationResultList
+    {
         $this->logger->notice(sprintf("Executing %d operation(s)...", count($operationList)));
 
         $operationResultList = new OperationResultList();
@@ -387,13 +376,13 @@ class Vault implements LoggerAwareInterface
         {
             /** @var OperationListItem $operationListItem */
 
-            $this->logger->debug(sprintf("#%d: {$operationListItem->getOperation()}", $index + 1));
+            $this->logger->debug(sprintf("#%d {$operationListItem->getOperation()}", $index + 1));
 
-            $success = $operationListItem->getOperation()->execute($targetPath, $this->storeman->getFileReader(), $this->getVaultLayout());
+            $success = $operationListItem->getOperation()->execute($basePath, $this->storeman->getFileReader(), $this->getVaultLayout());
 
             if ($success && $indexObject = $operationListItem->getIndexObject())
             {
-                $absolutePath = PathUtils::getAbsolutePath($targetPath . $indexObject->getRelativePath());
+                $absolutePath = PathUtils::getAbsolutePath($basePath . $indexObject->getRelativePath());
 
                 if (is_file($absolutePath))
                 {
@@ -407,16 +396,6 @@ class Vault implements LoggerAwareInterface
             $progressionListener->advance();
         }
         $progressionListener->finish();
-
-        if (!$skipLastLocalIndexUpdate)
-        {
-            $this->writeLastLocalIndex($remoteIndex);
-        }
-
-        if (!$this->getLockAdapter()->releaseLock(static::LOCK_SYNC))
-        {
-            throw new Exception('Failed to release lock.');
-        }
 
         return $operationResultList;
     }
