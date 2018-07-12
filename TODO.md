@@ -8,15 +8,12 @@
     - PHP config
         - "bootstrap" project like
 - Features
-    - Extend index merging to handle modified file content and modified metadata separately
     - Implement rsync-like algorithm for DownloadOperation
     - Seekable container
     - Partial checkouts (only some subdirectory)
     - "Transactional/Atomic" file operations (temp + rename)
     - Detect file movement and add corresponding local operation
         - inode usage
-    - Use full available mtime/ctime resolution
-        - Keep comparison across systems with different resolutions in mind
     - Add "force-local" parameter to synchronization to be able to "keep" restored state
         - Automatically call after restore (can optionally be prevented)
     - More logging verbosity
@@ -28,8 +25,6 @@
         - Configuration per vault
     - Synchronization without archival
         - Delete old blobs on sync
-    - Phar compilation
-        - Installer ala getcomposer.org
     - WebDAV endpoint
     - GUI
         - WebApp?
@@ -52,10 +47,7 @@
     - Selective compression
         - Most media files are already compressed
 - Code quality
-    - Test (recursive) symlink support
     - Offer plugin/module integration
-    - Versionable (across storeman versions) Local/Remote index format
-    - Tests for phar compiler
 
 
 ## File hash usages
