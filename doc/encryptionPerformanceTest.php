@@ -5,7 +5,12 @@ if ($argc < 3) {
     exit("Usage: php {$argv[0]} [file] [algorithm] ([algorithm...])\n");
 }
 
-$fileHandle = fopen($argv[1], 'rb') or exit("fopen() failed for '{$argv[1]}'\n");
+$fileHandle = fopen($argv[1], 'rb');
+
+if (!$fileHandle)
+{
+    exit("fopen() failed for '{$argv[1]}'\n");
+}
 
 $contexts = [];
 foreach (array_slice($argv, 2) as $algorithm)
