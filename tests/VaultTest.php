@@ -4,6 +4,8 @@ namespace Storeman\Test;
 
 use Storeman\Container;
 use Storeman\FilesystemUtility;
+use Storeman\Operation\OperationInterface;
+use Storeman\OperationResult;
 use Storeman\Storeman;
 use Storeman\Config\Configuration;
 use Storeman\Index\Index;
@@ -30,7 +32,7 @@ class VaultTest extends TestCase
         $this->assertNull($vault->getRemoteIndex());
         $this->assertIndexEqualsTestVault($testVault, $vault->getMergedIndex());
 
-        $vault->synchronize();
+        $this->assertSuccessfulOperations($vault->synchronize());
 
         $this->assertIndexEqualsTestVault($testVault, $vault->getStoreman()->getLocalIndex());
         $this->assertIndexEqualsTestVault($testVault, $vault->getLastLocalIndex());
@@ -54,28 +56,23 @@ class VaultTest extends TestCase
         $this->assertNull($secondVault->getRemoteIndex());
         $this->assertNull($secondVault->getLastLocalIndex());
 
-        $firstSynchronizationResult = $firstVault->synchronize();
+        $this->assertSuccessfulOperations($firstVault->synchronize());
 
-        $this->assertInstanceOf(OperationResultList::class, $firstSynchronizationResult);
         $this->assertInstanceOf(Index::class, $firstVault->getRemoteIndex());
         $this->assertInstanceOf(Index::class, $firstVault->getLastLocalIndex());
         $this->assertIndexEqualsTestVault($firstTestVault, $firstVault->getRemoteIndex());
         $this->assertIndexEqualsTestVault($firstTestVault, $firstVault->getLastLocalIndex());
         $this->assertIndexContainsTestVault($firstTestVault, $secondVault->getRemoteIndex());
 
-        $secondSynchronizationResult = $secondVault->synchronize();
+        $this->assertSuccessfulOperations($secondVault->synchronize());
 
-        $this->assertInstanceOf(OperationResultList::class, $secondSynchronizationResult);
         $this->assertInstanceOf(Index::class, $secondVault->getRemoteIndex());
         $this->assertInstanceOf(Index::class, $secondVault->getLastLocalIndex());
         $this->assertTrue($firstVault->getRemoteIndex()->equals($secondVault->getRemoteIndex()));
         $this->assertIndexContainsTestVault($firstTestVault, $firstVault->getRemoteIndex());
         $this->assertIndexContainsTestVault($secondTestVault, $firstVault->getRemoteIndex());
 
-
-        $thirdSynchronizationResult = $firstVault->synchronize();
-
-        $this->assertInstanceOf(OperationResultList::class, $thirdSynchronizationResult);
+        $this->assertSuccessfulOperations($firstVault->synchronize());
 
     }
 
@@ -88,11 +85,11 @@ class VaultTest extends TestCase
 
         $vault = $this->getLocalVault($testVault->getBasePath(), $this->getTemporaryPathGenerator()->getTemporaryDirectory());
 
-        $vault->synchronize();
+        $this->assertSuccessfulOperations($vault->synchronize());
 
         $testVault->fwrite('test.ext', 'New Content');
 
-        $vault->restore();
+        $this->assertSuccessfulOperations($vault->restore());
 
         $this->assertEquals($originalContent, file_get_contents($testVault->getBasePath() . 'test.ext'));
     }
@@ -106,11 +103,22 @@ class VaultTest extends TestCase
 
         $dumpTarget = $this->getTemporaryPathGenerator()->getTemporaryDirectory();
 
-        $vault->dump($dumpTarget);
+        $this->assertSuccessfulOperations($vault->dump($dumpTarget));
 
         $verificationVault = $this->getLocalVault($dumpTarget, $this->getTemporaryPathGenerator()->getTemporaryDirectory());
 
         $this->assertIndexEqualsTestVault($testVault, $verificationVault->getStoreman()->getLocalIndex());
+    }
+
+    protected function assertSuccessfulOperations(OperationResultList $operationResultList)
+    {
+        foreach ($operationResultList as $operationResult)
+        {
+            /** @var OperationResult $operationResult */
+
+            $this->assertTrue($operationResult->isSuccess());
+            $this->assertInstanceOf(OperationInterface::class, $operationResult->getOperation());
+        }
     }
 
     private function assertIndexEqualsTestVault(TestVault $testVault, Index $index)
