@@ -198,10 +198,7 @@ class Vault implements LoggerAwareInterface
      */
     public function synchronize(int $newRevision = null, SynchronizationProgressListenerInterface $progressionListener = null): OperationResultList
     {
-        if ($progressionListener === null)
-        {
-            $progressionListener = new DummySynchronizationProgressListener();
-        }
+        $progressionListener = $progressionListener ?: new DummySynchronizationProgressListener();
 
         $localIndex = $this->storeman->getLocalIndex();
         $lastLocalIndex = $this->getLastLocalIndex();
@@ -236,14 +233,14 @@ class Vault implements LoggerAwareInterface
 
         $operationResultList = $this->executeOperationList($operationList, $this->storeman->getConfiguration()->getPath(), $progressionListener);
 
-        // save merged index locally
-        $this->writeLastLocalIndex($mergedIndex);
-
         // release lock
         if (!$this->getLockAdapter()->releaseLock(static::LOCK_SYNC))
         {
             throw new Exception('Failed to release lock.');
         }
+
+        // save merged index locally
+        $this->writeLastLocalIndex($mergedIndex);
 
         return $operationResultList;
     }
@@ -314,10 +311,10 @@ class Vault implements LoggerAwareInterface
 
     protected function doRestore(int $revision = null, SynchronizationProgressListenerInterface $progressionListener = null, bool $skipLastLocalIndexUpdate = false, string $targetPath = null): OperationResultList
     {
-        if ($progressionListener === null)
-        {
-            $progressionListener = new DummySynchronizationProgressListener();
-        }
+        $progressionListener = $progressionListener ?: new DummySynchronizationProgressListener();
+        $targetPath = $targetPath ?: $this->storeman->getConfiguration()->getPath();
+
+        $localIndex = $this->storeman->getLocalIndex($targetPath);
 
         if (!$this->getLockAdapter()->acquireLock(static::LOCK_SYNC))
         {
@@ -344,22 +341,18 @@ class Vault implements LoggerAwareInterface
             throw new Exception("Unknown revision: {$revision}");
         }
 
-        $targetPath = $targetPath ?: $this->storeman->getConfiguration()->getPath();
-
-        $localIndex = $this->storeman->getLocalIndex($targetPath);
-
         $operationList = $this->getOperationListBuilder()->buildOperationList($remoteIndex, $localIndex);
 
         $operationResultList = $this->executeOperationList($operationList, $targetPath, $progressionListener);
 
-        if (!$skipLastLocalIndexUpdate)
-        {
-            $this->writeLastLocalIndex($remoteIndex);
-        }
-
         if (!$this->getLockAdapter()->releaseLock(static::LOCK_SYNC))
         {
             throw new Exception('Failed to release lock.');
+        }
+
+        if (!$skipLastLocalIndexUpdate)
+        {
+            $this->writeLastLocalIndex($remoteIndex);
         }
 
         return $operationResultList;
