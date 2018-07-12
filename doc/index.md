@@ -3,7 +3,7 @@
 
 ## Requirements
 
-- Up to this point __Linux__ is the only tested operating system (Mac OS X should work fine though)
+- Up to this point __Linux__ is the only supported operating system (Mac OS X should work fine though)
 - __PHP 7.1__ or above
 - [__Composer__](https://getcomposer.org/) to install required dependencies
 
