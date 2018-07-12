@@ -5,29 +5,37 @@
 
 - Up to this point __Linux__ is the only supported operating system (Mac OS X should work fine though)
 - __PHP 7.1__ or above
-- [__Composer__](https://getcomposer.org/) to install required dependencies
+- [__Composer__](https://getcomposer.org/) to install required dependencies (see below for install instructions)
 
 ## Quickstart
 
-### Building
+### Install composer
 
-As storeman is primarily intended for CLI usage it should be build into a stand-alone executable (Phar):   
-    
+If you do not have composer already installed you need to install it like its described [here](https://getcomposer.org/download/) or use this snippet to install composer for the current user:
+
 ```bash
-$ composer install
-$ composer build
-Building to /path/to/repo/build/storeman.phar...
-Build successful!
+$ wget -nc -O ~/bin/composer https://getcomposer.org/composer.phar
+$ chmod +x ~/bin/composer
 ```
 
-> Alternatively you can run storeman directly with `php bin/storeman`
+### Download and install dependencies
+
+Download storeman by cloning this repo and install required dependencies using composer:
+
+```bash
+$ git clone https://github.com/storeman-io/storeman.git
+$ cd storeman
+$ composer install
+```
+
+> Composer installs dependencies locally into the `vendor` directory so you do not have to be afraid of [dependency hell](https://en.wikipedia.org/wiki/Dependency_hell).
 
 ### Installing
 
 For convenience you might want to symlink the storeman executable into `~/bin`, `/usr/bin` or wherever:
 
 ```bash
-$ ln -s /path/to/repo/build/storeman.phar ~/bin/storeman
+$ ln -s /path/to/repo/bin/storeman ~/bin/storeman
 ```
 
 ### Running
@@ -70,7 +78,7 @@ Available commands:
 
 ### How to use
 
-Storeman operates on local _archives_ which are synchronized to one or more remote _vaults_ - an addressable location provided by a _storage provider_. A local archive is any directory with a _storeman.json_ configuration file contained in it. This configuration file can be generated using the _init_ command or can be manually created and might look like this:
+Storeman operates on local _archives_ which are synchronized to one or more remote _vaults_ - an addressable storage location provided by a _storage provider_. A local archive is any directory with a `storeman.json` configuration file contained in it. This configuration file can be manually created or generated using the `init` command and looks something like this:
 
 ```json
 {
@@ -102,7 +110,7 @@ A simple synchronization is performed like this:
 $ storeman sync
 ```
 
-Like this storeman is already useful as a backup utility. To synchronize the data to another machine just address the same vault location in the configuration file on that machine:
+Like this storeman is already useful as a backup utility. To synchronize the data to another machine just address the same vault in the configuration file on that machine:
 
 ```json
 {
@@ -118,6 +126,17 @@ Like this storeman is already useful as a backup utility. To synchronize the dat
         }
     ]
 }
+```
+
+## Building executable
+
+Storeman can be packaged into a stand-alone [phar](https://secure.php.net/manual/en/intro.phar.php) executable which bundles storeman and its dependencies into a single file:
+    
+```bash
+$ composer build
+Building to /path/to/repo/build/storeman.phar...
+Build successful!
+$ mv /path/to/repo/build/storeman.phar ~/bin/storeman
 ```
 
 ## Testing
