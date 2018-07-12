@@ -64,8 +64,11 @@ class IndexObjectTest extends TestCase
 
         $object = $testVault->getIndex()->getObjectByPath('file.ext');
 
-        $this->assertEquals($object->getRelativePath(), $object['relativePath']);
-        $this->assertEquals($object->getMtime(), $object['mtime']);
+        foreach (['relativePath', 'type', 'mtime', 'ctime', 'permissions', 'size', 'inode', 'linkTarget', 'hashes'] as $attribute)
+        {
+            $this->assertTrue(isset($object[$attribute]));
+            $this->assertEquals(call_user_func([$object, 'get' . ucfirst($attribute)]), $object[$attribute]);
+        }
     }
 
     public function testInvalidArrayAccessSet()
@@ -90,5 +93,15 @@ class IndexObjectTest extends TestCase
         $this->expectException(\LogicException::class);
 
         unset($object['relativePath']);
+    }
+
+    public function testStringConversion()
+    {
+        $testVault = new TestVault();
+        $testVault->fwrite('file.ext', 'foobar');
+
+        $object = $testVault->getIndex()->getObjectByPath('file.ext');
+
+        $this->assertNotEmpty($object->__toString());
     }
 }
