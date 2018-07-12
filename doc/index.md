@@ -11,7 +11,7 @@
 
 ### Building
 
-As storeman is primarily intended for CLI usage it should be build into a stand-alone phar archive:   
+As storeman is primarily intended for CLI usage it should be build into a stand-alone executable (Phar):   
     
 ```bash
 $ composer install
