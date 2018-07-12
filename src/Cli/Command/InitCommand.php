@@ -54,7 +54,7 @@ class InitCommand extends AbstractCommand
 
         $configuration = new Configuration();
         $configuration->setPath($input->getOption('path') ?: $this->consoleStyle->ask('Local path', '.'));
-        $configuration->setIdentity($input->getOption('identity') ?: $this->consoleStyle->ask('Identity', get_current_user()));
+        $configuration->setIdentity($input->getOption('identity') ?: $this->consoleStyle->ask('Identity', sprintf('%s@%s', get_current_user(), gethostname())));
         $configuration->setExclude($input->getOption('exclude') ?: $this->consoleStyle->askMultiple('Excluded path(s)'));
         $configuration->setIndexBuilder($input->getOption('indexBuilder') ?: $this->consoleStyle->choice('Index builder', $container->getIndexBuilderNames(), $configuration->getIndexBuilder()));
 
