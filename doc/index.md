@@ -68,6 +68,48 @@ Available commands:
   sync        Synchronizes the local state with the vault state.
 ```
 
+### How to use
+
+Storeman operates on local _archives_ which are synchronized to one or more remote _vaults_ - an addressable location provided by a _storage provider_. A local archive is any directory with a _storeman.json_ configuration file contained in it. This configuration file can be generated using the _init_ command or can be manually created and might look like this:
+
+```json
+{
+    "identity": "My Laptop",
+    "vaults": [
+        {
+            "title": "My mounted external drive",
+            "adapter": "local",
+            "settings": {
+                "path": "/some/mounted/path"
+            }
+        }
+    ]
+}
+```
+
+A simple synchronization is performed like this:
+
+```bash
+$ storeman sync
+```
+
+Like this storeman is already useful as a backup utility. To synchronize the data to another machine just address the same vault location in the configuration file on that machine:
+
+```json
+{
+    "identity": "Another machine",
+    "vaults": [
+        {
+            "title": "My mounted external drive",
+            "adapter": "local",
+            "settings": {
+                "path": "/some/mounted/path"
+            }
+        }
+    ]
+}
+```
+
 ## Testing
 
 Storeman uses PHPUnit as its testing framework. The bundled tests can be run using the `test` composer script:
