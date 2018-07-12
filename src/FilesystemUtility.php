@@ -17,7 +17,7 @@ abstract class FilesystemUtility
 
         if ($exitCode !== 0)
         {
-            throw new \RuntimeException();
+            throw new \RuntimeException("stat failed for {$path}");
         }
 
         $array = str_getcsv($output[0], ';');
