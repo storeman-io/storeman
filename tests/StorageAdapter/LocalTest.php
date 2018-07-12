@@ -4,13 +4,13 @@ namespace Storeman\Test\StorageAdapter;
 
 use Storeman\Config\Configuration;
 use Storeman\Exception;
-use Storeman\StorageAdapter\LocalStorageAdapter;
+use Storeman\StorageAdapter\Local;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 use Storeman\Config\VaultConfiguration;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
-class LocalStorageAdapterTest extends TestCase
+class LocalTest extends TestCase
 {
     use TemporaryPathGeneratorProviderTrait;
 
@@ -21,7 +21,7 @@ class LocalStorageAdapterTest extends TestCase
 
     public function testWriteStream()
     {
-        /** @var LocalStorageAdapter $adapter */
+        /** @var Local $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $stream = fopen('php://memory', 'r+b');
@@ -35,7 +35,7 @@ class LocalStorageAdapterTest extends TestCase
 
     public function testExists()
     {
-        /** @var LocalStorageAdapter $adapter */
+        /** @var Local $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $this->getFilesystem()->dumpFile($filePath, $fileContent);
@@ -46,7 +46,7 @@ class LocalStorageAdapterTest extends TestCase
 
     public function testUnlink()
     {
-        /** @var LocalStorageAdapter $adapter */
+        /** @var Local $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $this->getFilesystem()->dumpFile($filePath, $fileContent);
@@ -64,7 +64,7 @@ class LocalStorageAdapterTest extends TestCase
 
     public function testGetReadStream()
     {
-        /** @var LocalStorageAdapter $adapter */
+        /** @var Local $adapter */
         list($fileName, $filePath, $fileContent, $adapter) = $this->getTestSettings();
 
         $this->getFilesystem()->dumpFile($filePath, $fileContent);
@@ -90,7 +90,7 @@ class LocalStorageAdapterTest extends TestCase
             $fileName,
             $basePath . $fileName,
             $fileContent,
-            new LocalStorageAdapter($vaultConfiguration),
+            new Local($vaultConfiguration),
         ];
     }
 

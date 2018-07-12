@@ -5,10 +5,9 @@ namespace Storeman\StorageAdapter;
 use Storeman\Config\ConfigurationException;
 use Storeman\PathUtils;
 use Storeman\Config\VaultConfiguration;
-use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 
-class LocalStorageAdapter extends FlysystemStorageAdapter
+class Local extends FlysystemStorageAdapter
 {
     public function __construct(VaultConfiguration $vaultConfiguration)
     {
@@ -24,7 +23,7 @@ class LocalStorageAdapter extends FlysystemStorageAdapter
             throw new ConfigurationException(sprintf('Path "%s" does not exist or is not writable.', $path));
         }
 
-        $adapter = new Local($path);
+        $adapter = new \League\Flysystem\Adapter\Local($path);
         $filesystem = new Filesystem($adapter);
 
         parent::__construct($filesystem);

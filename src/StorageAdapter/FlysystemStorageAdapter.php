@@ -2,16 +2,11 @@
 
 namespace Storeman\StorageAdapter;
 
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
-use Psr\Log\NullLogger;
 use Storeman\Exception;
 use League\Flysystem\Filesystem;
 
-abstract class FlysystemStorageAdapter implements LoggerAwareInterface, StorageAdapterInterface
+abstract class FlysystemStorageAdapter extends AbstractStorageAdapter
 {
-    use LoggerAwareTrait;
-
     /**
      * @var Filesystem
      */
@@ -19,8 +14,9 @@ abstract class FlysystemStorageAdapter implements LoggerAwareInterface, StorageA
 
     public function __construct(Filesystem $filesystem)
     {
+        parent::__construct();
+
         $this->filesystem = $filesystem;
-        $this->logger = new NullLogger();
     }
 
     public function writeStream(string $relativePath, $stream)

@@ -4,7 +4,7 @@ namespace Storeman\Test\LockAdapter;
 
 use Storeman\LockAdapter\StorageBasedLockAdapter;
 use Storeman\LockAdapter\LockAdapterInterface;
-use Storeman\StorageAdapter\LocalStorageAdapter;
+use Storeman\StorageAdapter\Local;
 use Storeman\Test\ConfiguredMockProviderTrait;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 use Storeman\Config\VaultConfiguration;
@@ -22,7 +22,7 @@ class StorageBasedLockAdapterTest extends AbstractLockAdapterTest
         $vaultConfiguration->setAdapter('local');
         $vaultConfiguration->setSetting('path', $this->getTemporaryPathGenerator()->getTemporaryDirectory());
 
-        $storageAdapter = new LocalStorageAdapter($vaultConfiguration);
+        $storageAdapter = new Local($vaultConfiguration);
 
         return new StorageBasedLockAdapter($configuration, $storageAdapter);
     }

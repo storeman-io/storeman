@@ -30,7 +30,7 @@ use Storeman\LockAdapter\LockAdapterInterface;
 use Storeman\LockAdapter\StorageBasedLockAdapter;
 use Storeman\OperationListBuilder\OperationListBuilderInterface;
 use Storeman\OperationListBuilder\StandardOperationListBuilder;
-use Storeman\StorageAdapter\LocalStorageAdapter;
+use Storeman\StorageAdapter\Local;
 use Storeman\StorageAdapter\StorageAdapterInterface;
 use Storeman\Validation\Constraints\ExistingServiceValidator;
 use Storeman\VaultLayout\Amberjack\AmberjackVaultLayout;
@@ -121,7 +121,7 @@ final class Container implements ContainerInterface
         $this->addOperationListBuilder('standard', StandardOperationListBuilder::class, true);
 
         $this->registerVaultServiceFactory('storageAdapter', 'adapter');
-        $this->addStorageAdapter('local', LocalStorageAdapter::class)->withArgument('vaultConfiguration');
+        $this->addStorageAdapter('local', Local::class)->withArgument('vaultConfiguration');
 
         $this->registerVaultServiceFactory('vaultLayout');
         $this->addVaultLayout('amberjack', AmberjackVaultLayout::class)->withArguments(['storageAdapter']);
