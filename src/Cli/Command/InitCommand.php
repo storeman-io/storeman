@@ -32,7 +32,7 @@ class InitCommand extends AbstractCommand
     {
         $this->setUpIO($input, $output);
 
-        if ($config = $this->getConfiguration($this->getContainer($output), $input))
+        if ($this->getConfiguration($this->getContainer($output), $input))
         {
             $output->writeln("This directory is already configured as an archive.");
 

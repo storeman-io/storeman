@@ -284,7 +284,6 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
 
         $solution = $conflictHandler->handleConflict($remoteObject, $localObject, $lastLocalObject);
 
-        $return = null;
         switch ($solution)
         {
             case ConflictHandlerInterface::USE_LOCAL:
