@@ -27,7 +27,7 @@ class PharCompiler
      * @param string $targetFilePath
      * @param int $mode
      */
-    public function compile(string $targetFilePath, int $mode = 0744): void
+    public function compile(string $targetFilePath, int $mode = 0755): void
     {
         if (file_exists($targetFilePath))
         {
