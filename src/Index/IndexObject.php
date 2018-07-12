@@ -2,6 +2,7 @@
 
 namespace Storeman\Index;
 
+use Storeman\FilesystemUtility;
 use Storeman\Hash\HashContainer;
 
 /**
@@ -260,14 +261,12 @@ class IndexObject implements \ArrayAccess
 
     public function __toString(): string
     {
-        $inode = $this->inode ?: '-';
-
         $parts = [
             $this->getTypeName(),
-            "mtime: {$this->mtime}",
-            "ctime: {$this->ctime}",
-            "permissions: {$this->getPermissionsString()}",
-            "inode: {$inode}"
+            "mtime: " . ($this->mtime === null ? '-' : FilesystemUtility::buildTime($this->mtime)),
+            "ctime: " . ($this->ctime === null ? '-' : FilesystemUtility::buildTime($this->ctime)),
+            "permissions: 0{$this->getPermissionsString()}",
+            "inode: " . $this->inode ?: '-',
         ];
 
         if ($this->isFile())
@@ -275,7 +274,7 @@ class IndexObject implements \ArrayAccess
             $blobId = $this->blobId ?: '-';
 
             $parts = array_merge($parts, [
-                "size: {$this->size}",
+                "size: {$this->size} B",
                 "blobId: {$blobId}",
             ]);
         }

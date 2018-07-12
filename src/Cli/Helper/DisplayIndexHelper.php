@@ -2,6 +2,7 @@
 
 namespace Storeman\Cli\Helper;
 
+use Storeman\FilesystemUtility;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
 use Symfony\Component\Console\Helper\Helper;
@@ -32,8 +33,8 @@ class DisplayIndexHelper extends Helper implements HelperInterface
             $table->addRow([
                 $indexObject->getRelativePath(),
                 $indexObject->getTypeName(),
-                'mtime: ' . \DateTime::createFromFormat('U', (int)$indexObject->getMtime())->format('c') . "\n" .
-                'ctime: ' . \DateTime::createFromFormat('U', (int)$indexObject->getCtime())->format('c'),
+                'mtime: ' . ($indexObject->getMtime() === null ? '-' : FilesystemUtility::buildTime($indexObject->getMtime())) . "\n" .
+                'ctime: ' . ($indexObject->getCtime() === null ? '-' : FilesystemUtility::buildTime($indexObject->getCtime())),
                 "0{$indexObject->getPermissionsString()}",
                 $indexObject->getInode() ?: '-',
                 $indexObject->getLinkTarget() ?: '-',

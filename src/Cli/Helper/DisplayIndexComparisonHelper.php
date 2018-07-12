@@ -2,6 +2,7 @@
 
 namespace Storeman\Cli\Helper;
 
+use Storeman\FilesystemUtility;
 use Storeman\Index\Comparison\IndexComparison;
 use Storeman\Index\Comparison\IndexObjectComparison;
 use Storeman\Index\IndexObject;
@@ -47,8 +48,8 @@ class DisplayIndexComparisonHelper extends Helper implements HelperInterface
 
         $parts = [
             $indexObject->getTypeName(),
-            "mtime: " . \DateTime::createFromFormat('U', (int)$indexObject->getMtime())->format('c'),
-            "ctime: " . \DateTime::createFromFormat('U', (int)$indexObject->getCtime())->format('c'),
+            "mtime: " . ($indexObject->getMtime() === null ? '-' : FilesystemUtility::buildTime($indexObject->getMtime())),
+            "ctime: " . ($indexObject->getCtime() === null ? '-' : FilesystemUtility::buildTime($indexObject->getCtime())),
             "perms: 0{$indexObject->getPermissionsString()}",
         ];
 
