@@ -6,3 +6,9 @@
 [![License](https://poser.pugx.org/storeman-io/storeman/license)](https://packagist.org/packages/storeman-io/storeman)
 
 This project aims to provide a fast, secure and robust file-synchronization and -backup utility that can be used with a large variety of storage providers including cloud services like Amazon S3, Microsoft Azure and Google Cloud Storage and old-fashioned services like FTP(s), SCP, WebDAV or some mounted path.
+
+## Documentation
+
+As the general shape and concrete featureset is still quite unstable there is only a QuickStart guide provided which can be found here:
+
+[Documentation](doc/index.md)
