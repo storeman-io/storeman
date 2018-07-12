@@ -189,9 +189,14 @@ class VaultConfiguration implements ArraySerializableInterface
         return $this->settings;
     }
 
+    public function hasSetting(string $name): bool
+    {
+        return array_key_exists($name, $this->settings);
+    }
+
     public function getSetting(string $name)
     {
-        return isset($this->settings[$name]) ? $this->settings[$name] : null;
+        return array_key_exists($name, $this->settings) ? $this->settings[$name] : null;
     }
 
     public function setSettings(array $settings): VaultConfiguration

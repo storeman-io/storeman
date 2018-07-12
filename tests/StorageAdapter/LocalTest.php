@@ -5,13 +5,15 @@ namespace Storeman\Test\StorageAdapter;
 use Storeman\Config\Configuration;
 use Storeman\Exception;
 use Storeman\StorageAdapter\Local;
+use Storeman\StorageAdapter\StorageAdapterInterface;
+use Storeman\Test\ConfiguredMockProviderTrait;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 use Storeman\Config\VaultConfiguration;
-use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
-class LocalTest extends TestCase
+class LocalTest extends AbstractStorageAdapterTest
 {
+    use ConfiguredMockProviderTrait;
     use TemporaryPathGeneratorProviderTrait;
 
     /**
@@ -102,5 +104,13 @@ class LocalTest extends TestCase
         }
 
         return $this->filesystem;
+    }
+
+    protected function getStorageAdapter(): StorageAdapterInterface
+    {
+        $vaultConfiguration = new VaultConfiguration($this->getConfigurationMock());
+        $vaultConfiguration->setSetting('path', $this->getTemporaryPathGenerator()->getTemporaryDirectory());
+
+        return new Local($vaultConfiguration);
     }
 }

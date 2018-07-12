@@ -30,6 +30,7 @@ use Storeman\LockAdapter\LockAdapterInterface;
 use Storeman\LockAdapter\StorageBasedLockAdapter;
 use Storeman\OperationListBuilder\OperationListBuilderInterface;
 use Storeman\OperationListBuilder\StandardOperationListBuilder;
+use Storeman\StorageAdapter\Ftp;
 use Storeman\StorageAdapter\Local;
 use Storeman\StorageAdapter\StorageAdapterInterface;
 use Storeman\Validation\Constraints\ExistingServiceValidator;
@@ -121,6 +122,7 @@ final class Container implements ContainerInterface
         $this->addOperationListBuilder('standard', StandardOperationListBuilder::class, true);
 
         $this->registerVaultServiceFactory('storageAdapter', 'adapter');
+        $this->addStorageAdapter('ftp', Ftp::class)->withArgument('vaultConfiguration');
         $this->addStorageAdapter('local', Local::class)->withArgument('vaultConfiguration');
 
         $this->registerVaultServiceFactory('vaultLayout');

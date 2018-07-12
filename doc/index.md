@@ -82,6 +82,15 @@ Storeman operates on local _archives_ which are synchronized to one or more remo
             "settings": {
                 "path": "/some/mounted/path"
             }
+        },
+        {
+            "title": "My ftp backup site",
+            "adapter": "ftp",
+            "settings": {
+                "host": "ftp.mysite.com",
+                "username": "username",
+                "password": "password"
+            }
         }
     ]
 }
@@ -100,10 +109,11 @@ Like this storeman is already useful as a backup utility. To synchronize the dat
     "identity": "Another machine",
     "vaults": [
         {
-            "title": "My mounted external drive",
-            "adapter": "local",
+            "adapter": "ftp",
             "settings": {
-                "path": "/some/mounted/path"
+                "host": "ftp.mysite.com",
+                "username": "username",
+                "password": "password"
             }
         }
     ]
