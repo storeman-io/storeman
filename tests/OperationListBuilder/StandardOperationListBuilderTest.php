@@ -7,6 +7,7 @@ use Storeman\Operation\OperationInterface;
 use Storeman\Operation\TouchOperation;
 use Storeman\Operation\UnlinkOperation;
 use Storeman\OperationListBuilder\StandardOperationListBuilder;
+use Storeman\OperationListItem;
 use Storeman\Test\TemporaryPathGeneratorProviderTrait;
 use Storeman\Test\TestVault;
 use PHPUnit\Framework\TestCase;
@@ -35,8 +36,15 @@ class StandardOperationListBuilderTest extends TestCase
 
         $operationList = $builder->buildOperationList($mergedIndex, $localIndex);
 
+        /** @var OperationInterface[] $operations */
+        $operations = array_map(function(OperationListItem $operationListItem) {
+
+            return $operationListItem->getOperation();
+
+        }, iterator_to_array($operationList));
+
         /** @var TouchOperation[] $touchOperations */
-        $touchOperations = array_values(array_filter(iterator_to_array($operationList), function(OperationInterface $operation) {
+        $touchOperations = array_values(array_filter($operations, function(OperationInterface $operation) {
 
             return $operation instanceof TouchOperation;
         }));
@@ -61,8 +69,15 @@ class StandardOperationListBuilderTest extends TestCase
         $builder = new StandardOperationListBuilder();
         $operationList = $builder->buildOperationList($mergedIndex, $localIndex);
 
+        /** @var OperationInterface[] $operations */
+        $operations = array_map(function(OperationListItem $operationListItem) {
+
+            return $operationListItem->getOperation();
+
+        }, iterator_to_array($operationList));
+
         /** @var UnlinkOperation[] $unlinkOperations */
-        $unlinkOperations = array_values(array_filter(iterator_to_array($operationList), function(OperationInterface $operation) {
+        $unlinkOperations = array_values(array_filter($operations, function(OperationInterface $operation) {
 
             return $operation instanceof UnlinkOperation;
         }));

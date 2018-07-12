@@ -63,6 +63,13 @@ class TestVault implements \IteratorAggregate
         return $this;
     }
 
+    public function chmod(string $relativePath, int $mode): TestVault
+    {
+        $this->filesystem->chmod($this->getAbsolutePath($relativePath), $mode);
+
+        return $this;
+    }
+
     public function link(string $relativePath, string $relativeTargetPath): TestVault
     {
         $this->filesystem->symlink(

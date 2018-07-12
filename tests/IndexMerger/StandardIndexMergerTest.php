@@ -14,6 +14,7 @@ use Storeman\Hash\Algorithm\Sha256;
 use Storeman\Hash\Algorithm\Sha512;
 use Storeman\Hash\HashProvider;
 use Storeman\Index\Index;
+use Storeman\Index\IndexObject;
 use Storeman\IndexMerger\IndexMergerInterface;
 use Storeman\IndexMerger\StandardIndexMerger;
 use Storeman\Test\TestVault;
@@ -42,7 +43,7 @@ class StandardIndexMergerTest extends TestCase
         $actualIndex = $testVault->getIndex();
         $mergedIndex = $merger->merge(new PanickingConflictHandler(), $firstState, $actualIndex, $firstState);
 
-        $this->assertTrue($mergedIndex->equals($actualIndex));
+        $this->assertTrue($mergedIndex->equals($actualIndex, IndexObject::CMP_IGNORE_INODE | IndexObject::CMP_IGNORE_CTIME));
     }
 
     public function testNewClientMerge()
@@ -83,7 +84,7 @@ class StandardIndexMergerTest extends TestCase
         $merger = $this->getIndexMerger($testVaultSet->getTestVault(0));
         $mergedIndex = $merger->merge(new PanickingConflictHandler(), $remoteIndex, $localIndex, $remoteIndex);
 
-        $this->assertTrue($mergedIndex->getObjectByPath('file')->equals($localIndex->getObjectByPath('file')));
+        $this->assertEquals($localIndex->getObjectByPath('file')->getMtime(), $mergedIndex->getObjectByPath('file')->getMtime());
     }
 
     public function testRemoteChangeMerging()
@@ -98,7 +99,7 @@ class StandardIndexMergerTest extends TestCase
         $merger = $this->getIndexMerger($testVaultSet->getTestVault(0));
         $mergedIndex = $merger->merge(new PanickingConflictHandler(), $remoteIndex, $localIndex, $localIndex);
 
-        $this->assertTrue($mergedIndex->getObjectByPath('file')->equals($remoteIndex->getObjectByPath('file')));
+        $this->assertEquals($remoteIndex->getObjectByPath('file')->getMtime(), $mergedIndex->getObjectByPath('file')->getMtime());
     }
 
     public function testConflictHandlingLocalUsage()
@@ -125,7 +126,7 @@ class StandardIndexMergerTest extends TestCase
         $merger = $this->getIndexMerger($testVaultSet->getTestVault(0));
         $mergedIndex = $merger->merge($conflictHandler, $remoteIndex, $localIndex, $lastLocalIndex);
 
-        $this->assertTrue($mergedIndex->getObjectByPath('file')->equals($localIndex->getObjectByPath('file')));
+        $this->assertEquals($localIndex->getObjectByPath('file')->getMtime(), $mergedIndex->getObjectByPath('file')->getMtime());
     }
 
     public function testConflictHandlingRemoteUsage()
@@ -152,7 +153,7 @@ class StandardIndexMergerTest extends TestCase
         $merger = $this->getIndexMerger($testVaultSet->getTestVault(0));
         $mergedIndex = $merger->merge($conflictHandler, $remoteIndex, $localIndex, $lastLocalIndex);
 
-        $this->assertTrue($mergedIndex->getObjectByPath('file')->equals($remoteIndex->getObjectByPath('file')));
+        $this->assertEquals($remoteIndex->getObjectByPath('file')->getMtime(), $mergedIndex->getObjectByPath('file')->getMtime());
     }
 
     public function testBlobIdReusage()
@@ -168,13 +169,38 @@ class StandardIndexMergerTest extends TestCase
 
         $mergedIndex = $merger->merge(new PanickingConflictHandler(), $remoteIndex, $localIndex, $remoteIndex);
 
-        $this->assertTrue($mergedIndex->equals($remoteIndex));
+        $this->assertEquals('xxx', $mergedIndex->getObjectByPath('file')->getBlobId());
+    }
+
+    public function testContentModificationDetectionWithManipulatedMtime()
+    {
+        $testVault = new TestVault();
+        $testVault->fwrite('file.ext', 'foo');
+        $testVault->touch('file.ext', time());
+
+        $indexA = $testVault->getIndex();
+        $objectA = $indexA->getObjectByPath('file.ext');
+        $objectA->setBlobId('xxx');
+        $objectA->getHashes()->addHash('sha256', '2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae');
+
+        // obvious change as we can compare file size
+        $testVault->fwrite('file.ext', 'obvious');
+        $testVault->touch('file.ext', $objectA->getMtime());
+
+        $mergedIndex = $this->getIndexMerger($testVault)->merge(new PanickingConflictHandler(), $indexA, $testVault->getIndex(), $indexA);
+        $this->assertNull($mergedIndex->getObjectByPath('file.ext')->getBlobId());
+
+        $testVault->fwrite('file.ext', 'bar');
+        $testVault->touch('file.ext', $objectA->getMtime());
+
+        $mergedIndex = $this->getIndexMerger($testVault)->merge(new PanickingConflictHandler(), $indexA, $testVault->getIndex(), $indexA);
+        $this->assertNull($mergedIndex->getObjectByPath('file.ext')->getBlobId());
     }
 
     public function testCtimeIgnorance()
     {
         $testVault = new TestVault();
-        $testVault->touch('file');
+        $testVault->touch('file', time());
 
         $index = $testVault->getIndex();
 
@@ -217,9 +243,41 @@ class StandardIndexMergerTest extends TestCase
 
         $remoteIndex->getObjectByPath('file')->setBlobId('xxx');
 
-        $this->getIndexMerger($testVault)->merge(new PanickingConflictHandler(), $remoteIndex, $localIndex, null, IndexMergerInterface::INJECT_BLOBID);
+        $this->getIndexMerger($testVault)->merge(new PanickingConflictHandler(), $remoteIndex, $localIndex, $remoteIndex, IndexMergerInterface::INJECT_BLOBID);
 
         $this->assertEquals('xxx', $localIndex->getObjectByPath('file')->getBlobId());
+    }
+
+    public function testIndependentContentAndMetadataModificationHandling()
+    {
+        $localTestVault = new TestVault();
+        $localTestVault->fwrite('file.ext', 'foo');
+        $localTestVault->chmod('file.ext', 0644);
+        $localTestVault->touch('file.ext', 1000);
+
+        $lastLocalIndex = $localTestVault->getIndex();
+        $lastLocalIndex->getObjectByPath('file.ext')->getHashes()->addHash('sha256', '2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae');
+
+        $localTestVault->chmod('file.ext', 0777);
+
+        $localIndex = $localTestVault->getIndex();
+        $localIndex->getObjectByPath('file.ext')->getHashes()->addHash('sha256', '2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae');
+
+        $remoteTestVault = new TestVault();
+        $remoteTestVault->fwrite('file.ext', 'bar');
+        $remoteTestVault->chmod('file.ext', 0644);
+        $remoteTestVault->touch('file.ext', 1000);
+
+        $remoteIndex = $remoteTestVault->getIndex();
+        $remoteIndex->getObjectByPath('file.ext')->getHashes()->addHash('sha256', 'fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9');
+
+        $mergedIndex = $this->getIndexMerger($localTestVault)->merge(new PanickingConflictHandler(), $remoteIndex, $localIndex, $lastLocalIndex);
+        $indexObject = $mergedIndex->getObjectByPath('file.ext');
+
+        $this->assertInstanceOf(IndexObject::class, $indexObject);
+        $this->assertEquals(0777, $indexObject->getPermissions());
+        $this->assertEquals(1000, $indexObject->getMtime());
+        $this->assertEquals('fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9', $indexObject->getHashes()->getHash('sha256'));
     }
 
     protected function getIndexMerger(TestVault $testVault): StandardIndexMerger

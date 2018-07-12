@@ -2,24 +2,22 @@
 
 namespace Storeman;
 
-use Storeman\Operation\OperationInterface;
-
 class OperationList implements \Countable, \IteratorAggregate
 {
     /**
-     * @var OperationInterface[]
+     * @var OperationListItem[]
      */
-    protected $operations = [];
+    protected $items = [];
 
     /**
      * Adds an operation to the end of the list.
      *
-     * @param OperationInterface $operation
+     * @param OperationListItem $item
      * @return OperationList
      */
-    public function addOperation(OperationInterface $operation): OperationList
+    public function add(OperationListItem $item): OperationList
     {
-        $this->operations[] = $operation;
+        $this->items[] = $item;
 
         return $this;
     }
@@ -32,7 +30,7 @@ class OperationList implements \Countable, \IteratorAggregate
      */
     public function append(OperationList $other): OperationList
     {
-        $this->operations = array_merge($this->operations, $other->operations);
+        $this->items = array_merge($this->items, $other->items);
 
         return $this;
     }
@@ -45,7 +43,7 @@ class OperationList implements \Countable, \IteratorAggregate
      */
     public function prepend(OperationList $other): OperationList
     {
-        $this->operations = array_merge($other->operations, $this->operations);
+        $this->items = array_merge($other->items, $this->items);
 
         return $this;
     }
@@ -55,7 +53,7 @@ class OperationList implements \Countable, \IteratorAggregate
      */
     public function count()
     {
-        return count($this->operations);
+        return count($this->items);
     }
 
     /**
@@ -63,6 +61,6 @@ class OperationList implements \Countable, \IteratorAggregate
      */
     public function getIterator(): \Iterator
     {
-        return new \ArrayIterator($this->operations);
+        return new \ArrayIterator($this->items);
     }
 }

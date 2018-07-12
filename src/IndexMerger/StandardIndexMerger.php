@@ -8,7 +8,6 @@ use Psr\Log\NullLogger;
 use Storeman\Config\Configuration;
 use Storeman\ConflictHandler\ConflictHandlerInterface;
 use Storeman\Hash\HashProvider;
-use Storeman\Index\Comparison\IndexObjectComparison;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
 
@@ -17,12 +16,6 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
     use LoggerAwareTrait;
 
     public const VERIFY_CONTENT = 2;
-
-    protected const CMP_OPTIONS =
-        IndexObject::CMP_IGNORE_BLOBID |
-        IndexObject::CMP_IGNORE_INODE |
-        IndexObject::CMP_IGNORE_CTIME
-    ;
 
     /**
      * @var Configuration
@@ -51,75 +44,211 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
         $mergedIndex = new Index();
         $lastLocalIndex = $lastLocalIndex ?: new Index();
 
-        $diff = $localIndex->getDifference($remoteIndex, static::CMP_OPTIONS);
-
-        $this->logger->debug(sprintf("Found %d differences between local and remote index", count($diff)));
-
-        foreach ($diff as $cmp)
+        foreach ($localIndex as $localObject)
         {
-            /** @var IndexObjectComparison $cmp */
+            /** @var IndexObject $localObject */
 
-            $localObject = $localIndex->getObjectByPath($cmp->getRelativePath());
-            $lastLocalObject = $lastLocalIndex->getObjectByPath($cmp->getRelativePath());
-            $remoteObject = $remoteIndex->getObjectByPath($cmp->getRelativePath());
+            $remoteObject = $remoteIndex->getObjectByPath($localObject->getRelativePath());
+            $lastLocalObject = $lastLocalIndex->getObjectByPath($localObject->getRelativePath());
 
-            $localObjectModified = $this->isLocalObjectModified($localObject, $lastLocalObject, $options);
-            $remoteObjectModified = $this->isRemoteObjectModified($remoteObject, $lastLocalObject);
-
-            if ($options & static::INJECT_BLOBID && $localObject !== null && !$localObjectModified)
+            if ($mergedObject = $this->mergeObject1($conflictHandler, $remoteObject, $localObject, $lastLocalObject, $options))
             {
-                assert($lastLocalObject !== null || $remoteObject !== null);
-
-                $localObject->setBlobId($lastLocalObject ? $lastLocalObject->getBlobId() : $remoteObject->getBlobId());
-            }
-
-            if ($localObjectModified && $remoteObjectModified)
-            {
-                $mergedIndex->addObject(clone $this->resolveConflict($conflictHandler, $remoteObject, $localObject, $lastLocalObject));
-            }
-            elseif ($localObjectModified && $localObject !== null)
-            {
-                $mergedIndex->addObject(clone $localObject);
-            }
-            elseif ($remoteObjectModified && $remoteObject !== null)
-            {
-                $mergedIndex->addObject(clone $remoteObject);
+                $mergedIndex->addObject($mergedObject);
             }
         }
 
-        $intersection = $localIndex->getIntersection($remoteIndex, static::CMP_OPTIONS);
-
-        $this->logger->debug(sprintf("Found %d similarities between local and remote index", count($intersection)));
-
-        foreach ($intersection as $cmp)
+        foreach ($remoteIndex as $remoteObject)
         {
-            /** @var IndexObjectComparison $cmp */
+            /** @var IndexObject $remoteObject */
 
-            // indexObjectB refers to remote object which we want to use to re-use the already existing blobId
-            $remoteObject = $cmp->getIndexObjectB();
+            $localObject = $localIndex->getObjectByPath($remoteObject->getRelativePath());
+            $lastLocalObject = $lastLocalIndex->getObjectByPath($remoteObject->getRelativePath());
 
-            $mergedIndex->addObject(clone $remoteObject);
-
-            if ($options & static::INJECT_BLOBID && $remoteObject->isFile())
+            if ($localObject !== null)
             {
-                $cmp->getIndexObjectA()->setBlobId($remoteObject->getBlobId());
+                // already taken care of in local index iteration
+                continue;
             }
+
+            if ($mergedObject = $this->mergeObject1($conflictHandler, $remoteObject, $localObject, $lastLocalObject, $options))
+            {
+                $mergedIndex->addObject($mergedObject);
+            }
+        }
+
+        if ($options & static::INJECT_BLOBID)
+        {
+            $this->injectBlobIds($mergedIndex, $localIndex);
         }
 
         return $mergedIndex;
     }
 
-    protected function isLocalObjectModified(?IndexObject $localObject, ?IndexObject $lastLocalObject, int $options): bool
+    /**
+     * First stage object merging looking at primarily at pure existence.
+     *
+     * @param ConflictHandlerInterface $conflictHandler
+     * @param IndexObject $remoteObject
+     * @param IndexObject $localObject
+     * @param IndexObject $lastLocalObject
+     * @param int $options
+     * @return IndexObject
+     */
+    protected function mergeObject1(ConflictHandlerInterface $conflictHandler, ?IndexObject $remoteObject, ?IndexObject $localObject, ?IndexObject $lastLocalObject, int $options = 0): ?IndexObject
     {
-        if (!$lastLocalObject)
+        if ($remoteObject === null && $localObject === null)
         {
-            return $localObject !== null;
+            // locally and remotely deleted
+            return null;
+        }
+        elseif ($lastLocalObject === null)
+        {
+            if ($remoteObject === null)
+            {
+                // locally created
+                return clone $localObject;
+            }
+            elseif ($localObject === null)
+            {
+                // remotely created
+                return clone $remoteObject;
+            }
+            elseif ($remoteObject !== null && $localObject !== null)
+            {
+                // remotely and locally created
+                return $this->resolveConflict($conflictHandler, $remoteObject, $localObject, $lastLocalObject);
+            }
+        }
+        elseif ($remoteObject === null)
+        {
+            // remotely deleted and locally changed
+            return $this->resolveConflict($conflictHandler, $remoteObject, $localObject, $lastLocalObject);
+        }
+        elseif ($localObject === null)
+        {
+            if ($remoteObject->equals($lastLocalObject))
+            {
+                // locally deleted
+                return null;
+            }
+            else
+            {
+                // remotely changed and locally deleted
+                return $this->resolveConflict($conflictHandler, $remoteObject, $localObject, $lastLocalObject);
+            }
         }
 
-        $localObjectModified = !$lastLocalObject->equals($localObject, static::CMP_OPTIONS);
+        return $this->mergeObject2($conflictHandler, $remoteObject, $localObject, $lastLocalObject, $options);
+    }
 
-        // eventually verify file content
-        if (!$localObjectModified && $localObject->isFile() && $options & static::VERIFY_CONTENT)
+    /**
+     * Second stage object merging.
+     *
+     * @param ConflictHandlerInterface $conflictHandler
+     * @param IndexObject $remoteObject
+     * @param IndexObject $localObject
+     * @param IndexObject $lastLocalObject
+     * @param int $options
+     * @return IndexObject
+     */
+    protected function mergeObject2(ConflictHandlerInterface $conflictHandler, IndexObject $remoteObject, IndexObject $localObject, IndexObject $lastLocalObject, int $options = 0): IndexObject
+    {
+        if ($remoteObject->getType() !== $localObject->getType())
+        {
+            return $this->resolveConflict($conflictHandler, $remoteObject, $localObject, $lastLocalObject);
+        }
+
+        $attributes = [
+            'size' => null,
+            'inode' => null,
+            'blobId' => null,
+            'hashes' => null,
+        ];
+
+        foreach (['permissions', 'mtime', 'linkTarget'] as $attribute)
+        {
+            $modifiedRemote = $lastLocalObject[$attribute] !== $remoteObject[$attribute];
+            $modifiedLocal = $lastLocalObject[$attribute] !== $localObject[$attribute];
+
+            if ($modifiedRemote && $modifiedLocal)
+            {
+                switch ($conflictHandler->handleConflict($remoteObject, $localObject, $lastLocalObject))
+                {
+                    case ConflictHandlerInterface::USE_LOCAL: $modifiedRemote = false; break;
+                    case ConflictHandlerInterface::USE_REMOTE: $modifiedLocal = false; break;
+                    default: throw new \LogicException();
+                }
+            }
+
+            if ($modifiedRemote || !$modifiedLocal)
+            {
+                $attributes[$attribute] = $remoteObject[$attribute];
+            }
+            else
+            {
+                $attributes[$attribute] = $localObject[$attribute];
+            }
+        }
+
+        if ($localObject->isFile())
+        {
+            $remoteFileContentModified = $this->isRemoteFileContentModified($remoteObject, $lastLocalObject);
+            $localFileContentModified = $this->isLocalFileContentModified($localObject, $lastLocalObject, $options);
+
+            if ($remoteFileContentModified && $localFileContentModified)
+            {
+                switch ($conflictHandler->handleConflict($remoteObject, $localObject, $lastLocalObject))
+                {
+                    case ConflictHandlerInterface::USE_LOCAL: $remoteFileContentModified = false; break;
+                    case ConflictHandlerInterface::USE_REMOTE: $localFileContentModified = false; break;
+                    default: throw new \LogicException();
+                }
+            }
+
+            if ($remoteFileContentModified || !$localFileContentModified)
+            {
+                $attributes['size'] = $remoteObject->getSize();
+                $attributes['blobId'] = $remoteObject->getBlobId();
+                $attributes['hashes'] = clone $remoteObject->getHashes();
+            }
+            else
+            {
+                $attributes['size'] = $localObject->getSize();
+                $attributes['inode'] = $localObject->getInode();
+                $attributes['hashes'] = clone $localObject->getHashes();
+            }
+        }
+
+        return new IndexObject(
+            $localObject->getRelativePath(),
+            $localObject->getType(),
+            $attributes['mtime'],
+            null,
+            $attributes['permissions'],
+            $attributes['size'],
+            $attributes['inode'],
+            $attributes['linkTarget'],
+            $attributes['blobId'],
+            $attributes['hashes']
+        );
+    }
+
+    protected function isLocalFileContentModified(IndexObject $localObject, IndexObject $lastLocalObject, int $options): bool
+    {
+        assert($localObject->isFile());
+        assert($lastLocalObject->isFile());
+
+        $modified = false;
+        $modified |= !$localObject->getHashes()->equals($lastLocalObject->getHashes());
+        $modified |= $localObject->getSize() !== $lastLocalObject->getSize();
+        $modified |= $localObject->getInode() !== $lastLocalObject->getInode();
+        $modified |= $localObject->getMtime() !== $lastLocalObject->getMtime();
+
+        $verifyContent = false;
+        $verifyContent |= !$modified && $localObject->getCtime() !== $lastLocalObject->getCtime();
+        $verifyContent |= !$modified && $options & static::VERIFY_CONTENT;
+
+        if ($verifyContent)
         {
             $existingHashes = iterator_to_array($lastLocalObject->getHashes());
             $configuredAlgorithms = $this->configuration->getFileChecksums();
@@ -132,25 +261,18 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
                 {
                     if ($this->hashProvider->getHash($localObject, $algorithm) !== $existingHashes[$algorithm])
                     {
-                        $localObjectModified = true;
+                        $modified = true;
                     }
                 }
             }
         }
 
-        return $localObjectModified;
+        return $modified;
     }
 
-    protected function isRemoteObjectModified(?IndexObject $remoteObject, ?IndexObject $lastLocalObject): bool
+    protected function isRemoteFileContentModified(IndexObject $remoteObject, IndexObject $lastLocalObject): bool
     {
-        if ($lastLocalObject)
-        {
-            return !$lastLocalObject->equals($remoteObject, static::CMP_OPTIONS);
-        }
-        else
-        {
-            return $remoteObject !== null;
-        }
+        return $remoteObject->getBlobId() !== $lastLocalObject->getBlobId();
     }
 
     protected function resolveConflict(ConflictHandlerInterface $conflictHandler, IndexObject $remoteObject, ?IndexObject $localObject, ?IndexObject $lastLocalObject): IndexObject
@@ -169,7 +291,7 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
 
                 $this->logger->info("Using local version for conflict at {$remoteObject->getRelativePath()}");
 
-                $return = $localObject;
+                $return = clone $localObject;
 
                 break;
 
@@ -177,7 +299,7 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
 
                 $this->logger->info("Using remote version for conflict at {$remoteObject->getRelativePath()}");
 
-                $return = $remoteObject;
+                $return = clone $remoteObject;
 
                 break;
 
@@ -187,6 +309,22 @@ class StandardIndexMerger implements IndexMergerInterface, LoggerAwareInterface
         }
 
         return $return;
+    }
+
+    protected function injectBlobIds(Index $mergedIndex, Index $localIndex): void
+    {
+        foreach ($mergedIndex as $object)
+        {
+            /** @var IndexObject $object*/
+
+            if ($object->getBlobId() !== null)
+            {
+                if ($localObject = $localIndex->getObjectByPath($object->getRelativePath()))
+                {
+                    $localObject->setBlobId($object->getBlobId());
+                }
+            }
+        }
     }
 
     public static function getOptionsDebugString(int $options): string

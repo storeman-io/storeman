@@ -12,6 +12,7 @@ use Storeman\Operation\SymlinkOperation;
 use Storeman\Operation\TouchOperation;
 use Storeman\Operation\UnlinkOperation;
 use Storeman\OperationList;
+use Storeman\OperationListItem;
 
 class StandardOperationListBuilder implements OperationListBuilderInterface
 {
@@ -20,13 +21,15 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
         $operationList = new OperationList();
 
         // mtimes to be set for directories are collected and applied afterwards as they get modified by synchronization operations as well
-        $directoryMtimes = [];
+        /** @var IndexObject[] $toSetMtime */
+        $toSetMtime = [];
 
         // set of modified paths that can be populated and is later used to add parent directory touch()es
         $modifiedPaths = [];
 
         // paths to be removed
-        $unlinkPaths = [];
+        /** @var IndexObject[] $toUnlink */
+        $toUnlink = [];
 
         // relies on the directory tree structure being traversed in pre-order (or at least a directory appears before its content)
         foreach ($mergedIndex as $mergedIndexObject)
@@ -38,7 +41,7 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
             // unlink to-be-overridden local path with different type
             if ($localObject !== null && $localObject->getType() !== $mergedIndexObject->getType())
             {
-                $unlinkPaths[] = $mergedIndexObject->getRelativePath();
+                $toUnlink[] = $mergedIndexObject;
                 $modifiedPaths[] = $mergedIndexObject->getRelativePath();
             }
 
@@ -47,9 +50,9 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
             {
                 if ($localObject === null || !$localObject->isDirectory())
                 {
-                    $operationList->addOperation(new MkdirOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getPermissions()));
+                    $operationList->add(new OperationListItem(new MkdirOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getPermissions()), $mergedIndexObject));
 
-                    $directoryMtimes[$mergedIndexObject->getRelativePath()] = $mergedIndexObject->getMtime();
+                    $toSetMtime[$mergedIndexObject->getRelativePath()] = $mergedIndexObject;
                 }
 
                 if ($localObject !== null && $localObject->isDirectory())
@@ -57,7 +60,7 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
                     if ($localObject->getMtime() !== $mergedIndexObject->getMtime())
                     {
                         // fix wrong mtime
-                        $directoryMtimes[$mergedIndexObject->getRelativePath()] = $mergedIndexObject->getMtime();
+                        $toSetMtime[$mergedIndexObject->getRelativePath()] = $mergedIndexObject;
                     }
                 }
             }
@@ -69,9 +72,9 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
 
                 if ($doDownloadFile)
                 {
-                    $operationList->addOperation(new DownloadOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getBlobId()));
-                    $operationList->addOperation(new TouchOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getMtime()));
-                    $operationList->addOperation(new ChmodOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getPermissions()));
+                    $operationList->add(new OperationListItem(new DownloadOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getBlobId()), $mergedIndexObject));
+                    $operationList->add(new OperationListItem(new TouchOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getMtime()), $mergedIndexObject));
+                    $operationList->add(new OperationListItem(new ChmodOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getPermissions()), $mergedIndexObject));
 
                     $modifiedPaths[] = $mergedIndexObject->getRelativePath();
                 }
@@ -81,8 +84,8 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
             {
                 if ($localObject !== null && $localObject->getLinkTarget() !== $mergedIndexObject->getLinkTarget())
                 {
-                    $operationList->addOperation(new UnlinkOperation($mergedIndexObject->getRelativePath()));
-                    $operationList->addOperation(new SymlinkOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getLinkTarget(), $mergedIndexObject->getPermissions()));
+                    $operationList->add(new OperationListItem(new UnlinkOperation($mergedIndexObject->getRelativePath()), $mergedIndexObject));
+                    $operationList->add(new OperationListItem(new SymlinkOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getLinkTarget(), $mergedIndexObject->getPermissions()), $mergedIndexObject));
 
                     $modifiedPaths[] = $mergedIndexObject->getRelativePath();
                 }
@@ -97,7 +100,7 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
 
             if ($localObject !== null && $localObject->getPermissions() !== $mergedIndexObject->getPermissions())
             {
-                $operationList->addOperation(new ChmodOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getPermissions()));
+                $operationList->add(new OperationListItem(new ChmodOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getPermissions()), $mergedIndexObject));
             }
         }
 
@@ -108,7 +111,7 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
 
             if ($mergedIndex->getObjectByPath($localObject->getRelativePath()) === null)
             {
-                $unlinkPaths[] = $localObject->getRelativePath();
+                $toUnlink[] = $localObject;
                 $modifiedPaths[] = $localObject->getRelativePath();
             }
         }
@@ -120,25 +123,25 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
             {
                 if ($dirObject = $mergedIndex->getObjectByPath($dir))
                 {
-                    $directoryMtimes[$dirObject->getRelativePath()] = $dirObject->getMtime();
+                    $toSetMtime[$dirObject->getRelativePath()] = $dirObject;
                 }
             }
         }
 
         // prepend deletions
-        krsort($unlinkPaths);
+        krsort($toUnlink);
         $unlinkOperations = new OperationList();
-        foreach ($unlinkPaths as $unlinkPath)
+        foreach ($toUnlink as $indexObject)
         {
-            $unlinkOperations->addOperation(new UnlinkOperation($unlinkPath));
+            $unlinkOperations->add(new OperationListItem(new UnlinkOperation($indexObject->getRelativePath()), $indexObject));
         }
         $operationList->prepend($unlinkOperations);
 
         // set directory mtimes after all other modifications have been performed
-        krsort($directoryMtimes);
-        foreach ($directoryMtimes as $relativePath => $mtime)
+        krsort($toSetMtime);
+        foreach ($toSetMtime as $relativePath => $indexObject)
         {
-            $operationList->addOperation(new TouchOperation($relativePath, $mtime));
+            $operationList->add(new OperationListItem(new TouchOperation($relativePath, $indexObject->getMtime()), $indexObject));
         }
 
         return $operationList;

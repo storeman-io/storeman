@@ -18,7 +18,6 @@ use Storeman\OperationListBuilder\OperationListBuilderInterface;
 use Storeman\SynchronizationProgressListener\DummySynchronizationProgressListener;
 use Storeman\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 use Storeman\VaultLayout\VaultLayoutInterface;
-use Storeman\Operation\OperationInterface;
 
 class Vault implements LoggerAwareInterface
 {
@@ -233,22 +232,32 @@ class Vault implements LoggerAwareInterface
         $synchronization = new Synchronization($newRevision, new \DateTime(), $this->storeman->getConfiguration()->getIdentity(), $mergedIndex);
 
         $operationList = $this->getOperationListBuilder()->buildOperationList($mergedIndex, $localIndex);
-        $operationList->addOperation(new WriteSynchronizationOperation($synchronization));
+        $operationList->add(new OperationListItem(new WriteSynchronizationOperation($synchronization)));
 
         $this->logger->notice(sprintf("Executing %d operation(s)...", count($operationList)));
 
         $operationResultList = new OperationResultList();
 
         $progressionListener->start(count($operationList));
-        foreach ($operationList as $index => $operation)
+        foreach ($operationList as $index => $operationListItem)
         {
-            /** @var OperationInterface $operation */
+            /** @var OperationListItem $operationListItem */
 
-            $this->logger->debug(sprintf("#%d {$operation}", $index + 1));
+            $this->logger->debug(sprintf("#%d {$operationListItem->getOperation()}", $index + 1));
 
-            $success = $operation->execute($this->storeman->getConfiguration()->getPath(), $this->storeman->getFileReader(), $this->getVaultLayout());
+            $success = $operationListItem->getOperation()->execute($this->storeman->getConfiguration()->getPath(), $this->storeman->getFileReader(), $this->getVaultLayout());
 
-            $operationResult = new OperationResult($operation, $success);
+            if ($success && $indexObject = $operationListItem->getIndexObject())
+            {
+                $absolutePath = PathUtils::getAbsolutePath($this->storeman->getConfiguration()->getPath() . $indexObject->getRelativePath());
+
+                if (is_file($absolutePath))
+                {
+                    $indexObject->setCtime(FilesystemUtility::lstat($absolutePath)['ctime']);
+                }
+            }
+
+            $operationResult = new OperationResult($operationListItem->getOperation(), $success);
             $operationResultList->addOperationResult($operationResult);
 
             $progressionListener->advance();
@@ -374,15 +383,25 @@ class Vault implements LoggerAwareInterface
         $operationResultList = new OperationResultList();
 
         $progressionListener->start(count($operationList));
-        foreach ($operationList as $index => $operation)
+        foreach ($operationList as $index => $operationListItem)
         {
-            /** @var OperationInterface $operation */
+            /** @var OperationListItem $operationListItem */
 
-            $this->logger->debug(sprintf("#%d: {$operation}", $index + 1));
+            $this->logger->debug(sprintf("#%d: {$operationListItem->getOperation()}", $index + 1));
 
-            $success = $operation->execute($targetPath, $this->storeman->getFileReader(), $this->getVaultLayout());
+            $success = $operationListItem->getOperation()->execute($targetPath, $this->storeman->getFileReader(), $this->getVaultLayout());
 
-            $operationResult = new OperationResult($operation, $success);
+            if ($success && $indexObject = $operationListItem->getIndexObject())
+            {
+                $absolutePath = PathUtils::getAbsolutePath($targetPath . $indexObject->getRelativePath());
+
+                if (is_file($absolutePath))
+                {
+                    $indexObject->setCtime(FilesystemUtility::lstat($absolutePath)['ctime']);
+                }
+            }
+
+            $operationResult = new OperationResult($operationListItem->getOperation(), $success);
             $operationResultList->addOperationResult($operationResult);
 
             $progressionListener->advance();

@@ -73,7 +73,7 @@ class IndexObject implements \ArrayAccess
      */
     protected $blobId;
 
-    public function __construct(string $relativePath, int $type, float $mtime, float $ctime, int $permissions, ?int $size, ?int $inode, ?string $linkTarget, ?string $blobId, ?HashContainer $hashContainer)
+    public function __construct(string $relativePath, int $type, float $mtime, ?float $ctime, int $permissions, ?int $size, ?int $inode, ?string $linkTarget, ?string $blobId, ?HashContainer $hashContainer)
     {
         assert(($type === static::TYPE_FILE) ^ ($size === null));
         assert(($type === static::TYPE_FILE) || ($blobId === null));
@@ -135,9 +135,16 @@ class IndexObject implements \ArrayAccess
         return $this->mtime;
     }
 
-    public function getCtime(): float
+    public function getCtime(): ?float
     {
         return $this->ctime;
+    }
+
+    public function setCtime(float $ctime): IndexObject
+    {
+        $this->ctime = $ctime;
+
+        return $this;
     }
 
     public function getPermissions(): int

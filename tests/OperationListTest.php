@@ -5,6 +5,7 @@ namespace Storeman\Test;
 use Storeman\Operation\OperationInterface;
 use Storeman\OperationList;
 use PHPUnit\Framework\TestCase;
+use Storeman\OperationListItem;
 
 class OperationListTest extends TestCase
 {
@@ -18,10 +19,11 @@ class OperationListTest extends TestCase
         /** @var OperationInterface $operation */
         $operation = $this->createMock(OperationInterface::class);
 
-        $operationList->addOperation($operation);
+        $operationListItem = new OperationListItem($operation);
+        $operationList->add($operationListItem);
 
         $this->assertEquals(1, $operationList->count());
-        $this->assertEquals([$operation], iterator_to_array($operationList->getIterator()));
+        $this->assertEquals([$operationListItem], iterator_to_array($operationList->getIterator()));
     }
 
     public function testAppend()
@@ -33,14 +35,16 @@ class OperationListTest extends TestCase
         $secondOperation = $this->createMock(OperationInterface::class);
 
         $first = new OperationList();
-        $first->addOperation($firstOperation);
+        $firstOperationListItem = new OperationListItem($firstOperation);
+        $first->add($firstOperationListItem);
 
         $second = new OperationList();
-        $second->addOperation($secondOperation);
+        $secondOperationListItem = new OperationListItem($secondOperation);
+        $second->add($secondOperationListItem);
 
         $first->append($second);
 
-        $this->assertEquals([$firstOperation, $secondOperation], iterator_to_array($first->getIterator()));
-        $this->assertEquals([$secondOperation], iterator_to_array($second->getIterator()));
+        $this->assertEquals([$firstOperationListItem, $secondOperationListItem], iterator_to_array($first->getIterator()));
+        $this->assertEquals([$secondOperationListItem], iterator_to_array($second->getIterator()));
     }
 }
