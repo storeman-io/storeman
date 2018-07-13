@@ -18,6 +18,7 @@ class S3Test extends AbstractStorageAdapterTest
             'key' => getenv('s3key'),
             'secret' => getenv('s3secret'),
             'bucket' => getenv('s3bucket'),
+            'region' => getenv('s3region'),
         ]);
 
         return new S3($vaultConfiguration);

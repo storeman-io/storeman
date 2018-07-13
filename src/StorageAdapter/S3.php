@@ -16,6 +16,7 @@ class S3 extends FlysystemStorageAdapter
             'bucket',
             'key',
             'secret',
+            'region',
         ];
 
         if ($missingSettings = array_diff($requiredSettings, array_keys(array_filter($vaultConfiguration->getSettings()))))
@@ -29,7 +30,7 @@ class S3 extends FlysystemStorageAdapter
                 'key' => $vaultConfiguration->getSetting('key'),
                 'secret' => $vaultConfiguration->getSetting('secret'),
             ],
-            'region' => 'eu-central-1',
+            'region' => $vaultConfiguration->getSetting('region'),
         ]);
         $adapter = new AwsS3Adapter($client, $vaultConfiguration->getSetting('bucket'));
         $filesystem = new Filesystem($adapter);
