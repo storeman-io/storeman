@@ -123,6 +123,17 @@ class StandardIndexBuilder implements IndexBuilderInterface, LoggerAwareInterfac
                 return null;
         }
 
-        return new IndexObject($relativePath, $type, $stat['mtime'], $stat['ctime'], $stat['mode'] & 0777, $size, $stat['ino'], $linkTarget, null, $hashContainer);
+        return new IndexObject(
+            $relativePath,
+            $type,
+            $stat['mtime'],
+            $stat['ctime'],
+            $stat['mode'] & 0777,
+            $size,
+            $stat['ino'],
+            $linkTarget,
+            null,
+            $hashContainer
+        );
     }
 }
