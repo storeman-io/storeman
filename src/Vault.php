@@ -373,6 +373,7 @@ class Vault implements LoggerAwareInterface
 
             $success = $operationListItem->getOperation()->execute($basePath, $this->storeman->getFileReader(), $this->getVaultLayout());
 
+            // update index ctime right after operation execution to make it as reliable as possible for usage in the next run
             if ($success && $indexObject = $operationListItem->getIndexObject())
             {
                 $absolutePath = PathUtils::getAbsolutePath($basePath . $indexObject->getRelativePath());
