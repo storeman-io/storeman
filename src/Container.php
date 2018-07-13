@@ -32,6 +32,7 @@ use Storeman\OperationListBuilder\OperationListBuilderInterface;
 use Storeman\OperationListBuilder\StandardOperationListBuilder;
 use Storeman\StorageAdapter\Ftp;
 use Storeman\StorageAdapter\Local;
+use Storeman\StorageAdapter\S3;
 use Storeman\StorageAdapter\StorageAdapterInterface;
 use Storeman\Validation\Constraints\ExistingServiceValidator;
 use Storeman\VaultLayout\Amberjack\AmberjackVaultLayout;
@@ -124,6 +125,7 @@ final class Container implements ContainerInterface
         $this->registerVaultServiceFactory('storageAdapter', 'adapter');
         $this->addStorageAdapter('ftp', Ftp::class)->withArgument('vaultConfiguration');
         $this->addStorageAdapter('local', Local::class)->withArgument('vaultConfiguration');
+        $this->addStorageAdapter('s3', S3::class)->withArgument('vaultConfiguration');
 
         $this->registerVaultServiceFactory('vaultLayout');
         $this->addVaultLayout('amberjack', AmberjackVaultLayout::class)->withArguments(['storageAdapter']);
