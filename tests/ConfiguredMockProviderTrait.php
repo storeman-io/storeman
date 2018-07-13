@@ -6,6 +6,7 @@ use Storeman\Cli\ConsoleStyle;
 use Storeman\Config\Configuration;
 use Storeman\Hash\HashProvider;
 use Storeman\Index\IndexObject;
+use Storeman\OperationListItem;
 use Symfony\Component\Console\Input\InputInterface;
 
 /**
@@ -13,6 +14,11 @@ use Symfony\Component\Console\Input\InputInterface;
  */
 trait ConfiguredMockProviderTrait
 {
+    private function getOperationListItemMock(array $config = []): OperationListItem
+    {
+        return $this->createConfiguredMock(OperationListItem::class, $config);
+    }
+
     private function getConfigurationMock(array $config = []): Configuration
     {
         return $this->createConfiguredMock(Configuration::class, $config);

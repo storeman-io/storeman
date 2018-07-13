@@ -49,6 +49,14 @@ class OperationList implements \Countable, \IteratorAggregate
     }
 
     /**
+     * @return OperationListItem[]
+     */
+    public function toArray(): array
+    {
+        return $this->items;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function count()

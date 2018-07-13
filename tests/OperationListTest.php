@@ -9,6 +9,8 @@ use Storeman\OperationListItem;
 
 class OperationListTest extends TestCase
 {
+    use ConfiguredMockProviderTrait;
+
     public function testAddOperation()
     {
         $operationList = new OperationList();
@@ -46,5 +48,14 @@ class OperationListTest extends TestCase
 
         $this->assertEquals([$firstOperationListItem, $secondOperationListItem], iterator_to_array($first->getIterator()));
         $this->assertEquals([$secondOperationListItem], iterator_to_array($second->getIterator()));
+    }
+
+    public function testToArray()
+    {
+        $list = new OperationList();
+        $list->add($this->getOperationListItemMock());
+        $list->add($this->getOperationListItemMock());
+
+        $this->assertEquals(iterator_to_array($list->getIterator()), $list->toArray());
     }
 }
