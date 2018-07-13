@@ -76,7 +76,8 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
                 if ($localObject !== null && $localObject->getLinkTarget() !== $mergedIndexObject->getLinkTarget())
                 {
                     $operationList->add(new OperationListItem(new UnlinkOperation($mergedIndexObject->getRelativePath()), $mergedIndexObject));
-                    $operationList->add(new OperationListItem(new SymlinkOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getLinkTarget(), $mergedIndexObject->getPermissions()), $mergedIndexObject));
+                    $operationList->add(new OperationListItem(new SymlinkOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getLinkTarget()), $mergedIndexObject));
+                    $operationList->add(new OperationListItem(new TouchOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getPermissions()), $mergedIndexObject));
 
                     $modifiedPaths[] = $mergedIndexObject->getRelativePath();
                 }

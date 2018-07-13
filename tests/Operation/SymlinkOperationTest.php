@@ -20,11 +20,10 @@ class SymlinkOperationTest extends AbstractOperationTest
 
         $this->assertTrue(touch($absoluteTargetPath));
 
-        $operation = new SymlinkOperation($linkName, $targetName, 0754);
+        $operation = new SymlinkOperation($linkName, $targetName);
         $operation->execute($tempDir, $this->getFileReaderMock(), $this->getVaultLayoutMock());
 
         $this->assertTrue(is_link($absoluteLinkPath));
-        $this->assertEquals(0754, fileperms($absoluteLinkPath) & 0777);
         $this->assertEquals($absoluteTargetPath, readlink($absoluteLinkPath));
     }
 }

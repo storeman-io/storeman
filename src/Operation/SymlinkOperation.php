@@ -17,16 +17,10 @@ class SymlinkOperation implements OperationInterface
      */
     protected $relativeLinkTarget;
 
-    /**
-     * @var int
-     */
-    protected $mode;
-
-    public function __construct(string $relativePath, string $relativeLinkTarget, int $mode)
+    public function __construct(string $relativePath, string $relativeLinkTarget)
     {
         $this->relativePath = $relativePath;
         $this->relativeLinkTarget = $relativeLinkTarget;
-        $this->mode = $mode;
     }
 
     public function execute(string $localBasePath, FileReader $fileReader, VaultLayoutInterface $vaultLayout): bool
@@ -34,7 +28,7 @@ class SymlinkOperation implements OperationInterface
         $absolutePath = $localBasePath . $this->relativePath;
         $absoluteLinkTarget = $localBasePath . $this->relativeLinkTarget;
 
-        return symlink($absoluteLinkTarget, $absolutePath) && chmod($absolutePath, $this->mode);
+        return symlink($absoluteLinkTarget, $absolutePath);
     }
 
     /**
@@ -42,6 +36,6 @@ class SymlinkOperation implements OperationInterface
      */
     public function __toString(): string
     {
-        return sprintf('Symlink %s to %s (mode %s)', $this->relativePath, $this->relativeLinkTarget, $this->mode);
+        return sprintf('Symlink %s to %s', $this->relativePath, $this->relativeLinkTarget);
     }
 }
