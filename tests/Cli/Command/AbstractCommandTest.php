@@ -4,17 +4,17 @@ namespace Storeman\Test\Cli\Command;
 
 use PHPUnit\Framework\TestCase;
 use Storeman\Cli\Application;
-use Storeman\Test\TemporaryPathGeneratorProviderTrait;
+use Storeman\Test\TemporaryPathGenerator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
 abstract class AbstractCommandTest extends TestCase
 {
-    use TemporaryPathGeneratorProviderTrait;
-
     public function testCallOutsideArchive(array $input = [])
     {
-        chdir($this->getTemporaryPathGenerator()->getTemporaryDirectory());
+        $tmpPathGenerator = new TemporaryPathGenerator();
+
+        chdir($tmpPathGenerator->getTemporaryDirectory());
 
         $tester = new CommandTester($this->getCommand());
         $returnCode = $tester->execute($input);
