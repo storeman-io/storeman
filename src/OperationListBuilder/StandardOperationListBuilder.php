@@ -54,15 +54,6 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
 
                     $toSetMtime[$mergedIndexObject->getRelativePath()] = $mergedIndexObject;
                 }
-
-                if ($localObject !== null && $localObject->isDirectory())
-                {
-                    if ($localObject->getMtime() !== $mergedIndexObject->getMtime())
-                    {
-                        // fix wrong mtime
-                        $toSetMtime[$mergedIndexObject->getRelativePath()] = $mergedIndexObject;
-                    }
-                }
             }
 
             elseif ($mergedIndexObject->isFile())
@@ -98,9 +89,17 @@ class StandardOperationListBuilder implements OperationListBuilderInterface
             }
 
 
-            if ($localObject !== null && $localObject->getPermissions() !== $mergedIndexObject->getPermissions())
+            if ($localObject !== null)
             {
-                $operationList->add(new OperationListItem(new ChmodOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getPermissions()), $mergedIndexObject));
+                if ($localObject->getPermissions() !== $mergedIndexObject->getPermissions())
+                {
+                    $operationList->add(new OperationListItem(new ChmodOperation($mergedIndexObject->getRelativePath(), $mergedIndexObject->getPermissions()), $mergedIndexObject));
+                }
+
+                if ($localObject->getMtime() !== $mergedIndexObject->getMtime())
+                {
+                    $toSetMtime[$localObject->getRelativePath()] = $mergedIndexObject;
+                }
             }
         }
 

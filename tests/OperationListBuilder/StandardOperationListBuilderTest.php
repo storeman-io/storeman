@@ -3,6 +3,7 @@
 namespace Storeman\Test\OperationListBuilder;
 
 use Storeman\Index\Index;
+use Storeman\Operation\ChmodOperation;
 use Storeman\Operation\OperationInterface;
 use Storeman\Operation\TouchOperation;
 use Storeman\Operation\UnlinkOperation;
@@ -86,5 +87,39 @@ class StandardOperationListBuilderTest extends TestCase
         $this->assertEquals('a/b/c/d.ext', $unlinkOperations[0]->getRelativePath());
         $this->assertEquals('a/b/c', $unlinkOperations[1]->getRelativePath());
         $this->assertEquals('a/b', $unlinkOperations[2]->getRelativePath());
+    }
+
+    public function testMtimeUpdate()
+    {
+        $testVault = new TestVault();
+        $testVault->touch('file.ext', 1000);
+
+        $localIndex = $testVault->getIndex();
+
+        $testVault->touch('file.ext', 1010);
+
+        $mergedIndex = $testVault->getIndex();
+
+        $operationList = (new StandardOperationListBuilder())->buildOperationList($mergedIndex, $localIndex);
+
+        $this->assertCount(1, $operationList);
+    }
+
+    public function testPermissionUpdate()
+    {
+        $testVault = new TestVault();
+        $testVault->touch('file.ext');
+        $testVault->chmod('file.ext', 0755);
+
+        $localIndex = $testVault->getIndex();
+
+        $testVault->chmod('file.ext', 0775);
+
+        $mergedIndex = $testVault->getIndex();
+
+        $operationList = (new StandardOperationListBuilder())->buildOperationList($mergedIndex, $localIndex);
+
+        $this->assertCount(1, $operationList);
+        $this->assertInstanceOf(ChmodOperation::class, $operationList->toArray()[0]->getOperation());
     }
 }

@@ -3,18 +3,15 @@
 namespace Storeman\Test;
 
 use Storeman\Container;
-use Storeman\FilesystemUtility;
 use Storeman\Operation\OperationInterface;
 use Storeman\OperationResult;
 use Storeman\Storeman;
 use Storeman\Config\Configuration;
-use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
 use Storeman\OperationResultList;
 use Storeman\Vault;
 use Storeman\Config\VaultConfiguration;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Finder\SplFileInfo;
 
 class VaultTest extends TestCase
 {
@@ -27,17 +24,19 @@ class VaultTest extends TestCase
         $connectionTarget = $this->getTemporaryPathGenerator()->getTemporaryDirectory();
         $vault = $this->getLocalVault($testVault->getBasePath(), $connectionTarget);
 
-        $this->assertIndexEqualsTestVault($testVault, $vault->getStoreman()->getLocalIndex());
+        $this->assertTrue($testVault->getIndex()->equals($vault->getStoreman()->getLocalIndex()));
         $this->assertNull($vault->getLastLocalIndex());
         $this->assertNull($vault->getRemoteIndex());
-        $this->assertIndexEqualsTestVault($testVault, $vault->getMergedIndex());
+        $this->assertTrue($testVault->getIndex()->equals($vault->getMergedIndex()));
 
         $this->assertSuccessfulOperations($vault->synchronize());
 
-        $this->assertIndexEqualsTestVault($testVault, $vault->getStoreman()->getLocalIndex());
-        $this->assertIndexEqualsTestVault($testVault, $vault->getLastLocalIndex());
-        $this->assertIndexEqualsTestVault($testVault, $vault->getRemoteIndex());
-        $this->assertIndexEqualsTestVault($testVault, $vault->getMergedIndex());
+        $index = $testVault->getIndex();
+
+        $this->assertTrue($index->equals($vault->getStoreman()->getLocalIndex()));
+        $this->assertTrue($index->equals($vault->getLastLocalIndex(), IndexObject::CMP_IGNORE_BLOBID));
+        $this->assertTrue($index->equals($vault->getRemoteIndex(), IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE | IndexObject::CMP_IGNORE_CTIME));
+        $this->assertTrue($index->equals($vault->getMergedIndex(), IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE | IndexObject::CMP_IGNORE_CTIME));
     }
 
     public function testTwoPartySynchronization()
@@ -58,22 +57,23 @@ class VaultTest extends TestCase
 
         $this->assertSuccessfulOperations($firstVault->synchronize());
 
-        $this->assertInstanceOf(Index::class, $firstVault->getRemoteIndex());
-        $this->assertInstanceOf(Index::class, $firstVault->getLastLocalIndex());
-        $this->assertIndexEqualsTestVault($firstTestVault, $firstVault->getRemoteIndex());
-        $this->assertIndexEqualsTestVault($firstTestVault, $firstVault->getLastLocalIndex());
-        $this->assertIndexContainsTestVault($firstTestVault, $secondVault->getRemoteIndex());
+        $firstIndex = $firstTestVault->getIndex();
+
+        $this->assertTrue($firstIndex->equals($firstVault->getRemoteIndex(), IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE | IndexObject::CMP_IGNORE_CTIME));
+        $this->assertTrue($firstIndex->equals($firstVault->getLastLocalIndex(), IndexObject::CMP_IGNORE_BLOBID));
+        $this->assertTrue($firstIndex->equals($secondVault->getRemoteIndex(), IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE | IndexObject::CMP_IGNORE_CTIME));
 
         $this->assertSuccessfulOperations($secondVault->synchronize());
 
-        $this->assertInstanceOf(Index::class, $secondVault->getRemoteIndex());
-        $this->assertInstanceOf(Index::class, $secondVault->getLastLocalIndex());
+        $secondIndex = $secondTestVault->getIndex();
+
         $this->assertTrue($firstVault->getRemoteIndex()->equals($secondVault->getRemoteIndex()));
-        $this->assertIndexContainsTestVault($firstTestVault, $firstVault->getRemoteIndex());
-        $this->assertIndexContainsTestVault($secondTestVault, $firstVault->getRemoteIndex());
+        $this->assertTrue($firstIndex->isSubsetOf($firstVault->getRemoteIndex(), IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE | IndexObject::CMP_IGNORE_CTIME));
+        $this->assertTrue($secondIndex->isSubsetOf($firstVault->getRemoteIndex(), IndexObject::CMP_IGNORE_BLOBID | IndexObject::CMP_IGNORE_INODE | IndexObject::CMP_IGNORE_CTIME));
 
         $this->assertSuccessfulOperations($firstVault->synchronize());
 
+        $this->assertTrue($firstVault->getStoreman()->getLocalIndex()->equals($secondVault->getStoreman()->getLocalIndex(), IndexObject::CMP_IGNORE_INODE | IndexObject::CMP_IGNORE_CTIME));
     }
 
     public function testRestore()
@@ -107,7 +107,7 @@ class VaultTest extends TestCase
 
         $verificationVault = $this->getLocalVault($dumpTarget, $this->getTemporaryPathGenerator()->getTemporaryDirectory());
 
-        $this->assertIndexEqualsTestVault($testVault, $verificationVault->getStoreman()->getLocalIndex());
+        $this->assertTrue($testVault->getIndex()->equals($verificationVault->getStoreman()->getLocalIndex(), IndexObject::CMP_IGNORE_INODE | IndexObject::CMP_IGNORE_CTIME));
     }
 
     protected function assertSuccessfulOperations(OperationResultList $operationResultList)
@@ -118,67 +118,6 @@ class VaultTest extends TestCase
 
             $this->assertTrue($operationResult->isSuccess());
             $this->assertInstanceOf(OperationInterface::class, $operationResult->getOperation());
-        }
-    }
-
-    private function assertIndexEqualsTestVault(TestVault $testVault, Index $index)
-    {
-        $this->assertTestVaultContainsIndex($testVault, $index);
-        $this->assertIndexContainsTestVault($testVault, $index);
-    }
-
-    private function assertTestVaultContainsIndex(TestVault $testVault, Index $index)
-    {
-        foreach ($index as $indexObject)
-        {
-            $this->assertIndexObjectIsInTestVault($indexObject, $testVault);
-        }
-    }
-
-    private function assertIndexContainsTestVault(TestVault $testVault, Index $index)
-    {
-        foreach ($testVault as $testVaultObject)
-        {
-            $this->assertTestVaultObjectIsInIndex($testVaultObject, $index);
-        }
-    }
-
-    private function assertIndexObjectIsInTestVault(IndexObject $indexObject, TestVault $testVault)
-    {
-        $testVaultObject = $testVault->getObjectByRelativePath($indexObject->getRelativePath());
-
-        $this->assertInstanceOf(SplFileInfo::class, $testVaultObject, sprintf('Failed to assert that object %s is part of the fiven test vault.', $indexObject->getRelativePath()));
-
-        $this->assertTestVaultObjectEqualsIndexObject($testVaultObject, $indexObject);
-    }
-
-    private function assertTestVaultObjectIsInIndex(SplFileInfo $testVaultObject, Index $index)
-    {
-        $indexObject = $index->getObjectByPath($testVaultObject->getRelativePathname());
-
-        $this->assertInstanceOf(IndexObject::class, $indexObject, sprintf('Failed to assert that object %s is part of the given index.', $testVaultObject->__toString()));
-
-        $this->assertTestVaultObjectEqualsIndexObject($testVaultObject, $indexObject);
-    }
-
-    private function assertTestVaultObjectEqualsIndexObject(SplFileInfo $testVaultObject, IndexObject $indexObject)
-    {
-        $stat = FilesystemUtility::lstat($testVaultObject->getPathname());
-
-        $this->assertEquals($testVaultObject->isFile(), $indexObject->isFile());
-        $this->assertEquals($testVaultObject->isDir(), $indexObject->isDirectory());
-        $this->assertEquals($testVaultObject->isLink(), $indexObject->isLink());
-        $this->assertEquals($stat['mtime'], $indexObject->getMtime());
-        $this->assertEquals($testVaultObject->getPerms() & 0777, $indexObject->getPermissions());
-
-        if ($testVaultObject->isFile())
-        {
-            $this->assertEquals($testVaultObject->getSize(), $indexObject->getSize());
-        }
-
-        elseif ($testVaultObject->isLink())
-        {
-            $this->assertEquals($testVaultObject->getLinkTarget(), $indexObject->getLinkTarget());
         }
     }
 
