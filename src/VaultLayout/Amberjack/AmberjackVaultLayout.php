@@ -14,6 +14,11 @@ use Storeman\SynchronizationList;
 use Storeman\VaultLayout\LazyLoadedIndex;
 use Storeman\VaultLayout\VaultLayoutInterface;
 
+/**
+ * The Amberjack vault layout is the simplest layout shipped with storeman and exists primarily for testing & debugging
+ * as it does not feature encryption, de-duplication and requires the ability to replace already existing files on the
+ * vault.
+ */
 class AmberjackVaultLayout implements VaultLayoutInterface
 {
     protected const SYNCHRONIZATION_LIST_FILE_NAME = 'sync.log';

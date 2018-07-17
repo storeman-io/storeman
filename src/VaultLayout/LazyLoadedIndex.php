@@ -5,6 +5,11 @@ namespace Storeman\VaultLayout;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
 
+/**
+ * Allows for an index to be lazy-loaded when its actually required using a provided loader callback.
+ * This might be used in situations where you don't know in advance if the index content is actually needed and helps
+ * to reduce the runtime.
+ */
 class LazyLoadedIndex extends Index
 {
     /**

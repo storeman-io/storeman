@@ -7,7 +7,8 @@ use Storeman\Synchronization;
 use Storeman\SynchronizationList;
 
 /**
- * The vault layout defines the data format within a vault.
+ * The vault layout defines the data layout within a vault. As this the vault layout is the component that needs to
+ * support features like encryption, de-duplication and other functionality that can be abstracted by this interface.
  */
 interface VaultLayoutInterface
 {
