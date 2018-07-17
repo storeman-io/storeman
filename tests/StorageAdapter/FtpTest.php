@@ -13,12 +13,18 @@ class FtpTest extends AbstractStorageAdapterTest
 
     protected function getStorageAdapter(): StorageAdapterInterface
     {
+        if (!getenv('ftpHost') || !getenv('ftpUser') || !getenv('ftpPass'))
+        {
+            $this->markTestSkipped('Skipping test because required environment variables do not exist.');
+
+            return null;
+        }
+
         $vaultConfiguration = new VaultConfiguration($this->getConfigurationMock());
         $vaultConfiguration->setSettings([
-            // https://dlptest.com/ftp-test/
-            'host' => 'ftp.dlptest.com',
-            'username' => 'dlpuser@dlptest.com',
-            'password' => '3D6XZV9MKdhM5fF',
+            'host' => getenv('ftpHost'),
+            'username' => getenv('ftpUser'),
+            'password' => getenv('ftpPass'),
         ]);
 
         return new Ftp($vaultConfiguration);

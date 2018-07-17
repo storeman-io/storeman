@@ -9,7 +9,10 @@ abstract class AbstractStorageAdapterTest extends TestCase
 {
     public function testRoundtrip()
     {
-        $adapter = $this->getStorageAdapter();
+        if (($adapter = $this->getStorageAdapter()) === null)
+        {
+            return;
+        }
 
         $objectName = uniqid('test_file_');
         $objectData = random_bytes(rand(10, 100));
