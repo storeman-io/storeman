@@ -19,6 +19,9 @@ use Storeman\SynchronizationProgressListener\DummySynchronizationProgressListene
 use Storeman\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 use Storeman\VaultLayout\VaultLayoutInterface;
 
+/**
+ * Represents a vault in a set of vaults associated to a storeman (archive) instance.
+ */
 class Vault implements LoggerAwareInterface
 {
     use LoggerAwareTrait;

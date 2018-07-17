@@ -9,7 +9,7 @@ use Storeman\IndexBuilder\IndexBuilderInterface;
 use Storeman\SynchronizationProgressListener\SynchronizationProgressListenerInterface;
 
 /**
- * This class coordinates executions with multiple vaults involved.
+ * Represents a local archive and this coordinates task executions with potentially multiple vaults.
  */
 class Storeman
 {

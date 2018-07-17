@@ -5,6 +5,10 @@ namespace Storeman\OperationListBuilder;
 use Storeman\Index\Index;
 use Storeman\OperationList;
 
+/**
+ * An operation list builder is responsible of comparing the local to a target index and constructing a list of
+ * operations required to transit from the local to the target state.
+ */
 interface OperationListBuilderInterface
 {
     /**

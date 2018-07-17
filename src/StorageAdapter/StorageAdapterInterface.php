@@ -4,6 +4,9 @@ namespace Storeman\StorageAdapter;
 
 use Storeman\Config\VaultConfiguration;
 
+/**
+ * A storage adapter abstracts the specific API for a concrete storage provider.
+ */
 interface StorageAdapterInterface
 {
     /**
