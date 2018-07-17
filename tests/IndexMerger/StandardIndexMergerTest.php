@@ -10,8 +10,8 @@ use Storeman\Hash\Algorithm\Adler32;
 use Storeman\Hash\Algorithm\Crc32;
 use Storeman\Hash\Algorithm\Md5;
 use Storeman\Hash\Algorithm\Sha1;
-use Storeman\Hash\Algorithm\Sha256;
-use Storeman\Hash\Algorithm\Sha512;
+use Storeman\Hash\Algorithm\Sha2_256;
+use Storeman\Hash\Algorithm\Sha2_512;
 use Storeman\Hash\HashProvider;
 use Storeman\Index\Index;
 use Storeman\Index\IndexObject;
@@ -181,7 +181,7 @@ class StandardIndexMergerTest extends TestCase
         $indexA = $testVault->getIndex();
         $objectA = $indexA->getObjectByPath('file.ext');
         $objectA->setBlobId('xxx');
-        $objectA->getHashes()->addHash('sha256', '2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae');
+        $objectA->getHashes()->addHash('sha2-256', '2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae');
 
         // obvious change as we can compare file size
         $testVault->fwrite('file.ext', 'obvious');
@@ -256,12 +256,12 @@ class StandardIndexMergerTest extends TestCase
         $localTestVault->touch('file.ext', 1000);
 
         $lastLocalIndex = $localTestVault->getIndex();
-        $lastLocalIndex->getObjectByPath('file.ext')->getHashes()->addHash('sha256', '2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae');
+        $lastLocalIndex->getObjectByPath('file.ext')->getHashes()->addHash('sha2-256', '2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae');
 
         $localTestVault->chmod('file.ext', 0777);
 
         $localIndex = $localTestVault->getIndex();
-        $localIndex->getObjectByPath('file.ext')->getHashes()->addHash('sha256', '2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae');
+        $localIndex->getObjectByPath('file.ext')->getHashes()->addHash('sha2-256', '2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae');
 
         $remoteTestVault = new TestVault();
         $remoteTestVault->fwrite('file.ext', 'bar');
@@ -269,7 +269,7 @@ class StandardIndexMergerTest extends TestCase
         $remoteTestVault->touch('file.ext', 1000);
 
         $remoteIndex = $remoteTestVault->getIndex();
-        $remoteIndex->getObjectByPath('file.ext')->getHashes()->addHash('sha256', 'fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9');
+        $remoteIndex->getObjectByPath('file.ext')->getHashes()->addHash('sha2-256', 'fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9');
 
         $mergedIndex = $this->getIndexMerger($localTestVault)->merge(new PanickingConflictHandler(), $remoteIndex, $localIndex, $lastLocalIndex);
         $indexObject = $mergedIndex->getObjectByPath('file.ext');
@@ -277,7 +277,7 @@ class StandardIndexMergerTest extends TestCase
         $this->assertInstanceOf(IndexObject::class, $indexObject);
         $this->assertEquals(0777, $indexObject->getPermissions());
         $this->assertEquals(1000, $indexObject->getMtime());
-        $this->assertEquals('fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9', $indexObject->getHashes()->getHash('sha256'));
+        $this->assertEquals('fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9', $indexObject->getHashes()->getHash('sha2-256'));
     }
 
     protected function getIndexMerger(TestVault $testVault): StandardIndexMerger
@@ -290,8 +290,8 @@ class StandardIndexMergerTest extends TestCase
             'crc32' => new Crc32(),
             'md5' => new Md5(),
             'sha1' => new Sha1(),
-            'sha256' => new Sha256(),
-            'sha512' => new Sha512(),
+            'sha2-256' => new Sha2_256(),
+            'sha2-512' => new Sha2_512(),
         ];
         $fileReader = new FileReader($configuration, $algorithms);
         $hashProvider = new HashProvider($fileReader, $configuration, $algorithms);

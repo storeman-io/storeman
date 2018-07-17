@@ -11,7 +11,7 @@ abstract class AbstractPhpHashAlgorithm implements HashAlgorithmInterface
      */
     public function initialize(): void
     {
-        $this->context = hash_init($this->getName());
+        $this->context = hash_init($this->getPhpHashAlgorithmName());
     }
 
     /**
@@ -32,5 +32,15 @@ abstract class AbstractPhpHashAlgorithm implements HashAlgorithmInterface
         assert($this->context !== null, sprintf('Calling %s() on uninitialized context.', __FUNCTION__));
 
         return hash_final($this->context);
+    }
+
+    /**
+     * Allows to override the hash algo name.
+     *
+     * @return string
+     */
+    protected function getPhpHashAlgorithmName(): string
+    {
+        return $this->getName();
     }
 }

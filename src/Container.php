@@ -18,8 +18,8 @@ use Storeman\Hash\Algorithm\Crc32;
 use Storeman\Hash\Algorithm\HashAlgorithmInterface;
 use Storeman\Hash\Algorithm\Md5;
 use Storeman\Hash\Algorithm\Sha1;
-use Storeman\Hash\Algorithm\Sha256;
-use Storeman\Hash\Algorithm\Sha512;
+use Storeman\Hash\Algorithm\Sha2_256;
+use Storeman\Hash\Algorithm\Sha2_512;
 use Storeman\Hash\HashProvider;
 use Storeman\IndexBuilder\IndexBuilderInterface;
 use Storeman\IndexBuilder\StandardIndexBuilder;
@@ -80,8 +80,8 @@ final class Container implements ContainerInterface
         $this->addHashAlgorithm('crc32', Crc32::class);
         $this->addHashAlgorithm('md5', Md5::class);
         $this->addHashAlgorithm('sha1', Sha1::class);
-        $this->addHashAlgorithm('sha256', Sha256::class);
-        $this->addHashAlgorithm('sha512', Sha512::class);
+        $this->addHashAlgorithm('sha2-256', Sha2_256::class);
+        $this->addHashAlgorithm('sha2-512', Sha2_512::class);
 
         $this->delegate->add('hashFunctions', function(Container $container) {
 

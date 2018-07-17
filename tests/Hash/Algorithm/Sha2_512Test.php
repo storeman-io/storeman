@@ -3,9 +3,9 @@
 namespace Storeman\Test\Hash\Algorithm;
 
 use Storeman\Hash\Algorithm\HashAlgorithmInterface;
-use Storeman\Hash\Algorithm\Sha512;
+use Storeman\Hash\Algorithm\Sha2_512;
 
-class Sha512Test extends AbstractAlgorithmTest
+class Sha2_512Test extends AbstractAlgorithmTest
 {
     protected function getTestCases(): array
     {
@@ -16,6 +16,6 @@ class Sha512Test extends AbstractAlgorithmTest
 
     protected function getFunction(): HashAlgorithmInterface
     {
-        return new Sha512();
+        return new Sha2_512();
     }
 }

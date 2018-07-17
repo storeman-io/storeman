@@ -41,7 +41,7 @@ class Configuration implements ArraySerializableInterface
      *
      * @var string[]
      */
-    protected $fileChecksums = ['sha256', 'sha1', 'md5'];
+    protected $fileChecksums = ['sha2-256', 'sha1', 'md5'];
 
     /**
      * Array of vault configurations.
