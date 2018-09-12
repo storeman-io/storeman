@@ -1,3 +1,5 @@
+> __This project is discontinued as [restic](https://github.com/restic/restic) seems to be an adequate solution to most problems this project aimed to solve.__
+
 # Storeman
 
 [![Build Status](https://travis-ci.org/storeman-io/storeman.svg?branch=master)](https://travis-ci.org/storeman-io/storeman)
